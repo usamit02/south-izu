@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>ダイレクト一覧</ion-title>
+    <ion-menu-button menu="end" slot="end">
+      <ion-icon name="contacts"></ion-icon>
+    </ion-menu-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-grid *ngIf="directs$|async as directs">
+    <ion-row *ngIf="directs.length;else nodirects">
+      <ion-col size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4" *ngFor="let direct of directs">
+        <ion-card button="true" [routerLink]="direct.url">
+          <ion-card-header>
+            <ion-card-title>{{direct.na}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div style="display:flex">
+              <img slot="start" [src]="direct.avatar" class="avatar" />
+              <span>{{direct.upd.toDate()|date}}</span>
+            </div>
+            <ion-item lines="none">{{direct.discription}}</ion-item>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ng-template #nodirects>
+      <ion-row>
+        <span>まだ誰ともダイレクトメッセージを交わしていません。</span>
+        <span>アバター画像をクリックして、ポップアップメニューから<ion-icon name="mail" color="secondary"></ion-icon>
+          メールボタンをクリックすると、その人と個別チャットできます。</span>
+        <span class="memo">※既定ではサポーターからしかダイレクトはできません。誰でもできる人、誰もできない人もいます。</span>
+      </ion-row>
+    </ng-template>
+  </ion-grid>
+</ion-content>

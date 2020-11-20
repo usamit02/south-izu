@@ -1,0 +1,106 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-button slot="start" (click)="modal.dismiss()" fill="clear">
+      　 <ion-icon name="close-circle" slot="icon-only" [color]="shopForm.dirty?'danger':'dark'"></ion-icon>
+    </ion-button>
+    <ion-button slot="start" (click)="undo()" fill="clear">
+      　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+    </ion-button>
+    <ion-title>ショップ</ion-title>
+    <ion-button [disabled]="!eraseable" (click)="erase()" color="danger" slot="end" fill="clear">
+      <ion-icon name="hammer" slot="icon-only"></ion-icon>
+    </ion-button>
+    <ion-button slot="end"
+      [disabled]="!shopForm.dirty || !shopForm.valid || !(prop.user.id===user.value || prop.user.admin || saving)"
+      (click)="save()" fill="clear">
+      　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <form [formGroup]="shopForm">
+    <ion-item>
+      <ion-label slot="start">地方</ion-label>
+      <ion-select name="region" slot="start" placeholder="選択してください" [formControl]="region" (ionChange)="resetArea('')"
+        [disabled]="!(prop.user.id===user.value || prop.user.admin)">
+        <ion-select-option *ngFor="let region of regions" value="{{region.id}}">
+          <span #regionOptions>{{region.na}}</span>
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label slot="start">地域</ion-label>
+      <ion-select name="area" slot="start" placeholder="選択してください" [formControl]="area">
+        <ion-select-option *ngFor="let area of areas" value="{{area.id}}">
+          <span #areaOptions>{{area.na}}</span>
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label slot="start">ジャンル</ion-label>
+      <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre">
+        <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
+          <span #genreOptions>{{genre.na}}</span>
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label class=" leftLabel">名称</ion-label>
+      <ion-input name="na" [formControl]="na" placeholder="東京ikuikuガール"
+        [readonly]="!(prop.user.id===user.value || prop.user.admin)"></ion-input>
+    </ion-item>
+    <span *ngIf="na.errors?.minlength||na.errors?.maxlength" class="errmsg">２文字以上２０文字以下で入力してください。</span>
+    <ion-item>
+      <ion-label class="leftLabel">ふりがな</ion-label>
+      <ion-input name="kana" [formControl]="kana" placeholder="とうきょういくいくがーる"
+        [readonly]="!(prop.user.id===user.value || prop.user.admin)"></ion-input>
+    </ion-item>
+    <span *ngIf="kana.errors?.minlength||kana.errors?.maxlength" class="errmsg">２文字以上４０文字以下で入力してください。</span>
+    <span *ngIf="kana.errors?.pattern && kana.dirty" class="errmsg">全角ひらがなで入力してください</span>
+    <ion-item>
+      <ion-label class="leftLabel">
+        <ion-icon name="home" padding-right></ion-icon>ホームページ
+      </ion-label>
+      <ion-input name="url" [formControl]="url" placeholder="https://kanderi.com" (change)="refresh()"
+        [readonly]="!(prop.user.id===user.value || prop.user.admin)"></ion-input>
+      <ion-button slot="end" (click)="refresh()" fill="clear"
+        [disabled]="!(prop.user.id===user.value || prop.user.admin) || !(url.valid && url.value)">
+        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <span *ngIf="url.errors?.pattern && url.dirty" class="errmsg">正しいURLを入力してください</span>
+    <ion-item>
+      <ion-label class="leftLabel">
+        <ion-icon name="call" padding-right></ion-icon>電話
+      </ion-label>
+      <ion-input name="phone" [formControl]="phone" placeholder="03-5321-1111"
+        [readonly]="!(prop.user.id===user.value || prop.user.admin)"></ion-input>
+    </ion-item>
+    <span *ngIf="phone.errors?.pattern && phone.dirty" class="errmsg">00-0000-0000などの形式で入力してください</span>
+
+  </form>
+  <ion-item>
+    <ion-label>ロゴ画像</ion-label>
+    <img *ngIf="imgBase64;else orgimg" class="img" [src]="imgBase64" />
+    <ng-template #orgimg>
+      <img class="img" [src]="img.value" />
+    </ng-template>
+    <ion-button slot="end" (click)="popCrop()" fill="clear"
+      [disabled]="!(prop.user.id===user.value || prop.user.admin)">
+      　 <ion-icon name="image" slot="icon-only" color="success"></ion-icon>
+    </ion-button>
+    <ion-button *ngIf="imgBase64" slot="end" (click)="imgBase64=''" fill="clear">
+      　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+    </ion-button>
+  </ion-item>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let img of imgs;let i=index" size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4">
+        <a [href]="img.url" target="_blank">
+          <img [src]="img.url" class="scrapingImg" />
+        </a>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+<canvas #canvas style="display:none;"></canvas>

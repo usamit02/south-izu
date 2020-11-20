@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>検索結果</ion-title>
+    <ion-menu-button menu="end" slot="end">
+      <ion-icon name="contacts"></ion-icon>
+    </ion-menu-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let report of reports;let i=index" size-xs="6" size-sm="6" size-md="4" size-lg="4" size-xl="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title [routerLink]="'/chat/report/'+report.id">{{report.cast_na}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="cardDiv">
+              <img [routerLink]="'/chat/report/'+report.id" [src]="report.castimg" class="castImg" />
+              <div *ngIf="(report.detail$|async)||report.detail as detail">
+                <div>
+                  <ion-icon name="eye" color="secondary"></ion-icon>{{detail.view}}
+                </div>
+                <div>
+                  <ion-icon name="text" color="medium"></ion-icon>{{detail.chat}}
+                </div>
+                <div>
+                  <ion-icon name="thumbs-up" color="success"></ion-icon>{{detail.good}}
+                </div>
+                <div>
+                  <ion-icon name="thumbs-down" color="dark"></ion-icon>{{detail.bad}}
+                </div>
+              </div>
+            </div>
+            <a [href]="report.shopurl" target="_blank">{{report.shop_na}}</a>
+            <ion-item lines="none" class="wrapItem">
+              <div>
+                <ion-item (click)="popUser($event,report.user)" class="avatarItem" lines="none" button="true">
+                  <ion-avatar>
+                    <img [src]="report.userDetail.avatar" />
+                  </ion-avatar>
+                </ion-item>
+              </div>
+              <div>
+                <ion-item [routerLink]="'/user/'+report.user" class="userItem" lines="none" button="true">
+                  <ion-label>{{report.userDetail.na}}</ion-label>
+                </ion-item>
+              </div>
+            </ion-item>
+            <div style="text-align: right;">{{report.created|date}}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-infinite-scroll #infinite position="bottom" threshold="10px"
+    (ionInfinite)="load(reports[reports.length-1][order])">
+    <ion-infinite-scroll-content loadingSpinner="bubbles">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

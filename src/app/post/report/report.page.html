@@ -1,0 +1,369 @@
+<ion-header>
+  <ion-toolbar>
+    <div class="toolbar">
+      <ion-button *ngIf="reports.drafts.length" slot="start" color="medium" (click)="popReports(reports.drafts,$event)">
+        下書き{{reports.drafts.length}}件
+      </ion-button>
+      <ion-button *ngIf="reports.requests.length" slot="start" color="secondary"
+        (click)="popReports(reports.requests,$event)">
+        申請中{{reports.requests.length}}件
+      </ion-button>
+      <ion-button *ngIf="reports.posts.length" slot="start" color="warning" (click)="popReports(reports.posts,$event)">
+        審査中{{reports.posts.length}}件
+      </ion-button>
+      <ion-button *ngIf="reports.acks.length" slot="start" color="success" (click)="popReports(reports.acks,$event)">
+        公開済{{reports.acks.length}}件
+      </ion-button>
+      <ion-title>レポート投稿</ion-title>
+      <ng-container *ngIf="report.id">
+        <ion-item *ngIf="report.author" button="true" [routerLink]="'/user/'+report.author.id">
+          <ion-avatar>
+            <img [src]="report.author.avatar" />
+          </ion-avatar>
+          {{report.author.na}}
+        </ion-item>
+        <ion-button *ngIf="report.id" (click)="newReport()" slot="end" fill="clear">
+          <ion-icon name="create" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button (click)="preview()" [disabled]="!reportForm.valid" slot="end" fill="clear">
+          <ion-icon name="browsers" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ng-container *ngIf="report.user===user.id">
+          <ion-button [disabled]="!reportForm.valid || !reportForm.dirty" (click)="save(-1)" slot="end" fill="clear">
+            <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button [disabled]="!reportForm.valid || !reportForm.dirty" (click)="save(0)" slot="end" fill="clear">
+            <ion-icon name="send" slot="icon-only" color="secondary"></ion-icon>
+          </ion-button>
+        </ng-container>
+        <ng-container *ngIf="user.admin">
+          <ion-button [disabled]="!reportForm.valid" (click)="save(1)" slot="end" fill="clear">
+            <ion-icon name="thumbs-up" slot="icon-only" color="success"></ion-icon>
+          </ion-button>
+          <ion-button [disabled]="!reportForm.valid" (click)="save(-1)" slot="end" fill="clear">
+            <ion-icon name="thumbs-down" slot="icon-only" color="dark"></ion-icon>
+          </ion-button>
+        </ng-container>
+        <ion-button *ngIf="report.user===user.id||user.admin" (click)="eraseClick()" color="danger" slot="end"
+          fill="clear">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ng-container>
+    </div>
+  </ion-toolbar>
+</ion-header>
+<ion-content #content (ionScrollEnd)="onScrollEnd()">
+  <form [formGroup]="reportForm">
+    <ion-grid>
+      <ion-row>
+        <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+          <ion-title class="caption">Basic</ion-title>
+          <ion-item>
+            <ion-label slot="start">地方 <ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-select name="area" slot="start" placeholder="選択してください" [formControl]="region"
+              (ionChange)="resetArea()">
+              <ion-select-option *ngFor="let region of regions" value="{{region.id}}">
+                <span #regionOptions>{{region.na}}</span>
+              </ion-select-option>
+            </ion-select>
+            <ion-button slot="end" fill="clear" class="search" (click)="add('region','地方','東京')">
+              <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label slot="start">地域 <ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-select name="area" slot="start" placeholder="選択してください" [formControl]="area" (ionChange)="clearShop()">
+              <ion-select-option *ngFor="let area of areas" value="{{area.id}}">
+                <span #areaOptions>{{area.na}}</span>
+              </ion-select-option>
+            </ion-select>
+            <ion-button slot="end" class="search" (click)="add('area','地域','鶯谷',{region:region.value})" fill="clear">
+              　 <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label class="leftLabel" slot="start">種類<ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre"
+              (ionChange)="clearShop()">
+              <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
+                <span #genreOptions>{{genre.na}}</span>
+              </ion-select-option>
+            </ion-select>
+            <ion-button slot="end" class="search" (click)="add('genre','種類','ソープ')" fill="clear">
+              <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <ion-item *ngIf="area.valid && genre.valid">
+            <ion-label class="leftLabel">ショップ<ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-item button="true" (click)="popList('shop')">
+              <div><img *ngIf="shopimg" class="shopimg" [src]="shopimg" />{{shoping}}</div>
+            </ion-item>
+            <ion-input name="shop" [formControl]="shop" (ionChange)="clearCast()" style="display:none"></ion-input>
+            <ion-button *ngIf="shop.value" slot="end" class="search" (click)="addShop(shop.value)" fill="clear">
+              <ion-icon name="information-circle" slot="icon-only" color="warning"></ion-icon>　
+            </ion-button>
+            <ion-button slot="end" class="search" (click)="addShop(0)" fill="clear">
+              　 <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-item *ngIf="shop.valid">
+            <ion-label class="leftLabel">キャスト<ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-item button="true" (click)="popList('cast')">
+              <img *ngIf="castimg" class="castimg" [src]="castimg" />
+              {{casting}}</ion-item>
+            <ion-input name="cast" [formControl]="cast" (ionChange)="changeCast()" style="display:none"></ion-input>
+            <ion-button *ngIf="cast.value" slot="end" class="search" (click)="addCast(cast.value)" fill="clear">
+              <ion-icon name="information-circle" slot="icon-only" color="warning"></ion-icon>　
+            </ion-button>
+            <ion-button slot="end" class="search" (click)="addCast(0)" fill="clear">
+              　 <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ng-container *ngIf="cast.value">
+            <ion-item>
+              <ion-text>
+                プレイ日<ion-text color="danger">*</ion-text>
+              </ion-text>
+              <ion-datetime display-format="YYYY年M月D日" picker-format="YYYY年M月D日" [formControl]="played"
+                placeholder="2020年1月1日">
+              </ion-datetime>
+            </ion-item>
+            <ion-item>
+              <ion-label>時間</ion-label>
+              <input name="time" type="number" min="10" max="600" [formControl]="time" style="width:4em" step="10" />
+              <ion-range min="10" [max]="time.value>180?600:190" step="10" [color]="time.value? 'secondary':'light'"
+                [value]="time.value" (ionChange)="time.setValue($event.target.value)">
+                <ion-label slot="start">10分</ion-label>
+                <ion-label slot="end" [innerHTML]="time.value>180?'10時間':'3時間～'">180分～</ion-label>
+              </ion-range>
+              <ion-button slot="end" (click)="time.reset()" fill="clear">
+                　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+              </ion-button>
+            </ion-item>
+            <span *ngIf="time.errors?.min||time.errors?.max" class="errmsg">0～3600分で入力してください。</span>
+            <ion-item>
+              <ion-label>金額</ion-label>
+              <input name="price" type="number" min="1000" max="300000" [formControl]="price" style="width:6em"
+                step="1000" />
+              <ion-range min="1000" [max]="price.value>50000?300000:51000" step="1000"
+                [color]="price.value? 'secondary':'light'" [value]="price.value"
+                (ionChange)="price.setValue($event.target.value)">
+                <ion-label slot="start">1000円</ion-label>
+                <ion-label slot="end" [innerHTML]="price.value>50000?'300000円':'50000円～'"></ion-label>
+              </ion-range>
+              <ion-button slot="end" (click)="price.reset()" fill="clear">
+                　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+              </ion-button>
+            </ion-item>
+            <span *ngIf="price.errors?.min||price.errors?.max" class="errmsg">0～30万円で入力してください。</span>
+          </ng-container>
+        </ion-col>
+        <ion-col #detail size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+          <ion-title class="caption">Detail</ion-title>
+          <ion-item>
+            <ion-label>年齢</ion-label>
+            <input name="age" type="number" min="16" max="50" [formControl]="age" style="width:3em" />
+            <ion-range min="16" max="50" step="1" [color]="age.value? 'secondary':'light'" [value]="age.value"
+              (ionChange)="age.setValue($event.target.value)">
+              <ion-label slot="start">JK</ion-label>
+              <ion-label slot="end">BBA</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="age.reset()" fill="clear">
+              　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <span *ngIf="age.errors?.min||age.errors?.max" class="errmsg">0～100歳で入力してください。</span>
+          <ion-item>
+            <ion-label>身長</ion-label>
+            <input name="height" type="number" min="140" max="180" [formControl]="height" style="width:3em" />
+            <ion-range min="140" max="180" step="1" [color]="height.value? 'secondary':'light'" [value]="height.value"
+              (ionChange)="height.setValue($event.target.value)">
+              <ion-label slot="start">140cm</ion-label>
+              <ion-label slot="end">180cm</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="height.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <span *ngIf="height.errors?.min||height.errors?.max" class="errmsg">0～200cmで入力してください。</span>
+          <ion-item>
+            <ion-label>体重</ion-label>
+            <input name="weight" type="number" min="30" max="80" [formControl]="weight" style="width:3em" />
+            <ion-range min="30" max="80" step="1" [color]="weight.value? 'secondary':'light'" [value]="weight.value"
+              (ionChange)="weight.setValue($event.target.value)">
+              <ion-label slot="start">30kg</ion-label>
+              <ion-label slot="end">80ke</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="weight.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <span *ngIf="weight.errors?.min||weight.errors?.max" class="errmsg">0～100kgで入力してください。</span>
+          <ion-item>
+            <ion-label>肌色</ion-label>
+            <ion-range name="skin" min="1" max="5" step="1" [color]="skin.value? 'secondary':'light'" snaps="true"
+              [formControl]="skin">
+              <ion-label slot="start">{{skinVals[skin.value]}}</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="skin.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label>おっぱい</ion-label>
+            <ion-range name="tits" min="1" max="7" step="1" [color]="tits.value? 'secondary':'light'" snaps="true"
+              [formControl]="tits">
+              <ion-label slot="start">{{titsVals[tits.value]}}</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="tits.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label>喫煙</ion-label>
+            <ion-range name="tabacco" min="1" max="5" step="1" [color]="tabacco.value? 'secondary':'light'" snaps="true"
+              [formControl]="tabacco">
+              <ion-label slot="start">{{tabaccoVals[tabacco.value]}}</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="tabacco.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label>刺青</ion-label>
+            <ion-range name="tattoo" min="1" max="5" step="1" [color]="tattoo.value? 'secondary':'light'" snaps="true"
+              [formControl]="tattoo">
+              <ion-label slot="start">{{tattooVals[tattoo.value]}}</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="tattoo.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label>言語</ion-label>
+            <ion-range name="commu" min="1" max="5" step="1" [color]="commu.value? 'secondary':'light'" snaps="true"
+              [formControl]="commu">
+              <ion-label slot="start">{{commuVals[commu.value]}}</ion-label>
+            </ion-range>
+            <ion-button slot="end" (click)="commu.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>　
+            </ion-button>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-title #essay class="caption">Essay</ion-title>
+    <app-story typ="report" [document]="report" [user]="user"></app-story>
+    <ion-title #score class="caption">Score</ion-title>
+    <ion-grid>
+      <ion-row>
+        <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+          <ion-item>
+            <ion-label>スタイル</ion-label>
+            <input name="style" type="number" min="0" max="100" [formControl]="style" style="width:3em" />
+            <ion-range [min]="style.value>77?75:0" max="100" step="1" [color]="style.value? 'secondary':'light'"
+              [value]="style.value" (ionChange)="style.setValue($event.target.value)">
+              <ion-label slot="start" [innerHTML]="style.value>79?'80':'㍘'"></ion-label>
+              <ion-label slot="end">💯</ion-label>
+            </ion-range>
+          </ion-item>
+          <span *ngIf="style.errors?.min||style.errors?.max" class="errmsg">0～100点で入力してください。</span>
+          <ion-item>
+            <ion-label>ルックス</ion-label>
+            <input name="looks" type="number" min="0" max="100" [formControl]="looks" style="width:3em" />
+            <ion-range [min]="looks.value>77?75:0" max="100" step="1" [color]="looks.value? 'secondary':'light'"
+              [value]="looks.value" (ionChange)="looks.setValue($event.target.value)">
+              <ion-label slot="start" [innerHTML]="looks.value>79?'80':'㍘'"></ion-label>
+              <ion-label slot="end">💯</ion-label>
+            </ion-range>
+          </ion-item>
+          <span *ngIf="looks.errors?.min||looks.errors?.max" class="errmsg">0～100点で入力してください。</span>
+        </ion-col>
+        <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+          <ion-item>
+            <ion-label>サービス</ion-label>
+            <input name="hosp" type="number" min="0" max="100" [formControl]="hosp" style="width:3em" />
+            <ion-range [min]="hosp.value>77?75:0" max="100" step="1" [color]="hosp.value? 'secondary':'light'"
+              [value]="hosp.value" (ionChange)="hosp.setValue($event.target.value)">
+              <ion-label slot="start" [innerHTML]="hosp.value>79?'80':'㍘'"></ion-label>
+              <ion-label slot="end">💯</ion-label>
+            </ion-range>
+          </ion-item>
+          <span *ngIf="hosp.errors?.min||hosp.errors?.max" class="errmsg">0～100点で入力してください。</span>
+
+          <ion-item>
+            <ion-label>総合得点</ion-label>
+            <input name="total" type="number" min="0" max="100" [formControl]="total" style="width:3em" />
+            <ion-range [min]="total.value>77?75:0" max="100" step="1" [color]="total.value? 'secondary':'light'"
+              [value]="total.value" (ionChange)="total.setValue($event.target.value)">
+              <ion-label slot="start" [innerHTML]="total.value>79?'80':'㍘'"></ion-label>
+              <ion-label slot="end">💯</ion-label>
+            </ion-range>
+          </ion-item>
+          <span *ngIf="total.errors?.min||total.errors?.max" class="errmsg">0～100点で入力してください。</span>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
+      Basic
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY>detailY+50" (click)="scroll(detailY)" color="light" size="small">
+      Detail
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY>essayY+50" (click)="scroll(essayY)" color="light" size="small">
+      Essay
+    </ion-fab-button>
+  </ion-fab>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY+contentH<detailY" (click)="scroll(detailY)" color="light" size="small">
+      Detail
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<essayY" (click)="scroll(essayY)" color="light" size="small">
+      Essay
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<scoreY" (click)="scroll(scoreY)" color="light" size="small">
+      Score
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+
+<!--
+*ngIf="currentY > contentY"
+
+     <ion-select name="shop" slot="start" placeholder="選択してください" [formControl]="shop" (ionFocus)="popList('shop')">
+        <ion-select-option value="{{shopping.id}}" selected>{{shopping.na}}</ion-select-option>
+      </ion-select>
+  <ion-item>
+            <ion-label slot="start">喫煙</ion-label>
+            <ion-select name="tabacco" slot="start" [formControl]="tabacco" placeholder="選択してください">
+              <ion-select-option value="4">ヘビー</ion-select-option>
+              <ion-select-option value="3">吸う</ion-select-option>
+              <ion-select-option value="2">断ってから</ion-select-option>
+              <ion-select-option value="1">客前では吸わない</ion-select-option>
+              <ion-select-option value="0">吸わない</ion-select-option>
+            </ion-select>
+            <ion-button slot="end" (click)="tabacco.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label slot="start">刺青</ion-label>
+            <ion-select name="tattoo" slot="start" [formControl]="tattoo" placeholder="選択してください">
+              <ion-select-option value="4">全身</ion-select-option>
+              <ion-select-option value="3">半身</ion-select-option>
+              <ion-select-option value="2">大きめ</ion-select-option>
+              <ion-select-option value="1">ワンポイント</ion-select-option>
+              <ion-select-option value="0">なし</ion-select-option>
+            </ion-select>
+            <ion-button slot="end" (click)="tattoo.reset()" fill="clear">
+              　　<ion-icon name="help-circle" slot="icon-only" color="medium"></ion-icon>
+            </ion-button>  
+-->

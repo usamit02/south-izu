@@ -1,0 +1,36 @@
+.leftLabel{
+  width:5em;
+}
+.leftText{
+  width:5.5em;
+}
+.errmsg{
+  color:red;
+}
+.castimg{
+  border-radius: 10px;
+  margin-right: 1em;
+  margin-top: 4px; margin-bottom: 4px;
+}
+.shopimg{
+  border-radius: 5px;
+  margin-right: 1em;
+  margin-top: 4px; margin-bottom: 4px;
+  display:block;
+}
+ion-select {
+  position: relative;
+}
+.title{
+  font-style: italic;
+}
+.toolbar{
+  display:flex;
+}
+.caption{
+    position: relative;
+    padding: 0.1em 0.5em;
+    background: -webkit-linear-gradient(to right, rgb(255, 186, 115), transparent);
+    background: linear-gradient(to right, rgb(255, 186, 115), transparent);
+    color: #545454;
+}

@@ -1,0 +1,70 @@
+<ion-title>注意事項</ion-title>
+以下に該当した場合、強制的にサポートは中止されます。
+<ol>
+  <li>クレジットカードの有効期限切れ、残高不足等により引き落とし不能となった。</li>
+  <li>公序良俗に反する書き込み、他者を誹謗中傷する書き込みをした。</li>
+  <li>限定公開の情報を許可なく漏洩した。</li>
+  <li>サイト管理者が別途定める規約に違反した。</li>
+</ol>
+<ion-title>返金について</ion-title>
+<span>サポートの中止はいつでも可能ですが、履行済分については理由の如何を問わず返金できません。</span>
+<span>直近の引き落とし日から1月に満たない場合でも未利用日数分は返金されません。強制中止となった場合も同様とします。</span>
+<p></p>
+<ion-title>プライバシーポリシー</ion-title>
+クレジットカード番号はトークン化したうえで通信されます。本システムにカード情報が記録されることはありません。
+<p></p>
+<p></p>
+<ion-title>月額：{{plan.amount}}円</ion-title>
+<p *ngIf="plan.trial_days" class="memo">（無料お試し期間:{{plan.trial_days}}日間）</p>
+<p *ngIf="plan.billing_day" class="memo">（毎月{{plan.billing_day}}日自動引き落とし）</p>
+<ng-container *ngIf="!plan.billing_day">
+  <p *ngIf="plan.auth_days && !plan.trial_days" class="memo">（本日より{{plan.auth_days}}日以内で審査を通過した日に毎月自動引き落とし）</p>
+  <p *ngIf="plan.auth_days && plan.trial_days" class="memo">
+    （本日より{{plan.auth_days}}日以内で審査を通過した日から無料期間{{plan.trial_days}}日間を経過した日に毎月自動引き落とし）</p>
+</ng-container>
+<p *ngIf="plan.prorate && plan.billing_day" class="memo">初月分は申込日から引き落とし日までの日数により日割り計算で申込日に自動引き落としされます。</p>
+<p *ngIf="!plan.prorate && plan.billing_day && (plan.auth_days || plan.trial_days)" class="memo">
+  初月分は申込日から次回引き落とし日までの日数が一月に満たない場合でも月額分が申込日に自動引き落としされます。</p>
+
+<form [formGroup]="cardForm" *ngIf="!card.last4||card.change">
+  <ion-list>
+    <ion-list-header>
+      <ion-img [src]="cardimg">
+      </ion-img>※現在、VISAカード及びMASTERカードのみ対応です。
+    </ion-list-header>
+    <ion-item>
+      <ion-label class="leftLabel">カード番号</ion-label>
+      <ion-input [formControl]="cardNumber" name="cardNumber" placeholder="4242565642425656"></ion-input>
+    </ion-item>
+    <span *ngIf="cardNumber.errors?.pattern && cardNumber.dirty"
+      class="errmsg">半角数字16桁または0000-0000-0000-0000形式で入力してください</span>
+    <ion-item>
+      <ion-label class="leftLabel">セキュリティコード</ion-label>
+      <ion-input [formControl]="cardCvc" name="cardCvc" placeholder="123"></ion-input>
+      <img *ngIf="whatCvc" [src]="cvcimg" />
+      <ion-button slot="end" icon-only (click)="whatCvc=!whatCvc">
+        <ion-icon name="help-circle"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <span *ngIf="cardCvc.errors?.pattern && cardCvc.dirty" class="errmsg">半角数字3桁で入力してください</span>
+    <ion-item>
+      <ion-text class="leftText">有効期限</ion-text>
+      <ion-datetime display-format="YYYY年M月" picker-format="YYYY年M月" [formControl]="cardRimit" name="cardRimit"
+        placeholder="2021年6月" doneText="決定" cancelText="取消" min="2019" max="2030">
+      </ion-datetime>
+    </ion-item>
+    <div text-center>
+      <ion-button color="tertiary" (click)="newpay()" [disabled]="cardForm.invalid">同意して申し込む</ion-button>
+    </div>
+  </ion-list>
+</form>
+<div *ngIf="card.last4">
+  <p>登録済クレジットカード</p>
+  　 <p>カード番号　　{{card.brand}} ****-****-****-{{card.last4}}</p>
+  <p>有効期間　　　{{card.exp_year}}年{{card.exp_month}}月</p>
+  <ion-item text-center align-items-center lines="none">
+    <ion-button color="tertiary" (click)="payClick('')">同意して申し込む</ion-button>
+    <ion-button *ngIf="!card.change" color="light" (click)="card.change=true" slot="end">クレジットカードを変更する</ion-button>
+  </ion-item>
+</div>
+<p *ngIf="plan.auth_days" class="memo">審査により承認できない場合があります。{{plan.auth_days}}日以内に承認を決定します。</p>

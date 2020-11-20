@@ -1,0 +1,63 @@
+.readed{
+  border-bottom:2px dotted red;
+}
+.cursor{
+  --background:lightyellow;
+  //--background: var(--ion-color-cursor);
+}
+#topmsg{
+  color:gray;
+  width:100%;
+  text-align: center;
+  padding-top:1em;
+}
+.mention{
+  color:white;
+  background-color: red;  
+}
+.newmsg{
+  color:white;
+  background-color: blue;  
+}
+.talk{
+  width:100%;
+  min-height: 3em;
+  border:2px dotted #0B85A1;
+  border-radius: 8px; 
+  white-space: pre-wrap;
+}
+.chatItems{  
+  position: relative; 
+}
+.avatarDiv{
+  position: absolute;
+  top: 0px;
+  left:0px;
+}
+.avatarItem{
+  --padding-start:5px;
+  --inner-padding-end:5px;
+}
+.chatDivs{
+   margin-left:50px;
+   width:100%;
+}
+.none{
+  display:none;
+}
+.chatna{
+  margin-left:0.5em;margin-right: 0.5em;
+  font-weight:600;  
+}
+.chatdate{
+  color:gray;
+}
+.emoji{
+  width:1em;
+}
+.chattxt{
+  white-space: pre-wrap;
+}
+.gray{
+  color:gray;
+}

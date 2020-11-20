@@ -1,0 +1,120 @@
+<ng-container *ngIf="show">
+  <ion-header>
+    <ion-toolbar>
+      <ion-menu-button slot="start"></ion-menu-button>
+      <ion-title>{{column.na}}</ion-title>
+      <ion-button *ngIf="column.lock&&!(user.admin||column.user===user.id);else create"
+        [routerLink]="'/support/'+column.user" slot="end" fill="clear">
+        　 <ion-icon name="lock" slot="icon-only" color="tertiary"></ion-icon>
+      </ion-button>
+      <ion-buttons slot="end">
+        <ng-template #create>
+          <ion-button [routerLink]="'/post/column/'+column.parent+'/'+column.id" slot="end" fill="clear">
+            <ion-icon name="create" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ng-template>
+        <ion-button [routerLink]="'/columns/'+column.parent" color="dark" slot="end" fill="clear">
+          <ion-icon name="caret-up" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-menu-button menu="end">
+          <ion-icon name="contacts"></ion-icon>
+        </ion-menu-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content #content (ionScrollEnd)="onScrollEnd()" class="ion-padding">
+    <div style="text-align: center;">
+      <ion-button *ngIf="column.lock" [routerLink]="'/support/'+column.user" color="tertiary">
+        <ion-icon name="heart" color="danger"></ion-icon>サポートして今すぐ見る
+      </ion-button>
+    </div>
+    <ion-grid #essay>
+      <ion-row *ngFor="let story of storys;index as i;">
+        <ng-container *ngIf="!story.rest;else rest">
+          <ion-col *ngIf="story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
+            [innerHtml]="story.media | safe">
+          </ion-col>
+          <ion-col *ngIf="story.txt && story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
+            [innerHtml]="story.txt | safe">
+          </ion-col>
+          <ion-col *ngIf="story.txt && !story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="12"
+            [innerHtml]="story.txt | safe">
+          </ion-col>
+        </ng-container>
+        <ng-template #rest>
+          <ion-col size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="12">
+            <ion-item>
+              <ion-text color="tertiary">続きはあと{{story.rested|date:'last'}}で公開されます</ion-text>
+              <ion-button slot="end" [routerLink]="'/support/'+column.user" color="tertiary">
+                <ion-icon name="heart" color="danger"></ion-icon>サポートして今すぐ見る
+              </ion-button>
+            </ion-item>
+          </ion-col>
+        </ng-template>
+      </ion-row>
+    </ion-grid>
+    <ion-item *ngIf="column.user$|async as user">
+      <ion-item button="true" (click)="popUser(column.user)" lines="none">
+        <ion-avatar><img [src]="user.avatar"></ion-avatar>
+      </ion-item>
+      <ion-item button="true" [routerLink]="'/user/' + column.user" lines="none">{{user.na}}</ion-item>
+      <span>
+        <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
+        <ion-icon name="paper" color="primary"></ion-icon>{{user.column}}
+        <ion-icon name="eye" color="secondary"></ion-icon>{{user.view}}
+        <ion-icon name="heart" color="danger"></ion-icon>{{user.supporter}}
+        <ion-icon name="star" color="warning"></ion-icon>{{user.follower}}
+        <ion-icon name="thumbs-up" color="success"></ion-icon>{{user.good}}
+        <ion-icon name="thumbs-down" color="dark"></ion-icon>{{user.bad}}
+      </span>
+      <span *ngIf="column.acked" slot="end">{{column.acked|date:'day'}}　公開 </span>
+    </ion-item>
+    <ion-grid>
+      <ion-row>
+        <ion-col size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4" *ngFor="let column of columns">
+          <ion-card button="true" [routerLink]="'/column/'+column.id">
+            <ion-card-header>
+              <ion-card-title>{{column.na}}</ion-card-title>
+            </ion-card-header>
+            <img *ngIf="column.image" [src]="column.image" />
+            <ion-card-content>
+              <div class="description">{{column.description}}</div>
+              <div class="acked">{{column.acked|date}}</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <app-chat #chat *ngIf="column.chat&&column.ack===1&&!column.lock" page="column" [params]="params" [user]="user"
+      [content]="content">
+    </app-chat>
+    <ion-fab vertical="top" horizontal="end" slot="fixed">
+      <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">
+        <ion-icon name="caret-up"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button *ngIf="chatY&&currentY>chatY+50" (click)="scroll(chatY)" color="light" size="small">
+        Chat
+      </ion-fab-button>
+    </ion-fab>
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button *ngIf="currentY+contentH<chatY" (click)="scroll(chatY)" color="light" size="small">
+        Chat
+      </ion-fab-button>
+      <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
+        <ion-icon name="caret-down"></ion-icon>
+      </ion-fab-button>
+      <ng-container *ngIf="currentY+contentH===scrollH && user.id && !eval && storys.length">
+        <ion-fab-button (click)="evaluation('good')" size="small" color="clear">
+          <ion-icon name="thumbs-up" color="success"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button (click)="evaluation('bad')" size="small" color="clear">
+          <ion-icon name="thumbs-down" color="dark"></ion-icon>
+        </ion-fab-button>
+      </ng-container>
+    </ion-fab>
+  </ion-content>
+  <ion-footer id="footer">
+    <app-send *ngIf="column.chat&&column.ack===1&&!column.lock&&user.id&&currentY+contentH>chatY"
+      [id]="column.id.toString()" page="column" thread="" [user]="user" [content]="content"></app-send>
+  </ion-footer>
+</ng-container>

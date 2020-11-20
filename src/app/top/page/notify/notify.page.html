@@ -1,0 +1,126 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+      <ion-button (click)="undo()" fill="clear">
+        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>通知設定</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [disabled]="!(pushForm.dirty||mailForm.dirty)||!(pushForm.valid&&mailForm.valid)" (click)="save()"
+        fill="clear">
+        　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ng-container *ngIf="!ios;else nopush">
+    <form *ngIf="user.id" [formGroup]="pushForm">
+      <ion-item lines="none">
+        <ion-title>プッシュ通知</ion-title>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="mail" color="secondary"></ion-icon>
+        <ion-label>ダイレクト</ion-label>
+        <ion-toggle [formControl]="push.direct"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="notifications" color="secondary"></ion-icon>
+        <ion-label>メンション</ion-label>
+        <ion-toggle [formControl]="push.mention"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="document" color="secondary"></ion-icon>
+        <ion-label>投稿へのコメント</ion-label>
+        <ion-toggle [formControl]="push.chat"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="document" color="secondary"></ion-icon>
+        <ion-label>コメントへの返信</ion-label>
+        <ion-toggle [formControl]="push.thread"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="star" color="secondary"></ion-icon>
+        <ion-label>サポート、フォロー、ブロックされたら</ion-label>
+        <ion-toggle [formControl]="push.friend"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="heart" color="secondary"></ion-icon>
+        <ion-label>サポートしている人の投稿</ion-label>
+        <ion-toggle [formControl]="push.supportpost"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="heart" color="secondary"></ion-icon>
+        <ion-label>サポートしている人のコメント</ion-label>
+        <ion-toggle [formControl]="push.supportchat"></ion-toggle>
+      </ion-item>
+      <ng-container *ngIf="user.admin">
+        <ion-item>
+          <ion-icon name="alert" color="secondary"></ion-icon>
+          <ion-label>通報</ion-label>
+          <ion-toggle [formControl]="push.tip"></ion-toggle>
+        </ion-item>
+      </ng-container>
+    </form>
+  </ng-container>
+  <form *ngIf="user.id" [formGroup]="mailForm">
+    <ion-item lines="none">
+      <ion-title>メール通知</ion-title>
+    </ion-item>
+    <ion-item>
+      <ion-label>メールアドレス</ion-label>
+      <ion-input [formControl]="mail.email" slot="end" inputmode="email" placeholder="sexualreport@gmail.com">
+      </ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="mail" color="secondary"></ion-icon>
+      <ion-label>ダイレクト</ion-label>
+      <ion-toggle [formControl]="mail.direct"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="notifications" color="secondary"></ion-icon>
+      <ion-label>メンション</ion-label>
+      <ion-toggle [formControl]="mail.mention"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="document" color="secondary"></ion-icon>
+      <ion-label>投稿へのコメント</ion-label>
+      <ion-toggle [formControl]="mail.chat"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="document" color="secondary"></ion-icon>
+      <ion-label>コメントへの返信</ion-label>
+      <ion-toggle [formControl]="mail.thread"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="star" color="secondary"></ion-icon>
+      <ion-label>ファン、フォロー、ブロックされたら</ion-label>
+      <ion-toggle [formControl]="mail.friend"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="heart" color="secondary"></ion-icon>
+      <ion-label>サポートしている人の投稿</ion-label>
+      <ion-toggle [formControl]="mail.supportpost"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-icon name="heart" color="secondary"></ion-icon>
+      <ion-label>サポートしている人のコメント</ion-label>
+      <ion-toggle [formControl]="mail.supportchat"></ion-toggle>
+    </ion-item>
+    <ng-container *ngIf="user.admin">
+      <ion-item>
+        <ion-icon name="alert" color="secondary"></ion-icon>
+        <ion-label>通報</ion-label>
+        <ion-toggle [formControl]="mail.tip"></ion-toggle>
+      </ion-item>
+    </ng-container>
+  </form>
+  <ng-template #nopush>
+    ※お使いのアップル社製端末はWebプッシュ通知に対応していません。
+  </ng-template>
+</ion-content>

@@ -1,0 +1,26 @@
+ion-content ion-toolbar {
+  --background: translucent;
+}
+.icon_green{
+  color:lightgreen;
+}
+.icon_red{
+  color:red;
+}
+.icon_yellow{
+  color:yellow;
+}
+.icon_blue{color:blue;}
+.icon_skybule{color:skyblue;}
+table{
+   margin-left: 10px;
+   margin-top:10px;
+}
+td{padding-left:10px;padding-right: 10px;}
+agm-map {
+  height: 600px;
+ img{
+    width:150px;
+    border-radius: 5px;
+    }  
+}

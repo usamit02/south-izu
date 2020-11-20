@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>{{parentColumn.na}}{{place}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="parentColumn.parent!=null" [routerLink]="'/columns/'+parentColumn.parent" color="dark"
+        slot="end" fill="clear">
+        <ion-icon name="caret-up" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let column of columns" size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4">
+        <ion-card button="true" [routerLink]="'/column/'+column.id">
+          <ion-card-header>
+            <ion-card-title>{{column.na}}</ion-card-title>
+          </ion-card-header>
+          <img *ngIf="column.image" [src]="column.image" />
+          <ion-card-content>
+            <div class="description">{{column.description}}</div>
+            <div class="acked">{{column.acked|date}}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

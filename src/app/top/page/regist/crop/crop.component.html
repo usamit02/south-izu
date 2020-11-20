@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-button slot="start" (click)="pop.dismiss()" fill="clear">
+        　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+      </ion-button>
+      <ion-title>トリミング</ion-title>
+      <ion-button slot="end" (click)="inputFile.click()" fill="clear">
+        　 <ion-icon name="image" slot="icon-only" color="success"></ion-icon>
+      </ion-button>
+      <ion-button slot="end" [disabled]="cripping===false" (click)="pop.dismiss(croppedImage)" fill="clear">
+        　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-header>
+<ion-content padding>
+  <image-cropper [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="true" [aspectRatio]="aspect"
+    [resizeToWidth]="width" format="jpeg" (imageCropped)="imageCropped($event)" (imageLoaded)="imageLoaded()"
+    (cropperReady)="cropperReady()" (loadImageFailed)="loadImageFailed()"></image-cropper>
+  <input #inputFile type="file" accept="image/*" (change)="fileChangeEvent($event)" style="display:none;" />
+  <ng-container *ngIf="croppedImage">
+    <div text-center align-items-center>
+      <img class="img" [src]="croppedImage" />
+    </div>
+  </ng-container>
+</ion-content>

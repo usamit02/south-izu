@@ -1,0 +1,44 @@
+<ng-container *ngIf="support.id">
+  <ion-header>
+    <ion-toolbar>
+      <ion-menu-button slot="start"></ion-menu-button>
+      <ion-title>{{support.na}}をサポートする</ion-title>
+      <ion-menu-button menu="end" slot="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    <ion-item button="true" [routerLink]="'/user/' + support.id">
+      <img [src]="support.image" class="userImg">
+      <span slot="end">
+        <ion-icon name="document" color="primary"></ion-icon>{{support.report}}
+        <ion-icon name="eye" color="secondary"></ion-icon>{{support.view}}
+        <ion-icon name="heart" color="danger"></ion-icon>{{support.supporter}}
+        <ion-icon name="star" color="warning"></ion-icon>{{support.follower}}
+        <ion-icon name="thumbs-up" color="success"></ion-icon>{{support.good}}
+        <ion-icon name="thumbs-down" color="dark"></ion-icon>{{support.bad}}
+      </span>
+    </ion-item>
+    <p></p>
+    <ion-title>特典</ion-title>
+    <ion-icon name="heart-empty" color="danger"></ion-icon>サポーターになるとより正確な嬢報をタイムリーに得ることができます。
+    <ol>
+      <li>
+        <ion-icon name="paper-plane" color="warning"></ion-icon>投稿、コメントをプッシュ通知またはメール通知で素早くチェックできます。
+      </li>
+      <li>
+        <ion-icon name="document" color="secondary"></ion-icon>一足先に非公開の投稿記事を見ることができます。
+      </li>
+      <li *ngIf="support.direct==='support'">
+        <ion-icon name="mail" color="medium"></ion-icon> 聞きにくいことも非公開のダイレクトでこっそり確認できます。
+      </li>
+    </ol>
+    <app-pay *ngIf="user.id" [dest]="support" [user]="user" (pay)="pay($event)"></app-pay>
+    <div *ngIf="!user.id" style="text-align: center">
+      <ion-button routerLink="/login">
+        <ion-icon name="log-in"></ion-icon>ログインして続ける
+      </ion-button>
+    </div>
+  </ion-content>
+</ng-container>

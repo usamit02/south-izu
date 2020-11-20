@@ -1,0 +1,17 @@
+canvas{
+  display:none;
+}
+.mediaButton{
+  margin:0.5em;
+}
+#send{
+  margin:1em;
+}
+#writer{height: 10px;margin:0;padding:0;}
+.talk{
+  width:100%;
+  min-height: 3em;
+  border:2px dotted #0B85A1;
+  border-radius: 8px;
+  white-space: pre-wrap;
+}

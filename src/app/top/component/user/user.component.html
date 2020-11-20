@@ -1,0 +1,56 @@
+<ng-container *ngIf="show&&user">
+  <ion-header>
+    <ion-toolbar button="true" (click)="goUser()">
+      <ion-title>{{user.na}}</ion-title>
+      <ion-icon *ngIf="friended" slot="end" [name]="friendVal[friended].icon" [color]="friendVal[friended].color">
+      </ion-icon>
+    </ion-toolbar>
+    <img [src]="user.image" (click)="goUser()" />
+  </ion-header>
+  <ion-content>
+    <ion-item>
+      <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
+      <ion-icon name="eye" color="secondary"></ion-icon>{{user.view}}
+      <ion-icon name="text" color="medium"></ion-icon>{{user.chat}}
+      <ion-icon name="heart" color="danger"></ion-icon>{{user.supporter}}
+      <ion-icon name="star" color="warning"></ion-icon>{{user.follower}}
+      <ion-icon name="thumbs-up" color="success"></ion-icon>{{user.good}}
+      <ion-icon name="thumbs-down" color="dark"></ion-icon>{{user.bad}}
+    </ion-item>
+    <ng-container *ngIf="!ban;else revive">
+      <ion-item *ngIf="self.id">
+        <ng-container *ngIf="friended!=='block'">
+          <ion-button (click)="friending('follow')" fill="clear">
+            <ion-icon name="star" slot="icon-only" [color]="friend==='follow'?'medium':'warning'"></ion-icon>
+          </ion-button>
+          <ion-button (click)="friending('support')" fill="clear">
+            <ion-icon name="heart" slot="icon-only" [color]="friend==='support'?'medium':'danger'"></ion-icon>
+          </ion-button>
+          <ion-button (click)="mention()" fill="clear">
+            <ion-icon name="notifications" slot="icon-only" color="secondary"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="user.direct==='everyone'||user.direct==='support'&&friend==='support'" routerLink="/direct"
+            [queryParams]="{user:id,self:self.id,na:user.na}" (click)="pop.dismiss()" fill="clear">
+            <ion-icon name="mail" slot="icon-only" color="secondary"></ion-icon>
+          </ion-button>
+        </ng-container>
+        <ion-button (click)="friending('block')" fill="clear">
+          <ion-icon name="hand" slot="icon-only" [color]="friend==='block'?'medium':'dark'"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ng-container>
+    <ng-template #revive>
+      <ion-item>
+        アカウント凍結中
+        <ion-button *ngIf="self.admin" slot="end" (click)="baning(true)" fill="clear">
+          <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ng-template>
+    <ion-item *ngIf="self.admin">
+      <ion-button *ngIf="!ban" (click)="baning(false)" fill="clear">
+        <ion-icon name="hammer" slot="icon-only" color="danger"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-content>
+</ng-container>

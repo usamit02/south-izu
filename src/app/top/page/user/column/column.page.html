@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{user.na}}のコラム</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let column of columns;let i=index" size-xs="4" size-sm="3" size-md="2" size-lg="4" size-xl="3">
+        <ion-card button="true" [routerLink]="'/column/' + column.id">
+          <ion-card-header>
+            <ion-card-title>{{column.na}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="cardDiv">
+              <ion-img *ngIf="column.image" [src]="column.image"></ion-img>
+              <div *ngIf="column.detail$|async as detail" class="viewDiv">
+                <ion-icon name="eye" color="secondary"></ion-icon>{{detail.view}}
+                <ion-icon name="text" color="medium"></ion-icon>{{detail.chat}}
+                <ion-icon name="thumbs-up" color="success"></ion-icon>{{detail.good}}
+                <ion-icon name="thumbs-down" color="dark"></ion-icon>{{detail.bad}}
+              </div>
+            </div>
+            <div style="text-align: right;">{{column.created|date}}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <span *ngIf="!columns.length">まだ投稿していません。</span>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{user.na}}のコメント</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <span *ngIf="!chats.length">まだコメントしていません。</span>
+  <ion-list>
+    <ion-item *ngFor="let chat of chats;index as i" button="true" [routerLink]="chat.url">
+      <div style="width:100%">
+        <div style="width:100%">
+          <span class="chatdate"> {{chat.upd|date}}</span>
+          <span class="chatsource">{{chat.source}}</span>
+        </div>
+        <div class="chattxt">{{chat.txt}}</div>
+        <div *ngIf="chat.media" [innerHTML]="chat.media|safe" text-center align-items-center></div>
+      </div>
+    </ion-item>
+  </ion-list>
+  <ion-infinite-scroll #infinite position="bottom" threshold="10px" (ionInfinite)="chatLoad($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

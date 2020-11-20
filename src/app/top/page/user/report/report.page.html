@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{user.na}}のレポート</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let report of reports;let i=index" size-xs="4" size-sm="3" size-md="2" size-lg="4" size-xl="3">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title [routerLink]="'/report/'+report.id">{{report.cast_na}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="cardDiv">
+              <img [routerLink]="'/report/'+report.id" [src]="report.cast_img" class="castImg" />
+              <div *ngIf="report.detail$|async as detail" class="viewDiv">
+                <div>
+                  <ion-icon name="eye" color="secondary"></ion-icon>{{detail.view}}
+                </div>
+                <div>
+                  <ion-icon name="chatbubbles" color="medium"></ion-icon>{{detail.chat}}
+                </div>
+                <div>
+                  <ion-icon name="thumbs-up" color="success"></ion-icon>{{detail.good}}
+                </div>
+                <div>
+                  <ion-icon name="thumbs-down" color="dark"></ion-icon>{{detail.bad}}
+                </div>
+              </div>
+            </div>
+            <a [href]="report.shopurl" target="_blank">{{report.shop_na}}</a>
+            <ion-button (click)="filter('shop',report.shop)" fill="clear">
+              　 <ion-icon name="funnel" slot="icon-only" [color]="shop?'primary':'medium'"></ion-icon>
+            </ion-button>
+            <div style="text-align: right;">{{report.acked|date}}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <span *ngIf="!reports.length">まだ投稿していません。</span>
+    </ion-row>
+  </ion-grid>
+  <ion-infinite-scroll #infinite position="bottom" threshold="10px"
+    (ionInfinite)="load(reports[reports.length-1].created)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

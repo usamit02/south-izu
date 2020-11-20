@@ -1,0 +1,81 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>ログイン</ion-title>
+    <ion-menu-button menu="end" slot="end">
+      <ion-icon name="contacts"></ion-icon>
+    </ion-menu-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="padding">
+  <form #formMail="ngForm" [formGroup]="mailForm">
+    <ion-item class="mail">
+      <ion-label position="floating">
+        <ion-icon name="mail"></ion-icon>
+        メールアドレス
+      </ion-label>
+      <ion-input [formControl]="email" name="email"></ion-input>
+    </ion-item>
+    <span *ngIf="email.errors?.email && email.dirty" class="errmsg">正しいメールアドレスを入力してください</span>
+    <ion-item class="mail">
+      <ion-label position="floating">
+        <ion-icon name="mail"></ion-icon>
+        パスワード
+      </ion-label>
+      <ion-input [formControl]="password" name="password"></ion-input>
+    </ion-item>
+    <span *ngIf="password.errors?.password && password.dirty" class="errmsg">正しいパスワードを入力してください</span>
+    <div class="snsLogin">
+      <ion-button (click)="registerEmail()">
+        新規登録
+      </ion-button>
+    </div>
+    <div class="snsLogin">
+      <ion-button (click)="loginEmail()">
+        ログイン
+      </ion-button>
+    </div>
+  </form>
+  <ion-item lines="none" style="text-align:center">
+    <ion-label>または</ion-label>
+  </ion-item>
+  <!--
+  <form #formPhone="ngForm" [formGroup]="phoneForm">
+    <ion-item>
+      <div slot="start">
+        <ion-label position="floating">
+          <ion-icon name="call"></ion-icon>
+          電話番号
+        </ion-label>
+        <ion-input [formControl]="phone" name="phone"></ion-input>
+      </div>
+      <div id="recaptcha-container"></div>
+      <ion-button slot="end" [disabled]="!phone.valid || !recaptchaOK " (click)="loginPhone()">
+        SMSを送信
+      </ion-button>
+    </ion-item>
+    <span *ngIf="phone.errors?.pattern && phone.dirty" class="errmsg">半角数字9-11桁または00-0000-0000などの形式で入力してください</span>
+  </form>
+  <ion-item lines="none" text-center >
+    <ion-label>または</ion-label>
+  </ion-item>
+  -->
+  <div class="snsLogin">
+    <ion-button color="twitter" (click)="loginSns('twitter')">
+      <ion-icon name="logo-twitter"></ion-icon>　twitterアカウントでログイン
+    </ion-button>
+  </div>
+  <div class="snsLogin">
+    <ion-button color="google" (click)="loginSns('google')">
+      <ion-icon name="logo-google"></ion-icon>　googleアカウントでログイン
+    </ion-button>
+  </div>
+  <!--
+  <ion-item lines="none" text-center align-items-center>
+    <ion-button color="facebook" (click)="loginSns('facebook')">
+      <ion-icon name="logo-facebook"></ion-icon>Facebookアカウントでログイン
+    </ion-button>
+  </ion-item>
+-->
+</ion-content>

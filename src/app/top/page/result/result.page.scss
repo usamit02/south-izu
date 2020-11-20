@@ -1,0 +1,21 @@
+.cardDiv{
+  display:flex;
+}
+.castImg{
+  width:70%;
+  border-radius:10px;
+  margin-right:5px ;  
+  object-fit: contain;
+}
+.avatarItem{
+  --padding-start:0px;--padding-end:5px;
+  --inner-padding-start:0px; --inner-padding-end:0px;
+}
+.userItem{
+  --padding-start:0px;--padding-end:0px;
+  --inner-padding-start:0px;--inner-padding-end:0px;
+}
+.wrapItem{
+  --padding-start:0px;--padding-end:0px;
+  --inner-padding-start:0px; --inner-padding-end:0px;
+}

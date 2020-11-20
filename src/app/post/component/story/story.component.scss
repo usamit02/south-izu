@@ -1,0 +1,30 @@
+
+.tiny{
+  width:100%;
+  min-height: 3em;
+  border:2px dotted #0B85A1;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  position: relative;
+}
+.media{ 
+  min-height: 3em;
+  position: relative;
+}
+.mediaButton{
+  z-index: 2;
+    position: absolute;
+    left: 40%;
+    top: 40%;
+    margin: auto;
+}
+.setButton{
+  z-index: 2;
+    position: absolute;
+    left: 70%;
+    top: 20%;
+    margin: auto;
+}
+.rest{
+  border:2px dotted #7044ff;
+}

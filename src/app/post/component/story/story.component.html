@@ -1,0 +1,84 @@
+<ion-grid>
+  <ion-row *ngFor="let row of rows;let i=index">
+    <ion-col size-xs="12" size-sm="12" size-md="4" size-lg="4" size-xl="4" style="text-align: center;">
+      <div class="media" (drop)="dropMedia($event,i)">
+        <ion-buttons *ngIf="document.user===user.id||user.admin" class="mediaButton">
+          <ion-button fill="clear" (click)="upmedia.click()">
+            <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ng-container *ngIf="medias[i]">
+            <ion-button *ngIf="i" (click)="storyUp(i,true)" slot="start" fill="clear">
+              <ion-icon name="arrow-dropup-circle" slot="icon-only" color="warning"></ion-icon>
+            </ion-button>
+            <ion-button *ngIf="i<medias.length-1" (click)="storyDown(i,true)" fill="clear">
+              <ion-icon name="arrow-dropdown-circle" slot="icon-only" color="warning"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" (click)="mediaDel(i)">
+              <ion-icon name="close-circle" color="danger" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ng-container>
+        </ion-buttons>
+        <div [innerHtml]="medias[i]|safe"></div>
+      </div>
+      <input #upmedia style="display: none;" type="file" (change)="upload($event,i)">
+      <ion-progress-bar *ngIf="uploading===i" [value]="progress" color="success"></ion-progress-bar>
+    </ion-col>
+    <ion-col size-xs="12" size-sm="12" size-md="8" size-lg="8" size-xl="8" style="display:flex;">
+      <editor [id]="'tiny' + i" class="tiny" [class.rest]="rests[i]"
+        apiKey="k5ac3vz6w0fxrw863ng9oartu6tyagjk7kmra9jetazslyfz" [init]="tinyinit" inline="true"></editor>
+      <ion-buttons *ngIf="setButtons[i]" class="setButton">
+        <ion-button (click)="storyRest(i)" fill="clear">
+          <ion-icon name="lock" slot="icon-only" color="tertiary"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="i" (click)="storyUp(i,false)" fill="clear">
+          <ion-icon name="arrow-dropup-circle" slot="icon-only" color="warning"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="i<rows.length-1" (click)="storyDown(i,false)" fill="clear">
+          <ion-icon name="arrow-dropdown-circle" slot="icon-only" color="warning"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="storyDel(i)">
+          <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <div>
+        <ion-button *ngIf="document.user===user.id||user.admin" (click)="setButtons[i]=!setButtons[i]" slot="end"
+          fill="clear">
+          <ion-icon name="settings" color="medium" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-col>
+  </ion-row>
+</ion-grid>
+<div style="text-align: center;">
+  <ion-button (click)="storyAdd()" fill="clear" [disabled]="!parent">
+    <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+  </ion-button>
+</div>
+<canvas style='display:none;'></canvas>
+
+<!--
+<ion-col size-xs="3" size-sm="3" size-md="2" size-lg="2" size-xl="2">
+        <ion-buttons>
+          <ion-button *ngIf="i" (click)="storyUp(i)" slot="start" fill="clear">
+            <ion-icon name="arrow-dropup-circle" slot="icon-only" color="warning"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="i<texts.controls.length" (click)="storyDown(i)" fill="clear">
+            <ion-icon name="arrow-dropdown-circle" slot="icon-only" color="warning"></ion-icon>
+          </ion-button>
+          <ion-button slot="end" fill="clear" (click)="storyDel(i)">
+            <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-col>
+
+
+<div formArrayName="medias" style="display:none;">
+    <div *ngFor="let media of medias.controls;let i=index">
+      <input type="text" [formControlName]="i" />
+    </div>
+  </div>
+
+
+ <div class="tiny" [id]="'tiny'+i"></div>
+
+-->

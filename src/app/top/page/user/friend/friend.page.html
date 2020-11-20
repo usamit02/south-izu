@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{user.na}}{{typVal[typ].na}}</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let card of cards;let i=index" size-xs="4" size-sm="3" size-md="2" size-lg="4" size-xl="3"
+        button="true" [routerLink]="'/user/'+card.id+'/report'">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{card.na}}
+              <ion-icon *ngIf="card.friend==='support'" name="heart" color="danger"></ion-icon>
+              <ion-icon *ngIf="card.friend==='follow'" name="star" color="warning"></ion-icon>
+              <ion-icon *ngIf="card.friend==='block'" name="hand" color="dark"></ion-icon>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="cardDiv">
+              <img [src]="card.image" class="castImg" />
+              <div class="detail">
+                <div>
+                  <ion-icon name="document" color="primary"></ion-icon>{{card.report}}
+                </div>
+                <div>
+                  <ion-icon name="paper" color="primary"></ion-icon>{{card.column}}
+                </div>
+                <div>
+                  <ion-icon name="eye" color="secondary"></ion-icon>{{card.view}}
+                </div>
+                <div>
+                  <ion-icon name="text" color="medium"></ion-icon>{{card.chat}}
+                </div>
+                <div>
+                  <ion-icon name="heart" color="danger"></ion-icon>{{card.supporter}}
+                </div>
+                <div>
+                  <ion-icon name="star" color="warning"></ion-icon>{{card.follower}}
+                </div>
+                <div>
+                  <ion-icon name="thumbs-up" color="success"></ion-icon>{{card.good}}
+                </div>
+                <div>
+                  <ion-icon name="thumbs-down" color="dark"></ion-icon>{{card.bad}}
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <span *ngIf="!cards.length">まだ誰もいません。</span>
+    </ion-row>
+  </ion-grid>
+  <ion-infinite-scroll #infinite position="bottom" threshold="10px" (ionInfinite)="cardLoad($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+  <button #dummy style="display:none;" (click)="dummyClick()"></button>
+</ion-content>

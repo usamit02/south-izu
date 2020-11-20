@@ -1,0 +1,21 @@
+<ng-container *ngIf="params.id&&self.id">
+  <ion-header>
+    <ion-toolbar>
+      <ion-menu-button slot="start"></ion-menu-button>
+      <ion-title>{{title}}</ion-title>
+      <ion-menu-button menu="end" slot="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content #content>
+    <app-chat page="direct" [params]="params" [user]="self" [content]="content"></app-chat>
+    <button #dummy style="display:none;" (click)="dummyClick()"></button>
+  </ion-content>
+
+  <ion-footer id="footer">
+    <app-send [id]="params.id" page="direct" thread="" [user]="self" [content]="content">
+    </app-send>
+  </ion-footer>
+</ng-container>

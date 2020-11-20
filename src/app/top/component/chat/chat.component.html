@@ -1,0 +1,77 @@
+<ion-fab vertical="top" horizontal="start" slot="fixed">
+  <ion-fab-button *ngIf="mentionTops.length" (click)="noticeClick('mentionTop')" color="danger" size="small">
+    <ion-icon name="notifications"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+<ion-infinite-scroll #top *ngIf="!(page==='report' || !topInfinite)" position="top" threshold="10px"
+  (ionInfinite)="chatLoad($event,'top')">
+  <ion-infinite-scroll-content loadingSpinner="bubbles">
+  </ion-infinite-scroll-content>
+</ion-infinite-scroll>
+<p id="topmsg" *ngIf="topMsg">{{topMsg}}</p>
+<div *ngIf="chats.length >= limit && !nomore && (page==='report' || !topInfinite)" style="text-align: center">
+  <ion-button fill="clear" (click)="chatLoad(false,'top')" shape="round">
+    <ion-icon name="arrow-dropup-circle" slot="icon-only"></ion-icon>
+  </ion-button>
+</div>
+<ion-list #chatY>
+  <ion-item #chatItems class="chatItems" *ngFor="let chat of chats;index as i" [class.readed]="chat.readed"
+    [class.cursor]="chat.cursor">
+    <div class="avatarDiv">
+      <ion-item class="avatarItem" [class.cursor]="chat.cursor" lines="none" button="true"
+        (click)="popUser($event,chat.uid)">
+        <ion-avatar>
+          <ion-img [src]="chat.avatar"></ion-img>
+        </ion-avatar>
+      </ion-item>
+    </div>
+    <div #chatDivs class="chatDivs">
+      <div>
+        <span class="chatna">{{chat.na}}</span>
+        <span class="chatdate"> {{chat.upd.toDate()|date}}</span>
+        <span class="chatdate" *ngIf="chat.rev"> {{chat.rev.toDate()|date}}修正</span>
+        <ion-button style="float:right;" size="small" fill="clear" (click)="chatMore($event,chat.uid,chat.na,i)">
+          <ion-icon color="medium" name="more" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="chat.good" style="float:right;" size="small" fill="clear" (click)="evaluation(i,'bad')">
+          <ion-icon color="dark" name="thumbs-down" slot="icon-only"></ion-icon>{{chat.good}}
+        </ion-button>
+        <ion-button *ngIf="chat.bad" style="float:right;" fill="clear" (click)="evaluation(i,'good')">
+          <ion-icon color="success" name="thumbs-up" slot="icon-only"></ion-icon>{{chat.bad}}
+        </ion-button>
+        <ion-button *ngIf="chat.thread" style="float:right;" size="small" fill="clear" shape="round"
+          (click)="goThread(i)">
+          <ion-icon color="medium" name="text" slot="icon-only"></ion-icon>{{chat.thread}}
+        </ion-button>
+      </div>
+      <div style="display:flex;">
+        <div class="chattxt">{{chat.txt}}</div>
+        <div *ngIf="chat.edit">
+          <ion-button (click)="editSend(i)">
+            <ion-icon name="send"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+      <div *ngIf="chat.emoji">
+        <div class="emoji"></div>
+      </div>
+      <div *ngIf="chat.react" [innerHTML]="chat.react|media:'react'|safe"></div>
+      <div *ngIf="chat.media" [innerHTML]="chat.media|safe" text-center align-items-center></div>
+    </div>
+  </ion-item>
+</ion-list>
+<ion-infinite-scroll #btm position="bottom" threshold="10px" (ionInfinite)="chatLoad($event,'btm')">
+  <ion-infinite-scroll-content loadingSpinner="bubbles">
+  </ion-infinite-scroll-content>
+</ion-infinite-scroll>
+<ion-fab vertical="bottom" horizontal="start" slot="fixed">
+  <ion-fab-button *ngIf="mentionBtms.length" (click)="noticeClick('mention')" color="danger" size="small">
+    <ion-icon name="notifications"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-button *ngIf="newUpds.length" (click)="noticeClick('newMsg')" color="warning" size="small">
+    <ion-icon name="paper-plane"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-button *ngIf="!newUpds.length && latest" (click)="noticeClick('latest')" color="secondary" size="small">
+    <ion-icon name="arrow-dropdown"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
