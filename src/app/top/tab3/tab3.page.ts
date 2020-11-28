@@ -1,11 +1,16 @@
 import { Component, OnInit,ViewChild, AfterViewInit , OnDestroy } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { FormControl, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { UiService } from '../../service/ui.service';
 import { ApiService } from '../../service/api.service';
+import { UserService } from '../../service/user.service';
+import { User } from '../../class';
 import { APIURL } from '../../../environments/environment';
 import { MouseEvent,LatLngBounds, Marker } from '@agm/core';
+import { MarkerComponent } from '../../component/marker/marker.component';
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
@@ -19,11 +24,16 @@ export class Tab3Page implements OnInit, OnDestroy {
   mylng: number = 7.809007;
   zoom:number = 8;
   infoWindowOpened:any;
-  markers:Array<Marker>;
+  markers:Array<Marker>;  
+  user: User;
   private debounceTimer = null;
   private onDestroy$ = new Subject();
-  constructor( private db: AngularFirestore, private ui: UiService,private api:ApiService,) { }
+  constructor( private db: AngularFirestore, private ui: UiService,private api:ApiService,private modal:ModalController,
+    private userService: UserService,) { }
   ngOnInit() {
+    this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
+      this.user = user;
+    });
   }
   onBoundsChange(bounds: LatLngBounds) {
     if (this.debounceTimer !== null) {
@@ -44,12 +54,24 @@ export class Tab3Page implements OnInit, OnDestroy {
     
   }
   mapRightClicked($event:MouseEvent) {
-    this.ui.confirm('マーカー登録','登録しますか').then(()=>{
+    this.ui.confirm('マーカー登録','登録しますか').then(async ()=>{
+      const modal =await this.modal.create({
+        component:MarkerComponent,componentProps:{prop:{user:this.user,id:0}}
+      })
+      return await modal.present().then(() => {
+        modal.onDidDismiss().then(event => {
+          if (event.data) {
+            //this.undo(event.data);//this.castimg = event.data.castimg; this.shopimg = event.data.shopimg;          
+          }
+        });
+      });;
+      /*
       this.api.post('map',{lat:$event.coords.lat,lng:$event.coords.lng,na:'ダミー',txt:'へのへの',img:'1'}).then(res=>{
         this.ui.pop('登録しました。');
       }).catch(err=>{
         this.ui.alert(`登録に失敗しました。${err}`);
       })
+      */
     })
   }
   clickedMarker(label: string, infoWindow: any,index: number) {

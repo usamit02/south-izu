@@ -2,9 +2,9 @@ import { Component, OnInit, Input, ViewChild, ViewChildren, ElementRef, QueryLis
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { AngularFireStorage } from '@angular/fire/storage';
-import { ApiService } from '../../../service/api.service';
-import { UiService } from '../../../service/ui.service';
-import { APIURL } from '../../../../environments/environment';
+import { ApiService } from '../../service/api.service';
+import { UiService } from '../../service/ui.service';
+import { APIURL } from '../../../environments/environment';
 //import { CropComponent } from '../crop/crop.component';
 @Component({
   selector: 'app-marker',
@@ -13,6 +13,7 @@ import { APIURL } from '../../../../environments/environment';
 })
 export class MarkerComponent implements OnInit {
   @Input() prop;
+  @ViewChild('upImg', { read: ElementRef, static: false }) upImg: ElementRef;//メディアファイル選択 
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   id = new FormControl(0, [Validators.required]);
   user = new FormControl("", [Validators.required]);
@@ -23,15 +24,17 @@ export class MarkerComponent implements OnInit {
   img = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
   simg = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
   markerForm = this.builder.group({
-    id: this.id, user: this.user, na: this.na, txt: this.txt, phone: this.phone, url: this.url, img: this.img,simg:this.simg
-  });  
+    id: this.id, user: this.user, na: this.na, txt: this.txt, phone: this.phone, url: this.url, img: this.img, simg: this.simg
+  });
   undoing: boolean = false;
+  imgBlob;
   imgBase64: string;
+  noimgUrl=APIURL+'img/noimg.jpg';
   imgs: Array<{ url }> = [];
   eraseable: boolean = false;
   saving: boolean = false;
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder,
-    private strage: AngularFireStorage, private ui: UiService, ) { }
+    private storage: AngularFireStorage, private ui: UiService,) { }
   ngOnInit() {
     this.user.setValue(this.prop.user.id);
     if (this.prop.id) {
@@ -51,12 +54,41 @@ export class MarkerComponent implements OnInit {
         controls[key].reset();
       }
     }
-    if (this.prop.user.admin || this.prop.user.id === user ) {      
+    if (this.prop.user.admin || this.prop.user.id === user) {
       this.eraseable = true;
     } else {
       this.eraseable = false;
     }
-    setTimeout(() => { this.undoing = false;}, 1000);
+    setTimeout(() => { this.undoing = false; }, 1000);
+  }
+  imgChange(e) {
+    if (e.target.files[0].type.match(/image.*/)) {
+      /*this.imgFile = e.target.files[0];
+      let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+      var ctx = canvas.getContext('2d');
+      var img = new Image();
+      var reader = new FileReader();
+      reader.onload = () => {
+        img.onload = () => {
+          let w, h;
+          if (img.width > img.height) {
+            w = img.width > 640 ? 640 : img.width;//横長
+            h = img.height * (w / img.width);
+          } else {
+            h = img.height > 480 ? 480 : img.height;//縦長
+            w = img.width * (h / img.height);
+          }
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.width = w; canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+        }
+        img.src = <string>reader.result;
+      }
+      reader.readAsDataURL(this.imgFile);*/
+      this.imgBlob=window.URL.createObjectURL(e.target.files[0]);
+    }else{
+      this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
+    }
   }
   async save() {
     if (this.saving) return;
@@ -77,6 +109,37 @@ export class MarkerComponent implements OnInit {
         }
       });
     }
+    const imagePut = (id:number,typ:string) => {
+      return new Promise<string>(resolve => {
+        if (!this.imgBlob) return resolve();
+        let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+        let ctx = canvas.getContext('2d');        
+        let image = new Image();
+          image.onload = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const px = typ=='small' ? 160 : 640;
+            let w, h;
+            if (image.width > image.height) {
+              w = image.width > px ? px : image.width;//横長
+              h = image.height * (w / image.width);
+            } else {
+              h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
+              w = image.width * (h / image.height);
+            }
+            canvas.width = w; canvas.height = h;
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(async blob => {
+              const ref = this.storage.ref(`marker/${id}/${typ}.jpg`);
+              await ref.put(blob);
+              const url = await ref.getDownloadURL().toPromise();
+              return resolve(url);
+            }, "image/jpeg")
+          }
+          image.src = this.imgBlob;
+        });
+    }
+    
+    
     const putImg = id => {
       return new Promise(async resolve => {
         if (!(id && this.imgBase64)) return resolve();
@@ -89,7 +152,7 @@ export class MarkerComponent implements OnInit {
             canvas.width = 160; canvas.height = 40;
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             canvas.toBlob(async blob => {
-              const ref = this.strage.ref(`marker/${id}/small.jpg`);
+              const ref = this.storage.ref(`marker/${id}/small.jpg`);
               await ref.put(blob);
               const url = await ref.getDownloadURL().toPromise();
               return resolve(url);
@@ -110,7 +173,7 @@ export class MarkerComponent implements OnInit {
             alert("ブロッブデータの作成に失敗しました。");
             return reject();
           }
-          const ref = this.strage.ref(`marker/${id}/medium.jpg`);
+          const ref = this.storage.ref(`marker/${id}/medium.jpg`);
           await ref.put(blob);
           const url = await ref.getDownloadURL().toPromise();
           return resolve(url);
@@ -118,29 +181,31 @@ export class MarkerComponent implements OnInit {
         resolve(await Promise.all([smallPut, mediumPut]));
       });
     };
+    
     let res: any;
     let id = this.id.value;
     if (id) {//更新
-      const imgurls = await putImg(id);
-      if (imgurls) {
-        this.simg.setValue(imgurls[0]); this.img.setValue(imgurls[1]);
-      } else {
-        const src = `${APIURL}img/noimage`;
-        this.simg.setValue(`${src}s.png`); this.img.setValue(`${src}.png`);
+      const simg = await imagePut(id,'small');
+      const img = await imagePut(id,'medium');
+      if (simg&&img) {
+        this.simg.setValue(simg); this.img.setValue(img);
+      } else {        
+        this.simg.setValue(`${APIURL}img/noimgs.jpg`); this.img.setValue(`${APIURL}img/noimg.jpg`);
       }
       res = await this.api.post('query', { table: "marker", update: this.markerForm.value, where: { id: id } });
     } else {//新規      
       let update = { simg: "", img: "" };
       res = await this.api.post('query', { table: "marker", insert: this.markerForm.value });
       id = res.marker.id;
-      const imgurls = await putImg(id);
-      if (imgurls) {
-        update = { simg: imgurls[0], img: imgurls[1] };
-        res.marker.simg = imgurls[0]; res.marker.img = imgurls[1];
+      const simg = await imagePut(id,'small');
+      const img = await imagePut(id,'medium');
+      if (simg&&img) {
+        update = { simg: simg, img: img };
+        res.marker.simg = simg; res.marker.img = img;
       } else {
         const src = `${APIURL}img/noimage`;
-        update = { simg: `${src}s.png`, img: `${src}.png` };
-        res.marker.simg = `${src}s.png`; res.marker.img = `${src}.png`;
+        update = { simg: `${APIURL}img/noimgs.jpg`, img: `${APIURL}img/noimg.jpg` };
+        res.marker.simg = `${APIURL}img/noimgs.jpg`; res.marker.img = `${APIURL}img/noimg.jpg`;
       }
       await this.api.post('query', { table: "marker", update: update, where: { id: id } });
     }
@@ -150,8 +215,8 @@ export class MarkerComponent implements OnInit {
     if (await this.ui.confirm(`削除確認`, `このマーカーを本当に削除しますか？`)) {
       this.modal.dismiss({ id: null });
       await this.api.post('query', { table: "marker", delete: { id: this.prop.id } });
-      this.strage.ref(`marker/${this.prop.id}/small.jpg`).delete();
-      this.strage.ref(`marker/${this.prop.id}/medium.jpg`).delete();
+      this.storage.ref(`marker/${this.prop.id}/small.jpg`).delete();
+      this.storage.ref(`marker/${this.prop.id}/medium.jpg`).delete();
     }
   }
 }
