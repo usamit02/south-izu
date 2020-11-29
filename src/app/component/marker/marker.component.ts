@@ -5,7 +5,6 @@ import { AngularFireStorage } from '@angular/fire/storage';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { APIURL } from '../../../environments/environment';
-//import { CropComponent } from '../crop/crop.component';
 @Component({
   selector: 'app-marker',
   templateUrl: './marker.component.html',
@@ -15,76 +14,52 @@ export class MarkerComponent implements OnInit {
   @Input() prop;
   @ViewChild('upImg', { read: ElementRef, static: false }) upImg: ElementRef;//メディアファイル選択 
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
-  id = new FormControl(0, [Validators.required]);
+  id = new FormControl(0, [Validators.required]);  
   user = new FormControl("", [Validators.required]);
+  latlng = new FormControl("", [Validators.required]);
   na = new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]);
-  txt = new FormControl("", [Validators.minLength(2), Validators.maxLength(40), Validators.pattern(/^([ぁ-ん]|ー)+$/), Validators.required]);
-  phone = new FormControl("", [Validators.pattern(/^(([0-9]{2,4}-[0-9]{2,4}-[0-9]{3,4}))$/), Validators.required]);
+  txt = new FormControl("", [Validators.minLength(2), Validators.maxLength(500), Validators.required]);
+  phone = new FormControl("", [Validators.pattern(/^(([0-9]{2,4}-[0-9]{2,4}-[0-9]{3,4}))$/)]);
   url = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
   img = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
   simg = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
+  icon = new FormControl(0, [Validators.required]);
+  marker={id:0,na:"",txt:"",lat:0,lng:0,url:"",phone:"",user:"",img:"",simg:"",icon:0};
   markerForm = this.builder.group({
-    id: this.id, user: this.user, na: this.na, txt: this.txt, phone: this.phone, url: this.url, img: this.img, simg: this.simg
+    id: this.id, user: this.user, latlng:this.latlng,na: this.na, txt: this.txt, phone: this.phone, url: this.url, 
+    img: this.img, simg: this.simg,icon:this.icon,
   });
   undoing: boolean = false;
   imgBlob;
-  imgBase64: string;
   noimgUrl=APIURL+'img/noimg.jpg';
-  imgs: Array<{ url }> = [];
   eraseable: boolean = false;
   saving: boolean = false;
+  icons=[];
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder,
     private storage: AngularFireStorage, private ui: UiService,) { }
-  ngOnInit() {
-    this.user.setValue(this.prop.user.id);
-    if (this.prop.id) {
-      this.id.setValue(this.prop.id);
-      this.undo();
-    }
+  ngOnInit() {   
+    this.api.get("query",{select:['id','na','url'],table:'markericon'}).then(res=>{
+      this.icons=res.markericons;
+      if (this.prop.marker) {
+        this.marker=this.prop.marker;
+        if(this.marker.icon){
+          let icons=this.icons.filter(icon=>{return icon.url===this.marker.icon;});
+          this.marker.icon=icons.length?icons[0].id:null;
+        }
+        this.undo();
+      }     
+    })  
   }
-  async undo() {
-    this.undoing = true;
-    const res = await this.api.get('query', { table: 'marker', select: ['na', 'txt', 'phone', 'img', 'url', 'user'], where: { id: this.prop.id } });
-    const user = res.markers[0].user;
-    const controls = this.markerForm.controls;
-    for (let key of Object.keys(res.shops[0])) {
-      if (res.shops[0][key]) {
-        controls[key].setValue(res.shops[0][key].toString());
-      } else {
-        controls[key].reset();
+  undo() {
+    for (let key of Object.keys(this.marker)) {
+      if(key!=="lat"&&key!=="lng"){
+        this[key].setValue(this.marker[key]);
       }
-    }
-    if (this.prop.user.admin || this.prop.user.id === user) {
-      this.eraseable = true;
-    } else {
-      this.eraseable = false;
-    }
-    setTimeout(() => { this.undoing = false; }, 1000);
+    } 
+    this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);  
   }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
-      /*this.imgFile = e.target.files[0];
-      let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-      var ctx = canvas.getContext('2d');
-      var img = new Image();
-      var reader = new FileReader();
-      reader.onload = () => {
-        img.onload = () => {
-          let w, h;
-          if (img.width > img.height) {
-            w = img.width > 640 ? 640 : img.width;//横長
-            h = img.height * (w / img.width);
-          } else {
-            h = img.height > 480 ? 480 : img.height;//縦長
-            w = img.width * (h / img.height);
-          }
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          canvas.width = w; canvas.height = h;
-          ctx.drawImage(img, 0, 0, w, h);
-        }
-        img.src = <string>reader.result;
-      }
-      reader.readAsDataURL(this.imgFile);*/
       this.imgBlob=window.URL.createObjectURL(e.target.files[0]);
     }else{
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
@@ -111,7 +86,7 @@ export class MarkerComponent implements OnInit {
     }
     const imagePut = (id:number,typ:string) => {
       return new Promise<string>(resolve => {
-        if (!this.imgBlob) return resolve();
+        if (!this.imgBlob) return resolve("");
         let canvas: HTMLCanvasElement = this.canvas.nativeElement;
         let ctx = canvas.getContext('2d');        
         let image = new Image();
@@ -137,61 +112,11 @@ export class MarkerComponent implements OnInit {
           }
           image.src = this.imgBlob;
         });
-    }
-    
-    
-    const putImg = id => {
-      return new Promise(async resolve => {
-        if (!(id && this.imgBase64)) return resolve();
-        const smallPut = new Promise(resolve => {
-          let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-          let ctx = canvas.getContext('2d');
-          let image = new Image();
-          image.onload = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.width = 160; canvas.height = 40;
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob(async blob => {
-              const ref = this.storage.ref(`marker/${id}/small.jpg`);
-              await ref.put(blob);
-              const url = await ref.getDownloadURL().toPromise();
-              return resolve(url);
-            }, "image/jpeg")
-          }
-          image.src = this.imgBase64;
-        });
-        const mediumPut = new Promise(async (resolve, reject) => {
-          let bin = atob(this.imgBase64.replace(/^.*,/, ''));
-          let buffer = new Uint8Array(bin.length);
-          let blob: Blob;
-          for (var i = 0; i < bin.length; i++) {
-            buffer[i] = bin.charCodeAt(i);
-          }
-          try {
-            blob = new Blob([buffer.buffer], { type: 'image/jpeg' });
-          } catch (e) {
-            alert("ブロッブデータの作成に失敗しました。");
-            return reject();
-          }
-          const ref = this.storage.ref(`marker/${id}/medium.jpg`);
-          await ref.put(blob);
-          const url = await ref.getDownloadURL().toPromise();
-          return resolve(url);
-        });
-        resolve(await Promise.all([smallPut, mediumPut]));
-      });
-    };
-    
+    }  
     let res: any;
     let id = this.id.value;
     if (id) {//更新
-      const simg = await imagePut(id,'small');
-      const img = await imagePut(id,'medium');
-      if (simg&&img) {
-        this.simg.setValue(simg); this.img.setValue(img);
-      } else {        
-        this.simg.setValue(`${APIURL}img/noimgs.jpg`); this.img.setValue(`${APIURL}img/noimg.jpg`);
-      }
+      this.simg.setValue(await imagePut(id,'small')); this.img.setValue(await imagePut(id,'medium'));
       res = await this.api.post('query', { table: "marker", update: this.markerForm.value, where: { id: id } });
     } else {//新規      
       let update = { simg: "", img: "" };
@@ -199,14 +124,8 @@ export class MarkerComponent implements OnInit {
       id = res.marker.id;
       const simg = await imagePut(id,'small');
       const img = await imagePut(id,'medium');
-      if (simg&&img) {
-        update = { simg: simg, img: img };
-        res.marker.simg = simg; res.marker.img = img;
-      } else {
-        const src = `${APIURL}img/noimage`;
-        update = { simg: `${APIURL}img/noimgs.jpg`, img: `${APIURL}img/noimg.jpg` };
-        res.marker.simg = `${APIURL}img/noimgs.jpg`; res.marker.img = `${APIURL}img/noimg.jpg`;
-      }
+      update = { simg: simg, img: img };
+      res.marker.simg = simg; res.marker.img = img;
       await this.api.post('query', { table: "marker", update: update, where: { id: id } });
     }
     this.modal.dismiss(res.marker);
@@ -214,9 +133,9 @@ export class MarkerComponent implements OnInit {
   async erase() {
     if (await this.ui.confirm(`削除確認`, `このマーカーを本当に削除しますか？`)) {
       this.modal.dismiss({ id: null });
-      await this.api.post('query', { table: "marker", delete: { id: this.prop.id } });
-      this.storage.ref(`marker/${this.prop.id}/small.jpg`).delete();
-      this.storage.ref(`marker/${this.prop.id}/medium.jpg`).delete();
+      await this.api.post('query', { table: "marker", delete: { id: this.marker.id } });
+      this.storage.ref(`marker/${this.marker.id}/small.jpg`).delete();
+      this.storage.ref(`marker/${this.marker.id}/medium.jpg`).delete();
     }
   }
 }
