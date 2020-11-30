@@ -1,0 +1,10 @@
+<ion-list>
+  <ion-item *ngFor="let marker of markers;index as i" class="wrapItem">
+    <div>
+      <img [src]="marker.icon"/>
+    </div>
+    <div style="width:100%;">
+      <ion-item lines="none" button="true" (click)="naClick(marker)">{{marker.na}}</ion-item>
+    </div>
+  </ion-item>
+</ion-list>

@@ -1,3 +1,14 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>
+      サイトの予約
+    </ion-title>
+    <ion-menu-button menu="end" slot="end">
+      <ion-icon name="contacts"></ion-icon>
+    </ion-menu-button>
+  </ion-toolbar>
+</ion-header>
 <ion-content [fullscreen]="true">
   <ion-calendar [(ngModel)]="dateRange" [options]="optionsRange" [type]="type" [format]="'YYYY-MM-DD'"
   (selectStart)="calendarStart($event)" (selectEnd)="calendarEnd($event)"></ion-calendar>

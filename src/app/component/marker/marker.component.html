@@ -7,6 +7,9 @@
       　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
     </ion-button>
     <ion-title>マーカー</ion-title>
+    <ion-button (click)="postStory()" color="primary" slot="end" fill="clear">
+      <ion-icon name="create" slot="icon-only"></ion-icon>
+    </ion-button>
     <ion-button [disabled]="!eraseable" (click)="erase()" color="danger" slot="end" fill="clear">
       <ion-icon name="hammer" slot="icon-only"></ion-icon>
     </ion-button>
@@ -43,14 +46,12 @@
       <ion-input name="phone" [formControl]="phone" placeholder="03-5321-1111"></ion-input>
     </ion-item>
     <span *ngIf="phone.errors?.pattern && phone.dirty" class="errmsg">00-0000-0000などの形式で入力してください</span>
-    
-      <ion-segment scrollable [formControl]="icon">
-        <ion-segment-button *ngFor="let icon of icons" [value]="icon.id">         
-            <img [src]="icon.url"/>
-            <ion-label>{{icon.na}}</ion-label>         
-        </ion-segment-button>        
-      </ion-segment>
-    
+    <ion-segment scrollable [formControl]="icon">
+      <ion-segment-button *ngFor="let icon of icons" [value]="icon.id">         
+          <img [src]="icon.url"/>
+          <ion-label>{{icon.na}}</ion-label>         
+      </ion-segment-button>        
+    </ion-segment>    
   </form>
   <ion-item>    
       <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe" />

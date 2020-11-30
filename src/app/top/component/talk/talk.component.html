@@ -1,0 +1,42 @@
+<ion-list>
+  <ion-item *ngFor="let talk of talks;index as i" class="wrapItem">
+    <div>
+      <ion-item class="avatarItem" lines="none" button="true" (click)="popUser($event,talk.uid)">
+        <ion-avatar>
+          <ion-img [src]="talk.avatar" alt="クリックで情報を表示"></ion-img>
+        </ion-avatar>
+      </ion-item>
+    </div>
+    <div #talkDivs style="width:100%;">
+      <ion-item lines="none" button="true" [routerLink]="talk.url">
+        <div>
+          <div>
+            <span class="talkna">{{talk.na}}</span>
+            <span class="talkdate"> {{talk.upd|date:'short'}}</span>
+          </div>
+          <div class="talktxt">{{talk.txt}}</div>
+        </div>
+      </ion-item>
+    </div>
+  </ion-item>
+</ion-list>
+<ion-infinite-scroll #infinite position="bottom" threshold="10px" (ionInfinite)="talkLoad($event)">
+  <ion-infinite-scroll-content loadingSpinner="bubbles">
+  </ion-infinite-scroll-content>
+</ion-infinite-scroll>
+<!--
+ 
+<ion-header>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-searchbar placeholder="ユーザー検索" (ionClear)="searchClear()" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+      </ion-searchbar>
+      <ion-button (click)="test()" fill="clear">
+        <ion-icon name="search" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  
+-->

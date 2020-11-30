@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, ViewChild, ViewChildren, ElementRef, QueryList } from '@angular/core';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { ApiService } from '../../service/api.service';
@@ -21,8 +22,8 @@ export class MarkerComponent implements OnInit {
   txt = new FormControl("", [Validators.minLength(2), Validators.maxLength(500), Validators.required]);
   phone = new FormControl("", [Validators.pattern(/^(([0-9]{2,4}-[0-9]{2,4}-[0-9]{3,4}))$/)]);
   url = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
-  img = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
-  simg = new FormControl("", [Validators.pattern(/^https?:\/\/[\w/:%#\$&\?\(\)~\.=\+\-]+$/)]);
+  img = new FormControl("");
+  simg = new FormControl("");
   icon = new FormControl(0, [Validators.required]);
   marker={id:0,na:"",txt:"",lat:0,lng:0,url:"",phone:"",user:"",img:"",simg:"",icon:0};
   markerForm = this.builder.group({
@@ -36,7 +37,7 @@ export class MarkerComponent implements OnInit {
   saving: boolean = false;
   icons=[];
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder,
-    private storage: AngularFireStorage, private ui: UiService,) { }
+    private storage: AngularFireStorage, private ui: UiService,private router: Router,) { }
   ngOnInit() {   
     this.api.get("query",{select:['id','na','url'],table:'markericon'}).then(res=>{
       this.icons=res.markericons;
@@ -128,14 +129,19 @@ export class MarkerComponent implements OnInit {
       res.marker.simg = simg; res.marker.img = img;
       await this.api.post('query', { table: "marker", update: update, where: { id: id } });
     }
-    this.modal.dismiss(res.marker);
+    delete res.marker.latlng;    
+    this.modal.dismiss({...res.marker,lat:this.marker.lat,lng:this.marker.lng});
   }
   async erase() {
     if (await this.ui.confirm(`削除確認`, `このマーカーを本当に削除しますか？`)) {
-      this.modal.dismiss({ id: null });
+      this.modal.dismiss();
       await this.api.post('query', { table: "marker", delete: { id: this.marker.id } });
       this.storage.ref(`marker/${this.marker.id}/small.jpg`).delete();
       this.storage.ref(`marker/${this.marker.id}/medium.jpg`).delete();
     }
+  }
+  postStory(){
+    this.router.navigate(['/post/marker', this.marker.id]);
+    this.modal.dismiss();
   }
 }

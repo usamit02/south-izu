@@ -14,6 +14,7 @@ export interface User {
   bank?: string;
 }
 export const USER = { id: "", na: "ゲスト", displayName: "", photoURL: "", avatar: "https://bloggersguild.cf/img/avatar.jpg", image: "https://bloggersguild.cf/img/avatar.jpg", token: "", admin: 0, direct: 'block' };
+
 export interface Column {
   parent: number;
   id: number;
@@ -27,3 +28,20 @@ export interface Column {
   lock?: number;
 }
 export const COLUMN = { parent: 0, id: 0, na: "新しいコラムを追加", kana: "", image: "", description: "" };
+
+export interface Marker {
+  lat: number;
+  lng: number;
+  label?: string;
+  id:number;
+  na: string;
+  txt: string;
+  img: string;
+  simg:string;
+  url:string;
+  phone:string;
+  icon:string|number;
+  user:string;
+  created?:Date|string;
+}
+export const MARKER={id:0,na:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",img:"",simg:"",icon:0};

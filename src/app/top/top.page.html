@@ -6,7 +6,10 @@
   </ion-menu>
   <ion-menu contentId="menu-content" side="end">
     <ion-content>
-      <!--   <app-talk [user]="user"></app-talk>-->
+      <app-marker *ngIf="page==='/tabs/tab3';else talk"></app-marker>
+      <ng-template #talk>
+        <app-talk [user]="user"></app-talk>
+      </ng-template>
     </ion-content>
   </ion-menu>
   <ion-router-outlet id="menu-content"></ion-router-outlet>

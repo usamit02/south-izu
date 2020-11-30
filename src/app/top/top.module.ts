@@ -6,6 +6,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TopPage } from './top.page';
 import { MenuComponent } from './component/menu/menu.component';
 import { UserComponent } from './component/user/user.component';
+import { TalkComponent } from './component/talk/talk.component';
+import { MarkerComponent } from './component/marker/marker.component';
 import { PipeSharedModule } from '../pipe/shared.module';
 const routes: Routes = [
   {
@@ -31,7 +33,7 @@ const routes: Routes = [
   }
 ];
 @NgModule({
-  declarations: [TopPage, MenuComponent,UserComponent,],
+  declarations: [TopPage, MenuComponent,UserComponent,TalkComponent,MarkerComponent,],
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), FormsModule, ReactiveFormsModule, PipeSharedModule,
   ],
