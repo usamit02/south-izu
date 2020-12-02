@@ -16,13 +16,15 @@ export class ListComponent implements OnInit {
   ngOnInit() {
     if (this.prop.table) {
       this.col = this.prop.table === 'shop' ? { s: "6", m: "4", l: "4" } : { s: "3", m: "2", l: "2" };
-      this.api.get('query', { table: this.prop.table, select: ['id', 'na', 'kana','img', 'simg'], where: this.prop.where, order: { kana: "ASC" } }).then(res => {
+      this.api.get('query', { table: this.prop.table, select: ['id', 'na','kana', 'img', 'simg'], where: this.prop.where, order: { kana: "ASC" } }).then(res => {
         this.lists = res[this.prop.table + "s"];
       });
     } else if (this.prop.reports) {
       this.lists = this.prop.reports;
     } else if (this.prop.columns) {
       this.lists = this.prop.columns;
+    } else if (this.prop.markers) {
+      this.lists = this.prop.markers;
     }
   }
   seek(e) {

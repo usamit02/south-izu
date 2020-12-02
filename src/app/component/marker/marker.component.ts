@@ -27,7 +27,7 @@ export class MarkerComponent implements OnInit {
   icon = new FormControl(0, [Validators.required]);
   marker={id:0,na:"",txt:"",lat:0,lng:0,url:"",phone:"",user:"",img:"",simg:"",icon:0};
   markerForm = this.builder.group({
-    id: this.id, user: this.user, latlng:this.latlng,na: this.na, txt: this.txt, phone: this.phone, url: this.url, 
+    id: this.id, user: this.user, latlng:this.latlng,na: this.na,txt: this.txt, phone: this.phone, url: this.url, 
     img: this.img, simg: this.simg,icon:this.icon,
   });
   undoing: boolean = false;
@@ -52,12 +52,14 @@ export class MarkerComponent implements OnInit {
     })  
   }
   undo() {
-    for (let key of Object.keys(this.marker)) {
+    const controls = this.markerForm.controls
+    for (let key of Object.keys(controls)) {
       if(key!=="lat"&&key!=="lng"){
-        this[key].setValue(this.marker[key]);
+        controls[key].setValue(this.marker[key]);
       }
     } 
-    this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);  
+    this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);
+    this.markerForm.markAsPristine();
   }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
@@ -117,7 +119,9 @@ export class MarkerComponent implements OnInit {
     let res: any;
     let id = this.id.value;
     if (id) {//更新
-      this.simg.setValue(await imagePut(id,'small')); this.img.setValue(await imagePut(id,'medium'));
+      if(this.imgBlob){
+        this.simg.setValue(await imagePut(id,'small')); this.img.setValue(await imagePut(id,'medium'));
+      }
       res = await this.api.post('query', { table: "marker", update: this.markerForm.value, where: { id: id } });
     } else {//新規      
       let update = { simg: "", img: "" };

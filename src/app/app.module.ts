@@ -14,11 +14,12 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireFunctionsModule ,REGION} from '@angular/fire/functions';
+import { AgmCoreModule } from '@agm/core';
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
     AngularFireModule.initializeApp(firebaseConfig), AngularFireAuthModule, AngularFirestoreModule, AngularFireDatabaseModule, AngularFireStorageModule, AngularFireFunctionsModule,
+    AgmCoreModule.forRoot({apiKey: 'AIzaSyB4D969VIv64a6rMFtrtX2wpHUhuosD9h0'}),//'AIzaSyDTHLyzh5B37YJPU8esWD0fV0ntvE9QOwI'})*/
    ],
   providers: [
     StatusBar, SplashScreen, { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

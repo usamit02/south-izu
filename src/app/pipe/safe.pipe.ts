@@ -5,8 +5,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 })
 export class SafePipe implements PipeTransform {
   constructor(protected sanitizer: DomSanitizer) { }
-  transform(value: any): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(value);
+  transform(value: any,type: string = "html"): SafeHtml {
+    switch(type){
+      case "html":
+        return this.sanitizer.bypassSecurityTrustHtml(value);
+      case "url":
+        return this.sanitizer.bypassSecurityTrustUrl(value);//data:image/png;base64,
+      default: throw new Error(`Invalid safe type specified: ${type}`);  
+    }
+    
   }
 }
 

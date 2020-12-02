@@ -35,13 +35,20 @@ export interface Marker {
   label?: string;
   id:number;
   na: string;
+  kana:string;
   txt: string;
   img: string;
   simg:string;
   url:string;
   phone:string;
   icon:string|number;
+  iconurl?:string;
   user:string;
   created?:Date|string;
+  ack?:number;
+  ackuser?:string;
+  acked?:Date|string;
+  rest?:number;
+  chat?:number;
 }
-export const MARKER={id:0,na:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",img:"",simg:"",icon:0};
+export const MARKER={id:0,na:"",kana:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",img:"",simg:"",icon:0};

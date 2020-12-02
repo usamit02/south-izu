@@ -15,7 +15,7 @@ export class ApiService {
           resolve(res);
         } else {
           this.ui.alert(`${res.msg}\r\n${res.err}`);
-          console.error(`pdoerrinfo:${res.err}`)
+          console.error(`PDO errorInfo:${res.err}`)
           reject();
         }
       }).catch(error => {

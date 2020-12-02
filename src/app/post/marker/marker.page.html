@@ -1,50 +1,47 @@
 <ion-header>
   <ion-toolbar>
     <div class="title">
-      <ion-button *ngIf="columns.drafts.length" slot="start" color="medium" (click)="popColumns(columns.drafts,$event)">
-        下書き{{columns.drafts.length}}件
+      <ion-button *ngIf="markers.drafts.length" slot="start" color="medium" (click)="popMarkers(markers.drafts,$event)">
+        下書き{{markers.drafts.length}}件
       </ion-button>
-      <ion-button *ngIf="columns.requests.length" slot="start" color="secondary"
-        (click)="popColumns(columns.requests,$event)">
-        申請中{{columns.requests.length}}件
+      <ion-button *ngIf="markers.requests.length" slot="start" color="secondary"
+        (click)="popMarkers(markers.requests,$event)">
+        申請中{{markers.requests.length}}件
       </ion-button>
-      <ion-button *ngIf="columns.posts.length" slot="start" color="warning" (click)="popColumns(columns.posts,$event)">
-        審査中{{columns.posts.length}}件
+      <ion-button *ngIf="markers.posts.length" slot="start" color="warning" (click)="popMarkers(markers.posts,$event)">
+        審査中{{markers.posts.length}}件
       </ion-button>
-      <ion-button *ngIf="columns.acks.length" slot="start" color="success" (click)="popColumns(columns.acks,$event)">
-        承認済{{columns.acks.length}}件
+      <ion-button *ngIf="markers.acks.length" slot="start" color="success" (click)="popMarkers(markers.acks,$event)">
+        承認済{{markers.acks.length}}件
       </ion-button>
-      <ion-title>コラム投稿</ion-title>
-      <ng-container *ngIf="column.id">
-        <ion-item *ngIf="column.author" button="true" [routerLink]="'/user/'+column.author.id">
+      <ion-title>マーカー記事投稿</ion-title>
+      <ng-container *ngIf="marker.id">
+        <ion-item *ngIf="marker.author" button="true" [routerLink]="'/user/'+marker.author.id">
           <ion-avatar>
-            <img [src]="column.author.avatar" />
+            <img [src]="marker.author.avatar" />
           </ion-avatar>
-          {{column.author.na}}
+          {{marker.author.na}}
         </ion-item>
-        <ion-button *ngIf="column.id" (click)="newColumn()" slot="end" fill="clear">
-          <ion-icon name="create" slot="icon-only"></ion-icon>
-        </ion-button>
         <ion-button (click)="preview()" slot="end" fill="clear">
           <ion-icon name="browsers" slot="icon-only"></ion-icon>
         </ion-button>
-        <ng-container *ngIf="column.user===user.id">
-          <ion-button [disabled]="!columnForm.valid || !columnForm.dirty" (click)="save(-1)" slot="end" fill="clear">
+        <ng-container *ngIf="marker.user===user.id">
+          <ion-button [disabled]="!markerForm.valid || !markerForm.dirty&&!imgBlob" (click)="save(-1)" slot="end" fill="clear">
             <ion-icon name="checkmark" slot="icon-only"></ion-icon>
           </ion-button>
-          <ion-button [disabled]="!columnForm.valid" (click)="save(0)" slot="end" fill="clear">
+          <ion-button [disabled]="!markerForm.valid" (click)="save(0)" slot="end" fill="clear">
             <ion-icon name="send" slot="icon-only" color="secondary"></ion-icon>
           </ion-button>
         </ng-container>
         <ng-container *ngIf="user.admin">
-          <ion-button [disabled]="!columnForm.valid" (click)="save(1)" slot="end" fill="clear">
+          <ion-button [disabled]="!markerForm.valid" (click)="save(1)" slot="end" fill="clear">
             <ion-icon name="thumbs-up" slot="icon-only" color="success"></ion-icon>
           </ion-button>
-          <ion-button [disabled]="!columnForm.valid" (click)="save(-1)" slot="end" fill="clear">
+          <ion-button [disabled]="!markerForm.valid" (click)="save(-1)" slot="end" fill="clear">
             <ion-icon name="thumbs-down" slot="icon-only" color="dark"></ion-icon>
           </ion-button>
         </ng-container>
-        <ion-button *ngIf="(column.user===user.id||user.admin)&&column.id" (click)="erase()" color="danger" slot="end"
+        <ion-button *ngIf="(marker.user===user.id||user.admin)&&marker.id" (click)="erase()" color="danger" slot="end"
           fill="clear">
           <ion-icon name="trash" slot="icon-only"></ion-icon>
         </ion-button>
@@ -52,8 +49,8 @@
     </div>
   </ion-toolbar>
 </ion-header>
-<ion-content #content>
-  <form [formGroup]="columnForm">
+<ion-content #content>  
+  <form [formGroup]="markerForm">
     <ion-grid>
       <ion-row>
         <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
@@ -61,25 +58,71 @@
             <ion-label position="floating">
               タイトル<ion-text color="danger">*</ion-text>
             </ion-label>
-            <ion-input required [formControl]="na" minlength="2" maxlength="30" placeholder="何とかについて"
-              (ionBlur)="naBlur()"></ion-input>
+            <ion-input required [formControl]="na" minlength="2" maxlength="30" placeholder="セブンイレブン"></ion-input>
           </ion-item>
           <span *ngIf="na.errors?.minlength||na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
           <ion-item>
             <ion-label position="floating">
-              タイトルかな
+              ふりがな
             </ion-label>
-            <ion-input [formControl]="kana" minlength="2" maxlength="60" placeholder="なんとかについて"></ion-input>
+            <ion-input [formControl]="kana" minlength="2" maxlength="60" placeholder="ゆみがはま"></ion-input>
           </ion-item>
           <span *ngIf="kana.errors?.minlength||kana.errors?.maxlength" class="errmsg">２文字以上６０文字以下で入力してください。</span>
           <span *ngIf="kana.errors?.pattern && kana.dirty" class="errmsg">全角ひらがなで入力してください</span>
+          <agm-map [latitude]='marker.lat' [longitude]='marker.lng' [zoom]="zoom">           
+            <agm-marker [latitude]="marker.lat" [longitude]="marker.lng"
+              [iconUrl]="{ url: marker.iconurl, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
+              <agm-info-window>
+                <strong>{{marker.na}}</strong>
+                <div>{{marker.txt}}</div>
+                <img *ngIf="marker.simg" [src]="marker.simg" />
+              </agm-info-window>
+            </agm-marker>
+          </agm-map>
           <ion-item>
-            <ion-label position="floating">場所</ion-label>{{place}}
-            <ion-input [formControl]="parent" style="display:none"></ion-input>
-            <ion-button slot="end" (click)="popTree()" fill="clear">
-              　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
-            </ion-button>
+            <ion-label position="floating">
+              <ion-icon name="home" padding-right></ion-icon>ホームページ
+            </ion-label>
+            <ion-input name="url" [formControl]="url" placeholder="https://southizu.com" (change)="refresh()"></ion-input>
+            <ion-button slot="end" (click)="refresh()" fill="clear"></ion-button>
           </ion-item>
+          <span *ngIf="url.errors?.pattern && url.dirty" class="errmsg">正しいURLを入力してください</span>
+          <ion-item>
+            <ion-label position="floating">
+              <ion-icon name="call" padding-right></ion-icon>電話
+            </ion-label>
+            <ion-input name="phone" [formControl]="phone" placeholder="03-5321-1111"></ion-input>
+          </ion-item>
+          <span *ngIf="phone.errors?.pattern && phone.dirty" class="errmsg">00-0000-0000などの形式で入力してください</span>
+        </ion-col>
+        <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+          <ion-item>
+            <ion-label position="floating">
+              説明文
+            </ion-label>
+            <ion-textarea [formControl]="txt" autoGrow="true" maxlength="300"></ion-textarea>
+          </ion-item>
+          <span *ngIf="txt.errors?.minlength||txt.errors?.maxlength" class="errmsg">２文字以上３００文字以下で入力してください。</span>
+          <ion-item>          
+              <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe:'url'" />
+              <ng-template #orgimg>
+                <img *ngIf="img.value;else noimg" class="img" [src]="img.value" />
+                <ng-template #noimg>
+                  <img class="img" [src]="noimgUrl"/>
+                </ng-template>
+              </ng-template>
+              <ion-buttons class="imgButtons">
+                <ion-button fill="clear" (click)="upImg.click()">
+                  <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button *ngIf="imgBlob" slot="end" (click)="imgBlob=''" fill="clear">
+                  <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+          </ion-item> 
+          <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
+          <ion-progress-bar *ngIf="uploading" [value]="progress" color="success"></ion-progress-bar>
+          <canvas #canvas style="display: none;"></canvas>
           <ion-item>
             <ion-icon name="chatboxes" color="primary"></ion-icon>
             <ion-label>コメント欄</ion-label>
@@ -89,34 +132,17 @@
             <ion-toggle [formControl]="rest"></ion-toggle>
           </ion-item>
         </ion-col>
-        <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-          <ion-item>
-            <ion-label position="floating">
-              説明文
-            </ion-label>
-            <ion-textarea [formControl]="description" autoGrow="true" maxlength="300"></ion-textarea>
-          </ion-item>
-          <span *ngIf="description.errors?.minlength||description.errors?.maxlength"
-            class="errmsg">２文字以上３００文字以下で入力してください。</span>
-          <ion-item>
-            <ion-label>イメージ画像</ion-label>
-            <img *ngIf="imgBase64;else orgimg" class="img" [src]="imgBase64" />
-            <ng-template #orgimg>
-              <img *ngIf="column.image" class="img" [src]="column.image" alt="イメージ" />
-            </ng-template>
-            <ion-button slot="end" (click)="popCrop()" fill="clear">
-              　 <ion-icon name="image" slot="icon-only" color="success"></ion-icon>
-            </ion-button>
-            <ion-button *ngIf="imgBase64" slot="end" (click)="imgBase64=''" fill="clear">
-              　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
-            </ion-button>
-          </ion-item>
-        </ion-col>
       </ion-row>
     </ion-grid>
+    <ion-segment scrollable [formControl]="icon">
+      <ion-segment-button *ngFor="let icon of icons" [value]="icon.id">         
+          <img [src]="icon.url"/>
+          <ion-label>{{icon.na}}</ion-label>         
+      </ion-segment-button>        
+    </ion-segment>    
   </form>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story typ="column" [document]="column" [user]="user"></app-story>
+  <app-story typ="marker" [document]="marker" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic
