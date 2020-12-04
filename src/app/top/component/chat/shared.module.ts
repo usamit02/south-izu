@@ -16,6 +16,6 @@ import { MediaPipe } from './pipe/media.pipe';
   imports: [CommonModule, IonicModule, FormsModule, PickerModule],
   declarations: [ChatComponent, ReactComponent, SendComponent, EmojiComponent, SafePipe, DatePipe, MediaPipe,],
   entryComponents: [ReactComponent, EmojiComponent,],
-  exports: [ChatComponent, ReactComponent, SendComponent, EmojiComponent]
+  exports: [ChatComponent, ReactComponent, SendComponent, EmojiComponent,SafePipe,]
 })
 export class ChatSharedModule { }

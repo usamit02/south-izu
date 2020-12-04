@@ -31,7 +31,7 @@ export class ReportPage implements OnInit, OnDestroy {
   user: User;
   eval: string;//評価good、bad
   count: number = 0;//おなじcastのレポート数
-  view: any = {};
+  view: any = {};//viewカウント重複防止
   titsVals = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
   skinVals = ['', '純白', '白', '普通', '褐色', '黒ギャル'];
   tabaccoVals = ['', '非喫煙', '吸わない', '断って', '吸う', 'ヘビー'];

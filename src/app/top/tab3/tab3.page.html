@@ -1,18 +1,22 @@
 <ion-header>
   <ion-toolbar>
     <ion-menu-button slot="start"></ion-menu-button>
-    <ion-title>
-      周辺環境
-    </ion-title>
+    <ion-title>{{marker.na}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="user.id" (click)="createClick()" slot="end" fill="clear">
+        <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>      
+    </ion-buttons>
     <ion-menu-button menu="end" slot="end">
       <ion-icon name="location"></ion-icon>
     </ion-menu-button>
   </ion-toolbar>
 </ion-header>
 <ion-content [fullscreen]="true">
-<agm-map [latitude]='lat' [longitude]='lng' [zoom]='zoom' (boundsChange)="onBoundsChange($event)" (mapClick)="mapClicked($event)" (mapRightClick)="mapRightClicked($event)">
+<agm-map [latitude]='lat' [longitude]='lng' [zoom]='zoom' [fullscreenControl]='true' 
+(boundsChange)="onBoundsChange($event)" (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
     <agm-marker *ngFor="let marker of markers"
-      (markerClick)="openedWindow=marker.id" (markerRightClick)="markerUpdate(marker)" 
+      (markerClick)="markerClick(marker);" (markerRightClick)="markerRightClick(marker)" (mouseOver)="mouseOver($event,marker)" 
       [latitude]="marker.lat" [longitude]="marker.lng" [label]="marker.label" 
       [iconUrl]="{ url: marker.icon, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">      
     <agm-info-window #infoWindow [isOpen]="isInfoWindowOpen(marker.id)">
@@ -21,7 +25,6 @@
       <img *ngIf="marker.simg" [src]="marker.simg"/>
     </agm-info-window>    
   </agm-marker>  
-  <agm-circle [latitude]="mylat" [longitude]="mylng" [radius]="50" [fillColor]="'red'" [circleDraggable]="false" [editable]="false"></agm-circle>
 </agm-map>
 
 <ion-grid #essay>
@@ -50,10 +53,11 @@
   </ion-row>
 </ion-grid>
 <ion-item *ngIf="marker.user$|async as user">
+  <ng-container *ngIf="user.na">
   <ion-item button="true" (click)="popUser(marker.user)" lines="none">
     <ion-avatar><img [src]="user.avatar"></ion-avatar>
   </ion-item>
-  <ion-item button="true" [routerLink]="'/user/' + maarker.user" lines="none">{{user.na}}</ion-item>
+  <ion-item button="true" [routerLink]="'/user/' + marker.user" lines="none">{{user.na}}</ion-item>
   <span>
     <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
     <ion-icon name="paper" color="primary"></ion-icon>{{user.column}}
@@ -63,6 +67,7 @@
     <ion-icon name="thumbs-up" color="success"></ion-icon>{{user.good}}
     <ion-icon name="thumbs-down" color="dark"></ion-icon>{{user.bad}}
   </span>
+  </ng-container>
   <span *ngIf="marker.acked" slot="end">{{marker.acked|date:'day'}}　公開 </span>
 </ion-item>
 <app-chat #chat *ngIf="marker.chat&&marker.ack===1&&!marker.rest" page="marker" [params]="params" [user]="user"

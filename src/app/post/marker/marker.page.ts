@@ -240,6 +240,7 @@ export class MarkerPage implements OnInit, OnDestroy {
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `マーカー「${this.marker.na}」を削除します。`);
     if (!confirm || !this.marker.id) return;
+    this.ui.loading('削除中です。。。',30000);
     this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'marker', parent: this.marker.id } }).then(async res => {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`marker/${this.marker.id}/${story.file}`).delete();
@@ -249,6 +250,10 @@ export class MarkerPage implements OnInit, OnDestroy {
       await this.db.list(`marker/${this.marker.id}`).remove();
       await this.db.database.ref(`post/marker${this.marker.id}`).remove();
       await this.storedb.collection('marker').doc(this.marker.id.toString()).delete();
+      if (this.marker.img) {
+        this.storage.ref(`marker/${this.marker.id}/small.jpg`).delete();
+        this.storage.ref(`marker/${this.marker.id}/medium.jpg`).delete();
+      }
       this.ui.pop("マーカーを削除しました。");
       this.markers.drafts = this.markers.drafts.filter(marker => { return marker.id !== this.marker.id; });
       this.markers.requests = this.markers.requests.filter(marker => { return marker.id !== this.marker.id; });
@@ -258,7 +263,9 @@ export class MarkerPage implements OnInit, OnDestroy {
       this.undo(MARKER);
     }).catch(err => {
       this.ui.alert(`マーカーを削除できませんでした。\r\n${err.message}`);
-    });;
+    }).finally(()=>{
+      this.ui.loadend();
+    });
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

@@ -5,7 +5,7 @@ import * as google from 'googleapis';
 import { FieldValue } from '@google-cloud/firestore';
 admin.initializeApp();
 const URL = "https://south-izu.web.app";
-const typVal:any = { report: "レポート", column: "コラム" };
+const typVal:any = { report: "レポート", column: "コラム" ,marker:"マーカー",plan:"プラン"};
 //----------------------------------------ダイレクト---------------------------------------------
 export const directCreate = functions.region('asia-northeast1').firestore.document('direct/{key}').onCreate((snapshot, context) => {
   const doc = snapshot.data();
@@ -51,6 +51,12 @@ export const reportCreate = functions.region('asia-northeast1').database.ref(`re
 export const columnCreate = functions.region('asia-northeast1').database.ref(`column/{id}`).onCreate((snapshot, context) => {
   docCreate("column", snapshot, context);
 });
+export const markerCreate = functions.region('asia-northeast1').database.ref(`marker/{id}`).onCreate((snapshot, context) => {
+  docCreate("marker", snapshot, context);
+});
+export const planCreate = functions.region('asia-northeast1').database.ref(`plan/{id}`).onCreate((snapshot, context) => {
+  docCreate("marker", snapshot, context);
+});
 const docCreate = (typ:any, snapshot:any, context:any) => {
   const doc = snapshot.val();
   admin.database().ref(`user/${doc.uid}`).once('value', snap => {
@@ -87,11 +93,23 @@ export const reportChatCreate = functions.region('asia-northeast1').firestore.do
 export const columnChatCreate = functions.region('asia-northeast1').firestore.document('column/{id}/chat/{key}').onCreate((snapshot, context) => {
   chatCreate('column', snapshot, context);
 });
+export const markerChatCreate = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}').onCreate((snapshot, context) => {
+  chatCreate('marker', snapshot, context);
+});
+export const planChatCreate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}').onCreate((snapshot, context) => {
+  chatCreate('marker', snapshot, context);
+});
 export const reportThreadCreate = functions.region('asia-northeast1').firestore.document('report/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
   chatCreate('report', snapshot, context);
 });
 export const columnThreadCreate = functions.region('asia-northeast1').firestore.document('column/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
   chatCreate('column', snapshot, context);
+});
+export const markerThreadCreate = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
+  chatCreate('marker', snapshot, context);
+});
+export const planThreadCreate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
+  chatCreate('marker', snapshot, context);
 });
 const chatCreate = (page: string, snapshot:any, context:any) => {
   const doc = snapshot.data();
@@ -110,9 +128,8 @@ const chatCreate = (page: string, snapshot:any, context:any) => {
   }
   admin.database().ref(`${page}/${context.params.id}`).once('value', snap => {
     const document = snap.val();
-    const pageVal:any = { report: 'レポート', column: 'コラム' };
     let typ;
-    let message = `${pageVal[page]}「${document.na}」`;
+    let message = `${typVal[page]}「${document.na}」`;
     if (context.params.thread) {
       typ = "thread";
       message += `のコメントに${doc.na}から返信がありました。\r\n${doc.txt}`;
@@ -121,7 +138,7 @@ const chatCreate = (page: string, snapshot:any, context:any) => {
       message += `に${doc.na}からコメントがありました。\r\n${doc.txt}`;
     }
     send(document.uid, typ, message, url, doc.avatar);
-    const source = `${pageVal[page]}「${document.na}」`;
+    const source = `${typVal[page]}「${document.na}」`;
     const chat = { source: source, txt: doc.txt, upd: upd, media: doc.media, url: url };
     admin.database().ref(`chat/${doc.uid}/${key}`).set(chat).catch(err => { console.error(`chat書込みに失敗しました。user:${doc.na}\r\n${err.message}`) });
     timeline({ uid: doc.uid, na: doc.na, avatar: doc.avatar, txt: doc.txt, upd: upd, media: doc.media, url: url, source: source }, key);
@@ -147,10 +164,22 @@ export const reportChatUpdate = functions.region('asia-northeast1').firestore.do
 export const columnChatUpdate = functions.region('asia-northeast1').firestore.document('column/{id}/chat/{key}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
+export const markerChatUpdate = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
+export const planChatUpdate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
 export const reportThreadUpdate = functions.region('asia-northeast1').firestore.document('report/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
 export const columnThreadUpdate = functions.region('asia-northeast1').firestore.document('column/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
+export const markerThreadUpdate = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
+export const planThreadUpdate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
 const chatUpdate = (change:any, context:any) => {
@@ -180,10 +209,22 @@ export const reportChatDelete = functions.region('asia-northeast1').firestore.do
 export const columnChatDelete = functions.region('asia-northeast1').firestore.document('column/{id}/chat/{key}').onDelete((snapshot, context) => {
   chatDelete('column', snapshot, context);
 });
+export const markerChatDelete = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}').onDelete((snapshot, context) => {
+  chatDelete('column', snapshot, context);
+});
+export const planChatDelete = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}').onDelete((snapshot, context) => {
+  chatDelete('column', snapshot, context);
+});
 export const reportThreadDelete = functions.region('asia-northeast1').firestore.document('report/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
   chatDelete('report', snapshot, context);
 });
 export const columnThreadDelete = functions.region('asia-northeast1').firestore.document('column/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
+  chatDelete('column', snapshot, context);
+});
+export const markerThreadDelete = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
+  chatDelete('column', snapshot, context);
+});
+export const planThreadDelete = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
   chatDelete('column', snapshot, context);
 });
 const chatDelete = (page: string, snapshot:any, context:any) => {
@@ -291,19 +332,24 @@ export const reportEval = functions.region('asia-northeast1').firestore.document
 export const columnEval = functions.region('asia-northeast1').firestore.document('column/{id}/eval/{user}').onCreate((snapshot, context) => {
   evaluation('column', snapshot, context);
 });
+export const markerEval = functions.region('asia-northeast1').firestore.document('marker/{id}/eval/{user}').onCreate((snapshot, context) => {
+  evaluation('marker', snapshot, context);
+});
+export const planEval = functions.region('asia-northeast1').firestore.document('plan/{id}/eval/{user}').onCreate((snapshot, context) => {
+  evaluation('plan', snapshot, context);
+});
 const evaluation = (page:string, snapshot:any, context:any) => {
   const doc = snapshot.data();
-  const pageVal:any = { report: "レポート", column: "コラム" };
   admin.database().ref(`${page}/${context.params.id}/${doc.id}`).transaction(val => {
     return (val || 0) + 1;
-  }).catch(err => { console.error(`${pageVal[page]}評価プラス１に失敗しました。${err.message}`); });
+  }).catch(err => { console.error(`${typVal[page]}評価プラス１に失敗しました。${err.message}`); });
   admin.database().ref(`user/${doc.uid}/${doc.id}`).transaction(val => {
     return (val || 0) + 1;
-  }).catch(err => { console.error(`${pageVal[page]}評価によるユーザー評価プラス１に失敗しました。${err.message}`); });
+  }).catch(err => { console.error(`${typVal[page]}評価によるユーザー評価プラス１に失敗しました。${err.message}`); });
   admin.database().ref(`user/${context.params.user}`).once('value', snap => {
     const user = { id: context.params.user, ...snap.val() };
     const evaluation:any = { good: 'いいね！', bad: "ダメだし" };
-    const txt = `「${doc.na}」の${pageVal[page]}に${evaluation[doc.id]}しました。`;
+    const txt = `「${doc.na}」の${typVal[page]}に${evaluation[doc.id]}しました。`;
     const payload = {
       uid: user.id, na: user.na, avatar: user.avatar, txt: txt, upd: doc.upd._seconds * 1000, media: "",
       url: `/${page}/${context.params.id}`
@@ -363,6 +409,18 @@ export const viewReportUpdate = functions.region('asia-northeast1').database.ref
 });
 export const viewColumnUpdate = functions.region('asia-northeast1').database.ref(`column/{id}/view`).onUpdate((change, context) => {
   admin.database().ref(`column/${context.params.id}`).once('value', snapshot => {
+    const doc = snapshot.val();
+    score('user', doc.uid, 'view', 1);
+  });
+});
+export const viewMarkerUpdate = functions.region('asia-northeast1').database.ref(`marker/{id}/view`).onUpdate((change, context) => {
+  admin.database().ref(`marker/${context.params.id}`).once('value', snapshot => {
+    const doc = snapshot.val();
+    score('user', doc.uid, 'view', 1);
+  });
+});
+export const viewPlanUpdate = functions.region('asia-northeast1').database.ref(`plan/{id}/view`).onUpdate((change, context) => {
+  admin.database().ref(`plan/${context.params.id}`).once('value', snapshot => {
     const doc = snapshot.val();
     score('user', doc.uid, 'view', 1);
   });

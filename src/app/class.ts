@@ -44,6 +44,7 @@ export interface Marker {
   icon:string|number;
   iconurl?:string;
   user:string;
+  user$?:Object;
   created?:Date|string;
   ack?:number;
   ackuser?:string;
@@ -51,4 +52,4 @@ export interface Marker {
   rest?:number;
   chat?:number;
 }
-export const MARKER={id:0,na:"",kana:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",img:"",simg:"",icon:0};
+export const MARKER={id:0,na:"",kana:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",user$:{},img:"",simg:"",icon:0};
