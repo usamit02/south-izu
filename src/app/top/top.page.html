@@ -6,9 +6,9 @@
   </ion-menu>
   <ion-menu contentId="menu-content" side="end">
     <ion-content>
-      <app-marker *ngIf="page==='/tabs/tab3';else talk"></app-marker>
-      <ng-template #talk>
-        <app-talk [user]="user"></app-talk>
+      <app-markers *ngIf="page==='/tabs/marker';else talks"></app-markers>
+      <ng-template #talks>
+        <app-talks [user]="user"></app-talks>
       </ng-template>
     </ion-content>
   </ion-menu>

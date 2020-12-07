@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController,PopoverController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -13,6 +14,7 @@ import { User, Marker, MARKER } from '../../class';
 import { APIURL } from '../../../environments/environment';
 import { MouseEvent, LatLngBounds } from '@agm/core';
 import { MarkerComponent } from '../../component/marker/marker.component';
+import { UserComponent } from './../component/user/user.component';
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
@@ -22,21 +24,20 @@ export class Tab3Page implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
-  IMGURL = APIURL + 'img/tab3/';
   lat: number = 34.68503331;
   lng: number = 138.85154339;
   zoom: number = 12;
-  center={lat:this.lat,lng:this.lng};
+  center = { lat: this.lat, lng: this.lng };
   openedWindow: number = 1;
   marker: Marker = MARKER;
-  markers: Array<Marker>;
+  markers: Array<Marker> = [];
   user: User;
   storys = [];
   view: any = {};//viewカウント重複防止
   eval: string;//評価good、bad
   private debounceTimer = null;
   private onDestroy$ = new Subject();
-  constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private title: Title,
+  constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private pop : PopoverController,private route: ActivatedRoute, private title: Title,
     private userService: UserService, private db: AngularFireDatabase, private storedb: AngularFirestore, private store: Store) { }
   ngOnInit() {
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
@@ -45,12 +46,24 @@ export class Tab3Page implements OnInit, OnDestroy {
     this.store.select(state => state.marker).pipe(takeUntil(this.onDestroy$)).subscribe((marker: Marker) => {
       this.markerClick(marker);
     });
-    setTimeout(() => { 
-      let markers=this.markers.filter(marker => { return marker.id === 1; });
-      if (markers.length) {
-        this.markerClick(markers[0]);
-      }      
-     }, 5000)
+    this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
+      if (params.id) {
+        this.api.get('query', { select: ['*'], table: 'markered', where: { id: params.id } }).then(res => {
+          if (res.markers.length) {
+            this.marker = res.markers[0];
+            this.markerClick(this.marker);
+          }
+        });
+      }
+    });
+    setTimeout(() => {
+      if (!this.marker.id) {
+        let markers = this.markers.filter(marker => { return marker.id === 1; });
+        if (markers.length) {
+          this.markerClick(markers[0]);
+        }
+      }
+    }, 5000)
   }
   onBoundsChange(bounds: LatLngBounds) {
     if (this.debounceTimer !== null) {
@@ -61,36 +74,38 @@ export class Tab3Page implements OnInit, OnDestroy {
       const nlat = bounds.getNorthEast().lat();
       const nlng = bounds.getNorthEast().lng();
       const slat = bounds.getSouthWest().lat();
-      const slng = bounds.getSouthWest().lng();
-      this.center.lat=bounds.getCenter().lat();
-      this.center.lng=bounds.getCenter().lng();
-      this.api.get('map', { nlat: nlat, nlng: nlng, slat: slat, slng: slng }).then(res => {
+      const slng = bounds.getSouthWest().lng();      
+      this.center.lat = bounds.getCenter().lat();
+      this.center.lng = bounds.getCenter().lng();
+      const lat=this.marker.lat?this.marker.lat:this.center.lat;
+      const lng=this.marker.lng?this.marker.lng:this.center.lng;
+      this.api.get('map', { nlat: nlat, nlng: nlng, slat: slat, slng: slng,lat:lat,lng:lng }).then(res => {
         this.markers = [];
         for (let i = 0; i < res.markers.length; i++) {
-          delete res.markers[i].len;
+          res.markers[i].len=res.markers[i].len * 111.3194;
           res.markers[i].label = (i + 1).toString();
           this.markers.push(res.markers[i]);
         }
         this.store.update(state => ({ ...state, markers: this.markers }));
-        if (this.marker.id) {//選択中のマーカーがマップ範囲から外れたら選択解除する。
+        /*if (this.marker.id) {//選択中のマーカーがマップ範囲から外れたら選択解除する。
           let markers = this.markers.filter(marker => { return marker.id === this.marker.id; });
           if (!markers.length) {
             this.marker = MARKER;
             this.storys = [];
             this.title.setTitle(`周辺環境`);
           }
-        }
+        }*/
       })
       this.openedWindow = null;
     }, 1000);
   }
   createClick() {
     if (this.marker.id) {
-      if(this.user.admin || this.marker.user === this.user.id){
+      if (this.user.admin || this.marker.user === this.user.id) {
         this.markerRightClick(this.marker);
-      }else{
+      } else {
         this.mapRightClick(this.marker.lat, this.marker.lng);
-      }      
+      }
     } else {
       this.mapRightClick(this.center.lat, this.center.lng);
     }
@@ -185,6 +200,14 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
   isInfoWindowOpen(id) {
     return this.openedWindow == id;
+  }
+  async popUser(event, uid) {
+    const popover = await this.pop.create({
+      component: UserComponent,
+      componentProps: { id: uid, self: this.user },
+      cssClass: 'user'
+    });
+    return await popover.present();
   }
   ngOnDestroy() {
     this.onDestroy$.next();

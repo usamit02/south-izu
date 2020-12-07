@@ -12,11 +12,21 @@ ion-content ion-toolbar {
 }
 .icon_blue{color:blue;}
 .icon_skybule{color:skyblue;}
-table{
-   margin-left: 10px;
-   margin-top:10px;
+.avatarItem{
+  --padding-start:10px;--padding-end:0px;
+  --inner-padding-end:0px;
 }
-td{padding-left:10px;padding-right: 10px;}
+.wrapItem{
+  --padding-start:0px;
+  --padding-end:0px;
+  --padding-top:0px;
+  --padding-bottom:0px;
+  --inner-padding-start:0px;
+  --inner-padding-end:0px;
+  --inner-padding-top:0px;
+  --inner-padding-bottom:0px;
+  padding:none;
+}
 agm-map {
   height: 600px;
  img{border-radius: 5px;}  

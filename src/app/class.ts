@@ -32,6 +32,7 @@ export const COLUMN = { parent: 0, id: 0, na: "新しいコラムを追加", kan
 export interface Marker {
   lat: number;
   lng: number;
+  len?:number;
   label?: string;
   id:number;
   na: string;
@@ -51,5 +52,6 @@ export interface Marker {
   acked?:Date|string;
   rest?:number;
   chat?:number;
+  distance?:string;
 }
 export const MARKER={id:0,na:"",kana:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",user$:{},img:"",simg:"",icon:0};

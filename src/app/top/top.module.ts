@@ -6,15 +6,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TopPage } from './top.page';
 import { MenuComponent } from './component/menu/menu.component';
 import { UserComponent } from './component/user/user.component';
-import { TalkComponent } from './component/talk/talk.component';
-import { MarkerComponent } from './component/marker/marker.component';
+import { TalksComponent } from './component/talks/talks.component';
+import { MarkersComponent } from './component/markers/markers.component';
 import { PipeSharedModule } from '../pipe/shared.module';
 const routes: Routes = [
-  {
-    path: '', component: TopPage,
-    children: [
-      { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
-      { path: 'tabs', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
+  { path: '', component: TopPage,
+    children: [     
       { path: 'result', loadChildren: () => import('./page/result/result.module').then(m => m.ResultPageModule) },
       { path: 'report', loadChildren: () => import('./page/report/report.module').then(m => m.ReportPageModule) },
       { path: 'column', loadChildren: () => import('./page/column/column.module').then(m => m.ColumnPageModule) },
@@ -29,11 +26,13 @@ const routes: Routes = [
       { path: 'users', loadChildren: () => import('./page/users/users.module').then(m => m.UsersPageModule) },
       { path: 'columns', loadChildren: () => import('./page/columns/columns.module').then(m => m.ColumnsPageModule) },
       { path: 'thread', loadChildren: () => import('./page/thread/thread.module').then(m => m.ThreadPageModule) },
-    ]
+      { path: 'marker', loadChildren: () => import('./tab3/tab3.module').then(m => m.Tab3PageModule) },      
+      { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
+    ],    
   }
 ];
 @NgModule({
-  declarations: [TopPage, MenuComponent,UserComponent,TalkComponent,MarkerComponent,],
+  declarations: [TopPage, MenuComponent,UserComponent,TalksComponent,MarkersComponent,],
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), FormsModule, ReactiveFormsModule, PipeSharedModule,
   ],

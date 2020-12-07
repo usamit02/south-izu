@@ -3,11 +3,11 @@ import { IonInfiniteScroll, PopoverController } from '@ionic/angular';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { UserComponent } from '../user/user.component';
 @Component({
-  selector: 'app-talk',
-  templateUrl: './talk.component.html',
-  styleUrls: ['./talk.component.scss'],
+  selector: 'app-talks',
+  templateUrl: './talks.component.html',
+  styleUrls: ['./talks.component.scss'],
 })
-export class TalkComponent implements OnInit {
+export class TalksComponent implements OnInit {
   @Input() user;
   @ViewChild('infinite', { static: false }) infinite: IonInfiniteScroll;
   limit: number = 20;
