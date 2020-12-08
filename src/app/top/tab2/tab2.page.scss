@@ -1,3 +1,32 @@
 ion-content ion-toolbar {
   --background: translucent;
 }
+.title{
+  text-align: center;
+}  
+.title h2 {
+  position: relative;
+  padding: 0.5em;
+  color: white;
+  margin-left: 30%;  
+  margin-right: 30%;
+  background-color: lightseagreen;
+}
+.title h2:before {
+  position: absolute;
+  content: '';
+  top: 100%;
+  left: 0;
+  border: none;
+  border-bottom: solid 15px transparent;
+  border-right: solid 20px rgb(149, 158, 155);
+}
+.title h2:after {
+  position: absolute;
+  content: '';
+  top: 100%;
+  right: 0;
+  border: none;
+  border-bottom: solid 15px transparent;
+  border-left: solid 20px rgb(149, 158, 155);
+}

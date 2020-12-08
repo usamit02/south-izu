@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>
+      サイトの予約
+    </ion-title>
+    <ion-menu-button menu="end" slot="end">
+      <ion-icon name="contacts"></ion-icon>
+    </ion-menu-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true">
+  <ion-calendar [(ngModel)]="dateRange" [options]="optionsRange" [type]="type" [format]="'YYYY-MM-DD'"
+  (selectStart)="calendarStart($event)" (selectEnd)="calendarEnd($event)"></ion-calendar>
+  <p style="text-align: center;"><ion-text >２０２１年４月　プレオープン予定です。</ion-text></p>
+  <ion-item *ngIf="startDay && endDay">
+    <div>{{startDay|date:'day'}}～{{endDay|date:'day'}}</div>
+    <div>　準備中</div>
+  </ion-item>
+</ion-content>
+
+<!--
+ [disabled]="to.getTime()>=now.getTime()&&xScale.value===1"
+
+
+  
+-->

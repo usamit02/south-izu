@@ -1,22 +1,40 @@
 <ion-header>
   <ion-toolbar>
     <ion-menu-button slot="start"></ion-menu-button>
-    <ion-title>
-      サイトの予約
+    <ion-title *ngIf="from && to;else notime">      
+      <div *ngIf="from.getTime() !== to.getTime();else fromto">{{from|date:'day'}}～{{to|date:'day'}}の予約</div>
+      <ng-template #fromto>{{from|date:'day'}}の予約</ng-template>
     </ion-title>
+    <ng-template #notime>
+      <ion-title>日時を選択してください。</ion-title>
+    </ng-template>
+    <ion-button (click)="openCalendar()" slot="end" fill="clear">
+      <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
+    </ion-button>    
     <ion-menu-button menu="end" slot="end">
       <ion-icon name="contacts"></ion-icon>
     </ion-menu-button>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true">
-  <ion-calendar [(ngModel)]="dateRange" [options]="optionsRange" [type]="type" [format]="'YYYY-MM-DD'"
-  (selectStart)="calendarStart($event)" (selectEnd)="calendarEnd($event)"></ion-calendar>
-  <p style="text-align: center;"><ion-text >２０２１年４月　プレオープン予定です。</ion-text></p>
-  <ion-item *ngIf="startDay && endDay">
-    <div>{{startDay|date:'day'}}～{{endDay|date:'day'}}</div>
-    <div>　準備中</div>
-  </ion-item>
+<ion-content [fullscreen]="true"> 
+  <p style="text-align: center;"><ion-text >２０２１年４月　プレオープン予定です。</ion-text></p>  
+  <ion-grid *ngFor="let stayTyp of stayTyps">
+    <div class="title"><h2>{{stayTyp.title}}</h2></div>
+    <ion-row>
+      <ion-col *ngFor="let stay of stayTyp.stays" size-xs="6" size-sm="4" size-md="3" size-lg="6" size-xl="4">
+        <ion-card button="true" (click)="openCalendar(stay)">
+          <ion-card-header>
+            <ion-card-title>{{stay.title}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <img [src]="stay.img"/>
+            {{stay.txt}}
+            <div style="text-align: right;">{{stay.price}}円</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 
 <!--

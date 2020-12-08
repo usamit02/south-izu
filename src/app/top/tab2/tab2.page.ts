@@ -3,8 +3,9 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ModalController } from '@ionic/angular';
 import { AngularFireDatabase } from '@angular/fire/database';
+import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
-import { CalendarComponentOptions } from 'ion2-calendar';
+import { CalendarModal, CalendarModalOptions } from 'ion2-calendar';
 
 @Component({
   selector: 'app-tab2',
@@ -14,32 +15,52 @@ import { CalendarComponentOptions } from 'ion2-calendar';
 export class Tab2Page implements OnInit, OnDestroy {
   dateRange: { from: string; to: string; };
   type: 'string'; // 'string' | 'js-date' | 'moment' | 'time' | 'object'
-  optionsRange: CalendarComponentOptions = {
-    pickMode: 'range',from: new Date(), to: new Date().setMonth(new Date().getMonth()+1),
-    weekdays: ['日', '月', '火', '水', '木', '金', '土'],
-    monthPickerFormat:['１月','２月','３月','４月','５月','６月','７月','８月','９月','１０月','１１月','１２月'],
-    monthFormat: 'YYYY年M月',weekStart:1
-  };
-  startDay:Date;
-  endDay:Date;
+  from: Date = new Date();
+  to: Date = new Date();
+  stayTyps:Array<StayTyp>=[{title:"キャンプ",stays:[]},{title:"車中泊",stays:[]},{title:"民泊",stays:[]},{title:"コテージ",stays:[]}];
   private onDestroy$ = new Subject();
-  constructor(public modalCtrl: ModalController, private db: AngularFireDatabase, private ui: UiService,) { }
+  constructor(public modalCtrl: ModalController, private db: AngularFireDatabase, private api:ApiService,private ui: UiService,) { }
   ngOnInit() {
-  
-  }
-  calendarStart(e){
-    console.log(e);
-    this.startDay=new Date(e.time);
-    if(!this.endDay){
-      this.endDay=new Date(e.time);
-    }
-    let a=0;
-  }
-  calendarEnd(e){
-    console.log(e);
-    this.endDay=new Date(e.time);
+    this.api.get('query',{select:['*'],table:'stay'}).then(res=>{
+      res.stays.map(stay=>{
+        this.stayTyps[stay.typ-1].stays.push(stay);        
+      });
+    })
+  }  
+  async openCalendar(stay) {
+    let d = new Date();
+    const options: CalendarModalOptions = {
+      pickMode: 'range',
+      title: `「${stay.title}」の予約`,
+      from: new Date(), to: d.setFullYear(d.getFullYear() + 1),
+      weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+      closeIcon: true, doneIcon: true,
+      monthFormat: 'YYYY年M月', defaultScrollTo: new Date(),weekStart:1
+    };
+    let myCalendar = await this.modalCtrl.create({
+      component: CalendarModal,
+      componentProps: { options }
+    });
+    myCalendar.present();
+    myCalendar.onDidDismiss().then(event => {
+      this.from = new Date(event.data.from.dateObj);
+      this.to = new Date(event.data.to.dateObj.getTime() + 86399000);
+    });
   }
   ngOnDestroy() {
     this.onDestroy$.next();
   }
+}
+interface Stay{
+  title:string;
+  txt:string;
+  img:string;
+  price:number;
+  book:Array<Object>;
+}
+interface StayTyp{
+  title:string;
+  txt?:string;
+  img?:string;
+  stays:Array<Stay>;
 }
