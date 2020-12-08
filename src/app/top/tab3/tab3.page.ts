@@ -14,7 +14,7 @@ import { User, Marker, MARKER } from '../../class';
 import { APIURL } from '../../../environments/environment';
 import { MouseEvent, LatLngBounds } from '@agm/core';
 import { MarkerComponent } from '../../component/marker/marker.component';
-import { UserComponent } from './../component/user/user.component';
+import { UserComponent } from '../component/user/user.component';
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
@@ -201,7 +201,7 @@ export class Tab3Page implements OnInit, OnDestroy {
   isInfoWindowOpen(id) {
     return this.openedWindow == id;
   }
-  async popUser(event, uid) {
+  async popUser(uid) {
     const popover = await this.pop.create({
       component: UserComponent,
       componentProps: { id: uid, self: this.user },

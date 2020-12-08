@@ -7,7 +7,7 @@ import { Tab3Page } from './tab3.page';
 import { MarkerModule } from '../../component/marker/marker.module'
 import { AgmCoreModule } from '@agm/core';
 import { ChatSharedModule } from './../component/chat/shared.module';
-import { UserComponent } from './../component/user/user.component';
+import { UserComponent } from '../component/user/user.component';
 const routes: Routes = [
   { path: ':id', component: Tab3Page },
   { path: '', component: Tab3Page }
