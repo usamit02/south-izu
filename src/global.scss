@@ -46,3 +46,15 @@
 .emoji .popover-content{
   --width:370px;
 }
+.calendar{
+ .satday{
+      p {
+      background-color:lightsteelblue;
+    }    
+  } 
+  .sunday{
+      p {
+      background-color:lightcoral;
+    }    
+  } 
+}
