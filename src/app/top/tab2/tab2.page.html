@@ -22,14 +22,26 @@
     <div class="title"><h2>{{stayTyp.title}}</h2></div>
     <ion-row>
       <ion-col *ngFor="let stay of stayTyp.stays" size-xs="6" size-sm="4" size-md="3" size-lg="6" size-xl="4">
-        <ion-card button="true" (click)="openCalendar(stay)">
+        <ion-card [button]="!stay.state" (click)="openCalendar(stay)">
           <ion-card-header>
             <ion-card-title>{{stay.title}}</ion-card-title>
+            <ion-button (click)="editStay(stay.id)" slot="end" fill="clear">
+              <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
+            </ion-button>   
+            <ion-card-subtitle *ngIf="stay.state">{{state[stay.state]}}</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <img [src]="stay.img"/>
-            {{stay.txt}}
-            <div style="text-align: right;">{{stay.price}}円</div>
+            {{stay.txt}}            
+            <div *ngIf="stay.lo&&stay.hi&&stay.lo!=stay.hi;else price">{{stay.lo}}～{{stay.hi}}円</div>
+            <ng-template #price>
+              <div #price style="text-align: right;">{{stay.price}}円</div>
+            </ng-template>
+            <ion-item>
+              <ion-item *ngFor="let user of stay.users" button="true">
+                <ion-avatar><img [src]="user.avatar" [alt]="user.na"/></ion-avatar>
+              </ion-item>
+            </ion-item>
           </ion-card-content>
         </ion-card>
       </ion-col>
