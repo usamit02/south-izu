@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ModalController } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
@@ -21,8 +20,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;//=[{na:"キャンプ",stays:[]},{na:"車中泊",stays:[]},{na:"民泊",stays:[]},{na:"バンガロー",stays:[]}];
   private onDestroy$ = new Subject();
-  constructor(public modalCtrl: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,
-    private router: Router,) { }
+  constructor(public modalCtrl: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,) { }
   ngOnInit() {
     this.api.get('query', { select: ['*'], table: 'stay_typ' }).then(res => {
       this.stayTyps = res.stay_typs.map(typ => {
@@ -118,9 +116,6 @@ export class Tab2Page implements OnInit, OnDestroy {
         this.load();
       }
     });
-  }
-  editStay(id) {
-    this.router.navigate(['stay', id]);
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();

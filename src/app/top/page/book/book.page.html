@@ -1,0 +1,23 @@
+<ng-container *ngIf="book.id">
+  <ion-header>
+    <ion-toolbar>
+      <ion-menu-button slot="start"></ion-menu-button>
+      <ion-title>{{book.na}}を予約する</ion-title>
+      <ion-menu-button menu="end" slot="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    
+    <p></p>    
+    <app-bill *ngIf="user.id else login;" [user]="user" [book]="book" (bill)="bill($event)"></app-bill>
+    <ng-template #login>
+      <div style="text-align: center">
+        <ion-button routerLink="/login">
+          <ion-icon name="log-in"></ion-icon>ログインして続ける
+        </ion-button>
+      </div>
+    </ng-template>
+  </ion-content>
+</ng-container>

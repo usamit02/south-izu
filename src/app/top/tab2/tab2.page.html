@@ -22,7 +22,7 @@
     <div *ngIf="stayTyp.na" class="title"><h2>{{stayTyp.na}}</h2></div>
     <ion-row>
       <ion-col *ngFor="let stay of stayTyp.stays" size-xs="6" size-sm="4" size-md="3" size-lg="6" size-xl="4">
-        <ion-card [button]="!stay.state" (click)="openCalendar(stay)">
+        <ion-card [button]="!stay.state" [routerLink]="'/book/'+stay.id +'/' + stay.na + '/' + dateFormat(from) + '/' + dateFormat(to)">
           <ion-card-header>
             <ion-card-title>{{stay.na}}</ion-card-title>
             <ion-button (click)="editStay(stay.id)" slot="end" fill="clear">

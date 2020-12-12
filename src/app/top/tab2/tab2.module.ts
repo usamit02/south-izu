@@ -4,7 +4,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tab2Page } from './tab2.page';
-
 import { CalendarModule } from "ion2-calendar";
 import { DatePipe } from './date.pipe';
 @NgModule({
