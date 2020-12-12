@@ -33,9 +33,9 @@
           <ion-card-content>
             <img [src]="stay.img"/>{{stay.txt}}            
             <div *ngIf="stay.total!=null" class="total">{{stay.total}}円</div>
-            <ion-item *ngIf="stay.users.length">
+      <!--      <ion-item *ngIf="stay.users.length">
               <ion-avatar *ngFor="let user of stay.users" button="true"><img [src]="user.avatar" [alt]="user.na"/></ion-avatar>
-            </ion-item>
+            </ion-item>-->
           </ion-card-content>
         </ion-card>
       </ion-col>

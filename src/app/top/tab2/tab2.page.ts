@@ -17,77 +17,76 @@ export class Tab2Page implements OnInit, OnDestroy {
   type: 'string'; // 'string' | 'js-date' | 'moment' | 'time' | 'object'
   from: Date = new Date();
   to: Date = new Date();
+  home = 1;
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;//=[{na:"キャンプ",stays:[]},{na:"車中泊",stays:[]},{na:"民泊",stays:[]},{na:"バンガロー",stays:[]}];
   private onDestroy$ = new Subject();
-  constructor(public modalCtrl: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,) { }
+  constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,) { }
   ngOnInit() {
-    this.api.get('query', { select: ['*'], table: 'stay_typ' }).then(res => {
+    this.api.get('query', { select: ['*'], table: 'stay_typ' }).then(async res => {
+      const stay = await this.api.get('query', { select: ['*'], table: 'stay', where: { home: this.home } });
       this.stayTyps = res.stay_typs.map(typ => {
-        return { na: typ.na, stays: [] };
+        return { na: typ.na, stays: stay.stays.filter(stay => { return stay.typ === typ.id; })};
       });
-    });
-    this.load();
-    this.openCalendar();
+      this.load();
+      setTimeout(()=>{this.openCalendar();},2000);
+    }).catch(err => {
+      this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
+    });    
   }
   load() {
-    this.api.get('query', { select: ['*'], table: 'stay' }).then(async res => {
-      const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to) } };
-      let calendar = await this.api.get('query', { select: ['*'], table: 'calendar', where: where });
-      if (calendar.calendars.filter(calendar => { return calendar.close == 1; }).length) {
-        res.stays.map(stay => { stay.state = "close"; return stay; });
+    const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to),home:this.home }};
+    this.api.get('query', { select: ['*'], table: 'calendar', where: where }).then(async res => {
+      if (res.calendars.filter(calendar => { return calendar.close == 1; }).length) {
+        this.stayTyps.map(typ => {
+          typ.stays.map(stay => { stay.state = "close"; return stay; });
+        });
       } else {
         const stayCalendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: where });
         const book = await this.api.get('query', { select: ['*'], table: 'book', where: where });
-        res.stays.map(stay => {
-          stay.calendars = stayCalendar.stay_calendars.filter(calendar => { return calendar.id === stay.id; });
-          stay.books = book.books.filter(book => { return book.stay_id === stay.id; });
-          let users = [];
-          for (let book of stay.books) {
-            if (book.na) {
-              users.push({ id: book.user, na: book.na, avatar: book.avatar });
-            }
-          }
-          stay.users = [...new Set(users)];
-          stay.total = 0;
-          let count = 0;
-          for (let calendar of stay.calendars) {
-            if (calendar.close) {
-              stay.state = "close";// stay.total = null;
-              break;
-            }
-            if (calendar.price) {
-              stay.total += calendar.price;count++;
-            } else if (calendar.rate) {
-              stay.total += stay.price * calendar.rate;count++
-            }
-          }
-          //if (stay.total != null) {
-            stay.total += ((this.to.getTime() - this.from.getTime()) / 86400000 - count + 1) * stay.price;
-          //}
-          if (!stay.state) {
-            let dateds = [];
+        this.stayTyps.map(typ => {
+          typ.stays.map(stay => {
+            stay.calendars = stayCalendar.stay_calendars.filter(calendar => { return calendar.id === stay.id; });
+            stay.books = book.books.filter(book => { return book.stay_id === stay.id; });
+            let users = [];
             for (let book of stay.books) {
-              if (!dateds[book.dated]) { dateds[book.dated] = []; }
-              dateds[book.dated].push(book);
-            }
-            for (let dated of dateds) {
-              if (dated.length >= stay.num) {
-                stay.state = "full";
+              if (book.na) {
+                users.push({ id: book.user, na: book.na, avatar: book.avatar });
               }
             }
-          }
-          return stay;
+            stay.users = [...new Set(users)];
+            stay.total = 0;
+            let count = 0;
+            for (let calendar of stay.calendars) {
+              if (calendar.close) {
+                stay.state = "close";// stay.total = null;
+                break;
+              }
+              if (calendar.price) {
+                stay.total += calendar.price; count++;
+              } else if (calendar.rate) {
+                stay.total += stay.price * calendar.rate; count++
+              }
+            }
+            //if (stay.total != null) {
+            stay.total += ((this.to.getTime() - this.from.getTime()) / 86400000 - count + 1) * stay.price;
+            //}
+            if (!stay.state) {
+              let dateds = [];
+              for (let book of stay.books) {
+                if (!dateds[book.dated]) { dateds[book.dated] = []; }
+                dateds[book.dated].push(book);
+              }
+              for (let dated of dateds) {
+                if (dated.length >= stay.num) {
+                  stay.state = "full";
+                }
+              }
+            }
+            return stay;
+          });
         });
       }
-      this.stayTyps.map(stayTyp => {
-        stayTyp.stays = [];
-        return stayTyp;
-      });
-      res.stays.map(stay => {
-        this.stayTyps[stay.typ - 1].stays.push(stay);
-      });
-      let a = 1;
     }).catch(err => {
       this.ui.alert(`施設カレンダーの読み込みに失敗しました。\r\n${err.message}`);
     })
@@ -95,7 +94,6 @@ export class Tab2Page implements OnInit, OnDestroy {
   async openCalendar(stay?: Stay) {
     let d = new Date();
     let days: DayConfig[] = [];
-
     const options: CalendarModalOptions = {
       pickMode: 'range',
       title: stay ? `「${stay.na}」の予約` : `予約日を選択`,
@@ -104,7 +102,7 @@ export class Tab2Page implements OnInit, OnDestroy {
       closeIcon: true, doneIcon: true, cssClass: 'calendar',
       monthFormat: 'YYYY年M月', defaultScrollTo: new Date(), weekStart: 1, daysConfig: days,
     };
-    let myCalendar = await this.modalCtrl.create({
+    let myCalendar = await this.modal.create({
       component: CalendarModal,
       componentProps: { options }
     });
@@ -131,15 +129,17 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 }
 interface Stay {
+  id:number;
   na: string;
   txt: string;
   img: string;
   num: number;
   price: number;
   total?: number;
-  books: Array<Object>;
-  calendars: Array<Object>;
-
+  books: Array<any>;
+  calendars: Array<any>;
+  users?:Array<any>;
+  state?:string;
 }
 interface StayTyp {
   na: string;
