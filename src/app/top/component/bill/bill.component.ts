@@ -52,7 +52,7 @@ export class BillComponent implements OnInit, OnChanges {
     });
   }
   billClick(token: string) {
-    this.api.post('bill', { uid: this.user.id, na: this.user.na, stay_id: this.book.id, token: token, amount: this.total,
+    this.api.post('bill', { uid: this.user.id, na: this.user.na, stay_id: this.book.id, token: token, amount: this.book.amount,
       from:this.dateFormat(this.book.from),to:this.dateFormat(this.book.to) }, '決済中').then(res => {
       this.bill.emit(res);
     }).catch(() => {

@@ -3,15 +3,16 @@ import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { BookPage } from './book.page';
+import { DatePipe } from './date.pipe';
 import { CalendarModule } from "ion2-calendar";
 import { BillSharedModule } from '../../component/bill/shared.module';
 const routes: Routes = [
-  { path: ':id/:na/:from/:to', component: BookPage },
+  { path: ':id/:from/:to', component: BookPage },
 ];
 @NgModule({
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), CalendarModule,BillSharedModule,
   ],
-  declarations: [BookPage,],
+  declarations: [BookPage,DatePipe],
 })
 export class BookPageModule { }

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ModalController } from '@ionic/angular';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
@@ -23,19 +23,24 @@ export class Tab2Page implements OnInit, OnDestroy {
   private onDestroy$ = new Subject();
   constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,) { }
   ngOnInit() {
+    this.ui.loading();
     this.api.get('query', { select: ['*'], table: 'stay_typ' }).then(async res => {
       const stay = await this.api.get('query', { select: ['*'], table: 'stay', where: { home: this.home } });
       this.stayTyps = res.stay_typs.map(typ => {
         return { na: typ.na, stays: stay.stays.filter(stay => { return stay.typ === typ.id; })};
       });
+      this.ui.loadend();
       this.load();
-      setTimeout(()=>{this.openCalendar();},2000);
+      this.openCalendar();//setTimeout(()=>{this.openCalendar();},2000);
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
+    }).finally(()=>{
+      this.ui.loadend();
     });    
   }
   load() {
-    const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to),home:this.home }};
+    this.ui.loading("計算中です...");
+    const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to),home:this.home }};    
     this.api.get('query', { select: ['*'], table: 'calendar', where: where }).then(async res => {
       if (res.calendars.filter(calendar => { return calendar.close == 1; }).length) {
         this.stayTyps.map(typ => {
@@ -89,8 +94,8 @@ export class Tab2Page implements OnInit, OnDestroy {
       }
     }).catch(err => {
       this.ui.alert(`施設カレンダーの読み込みに失敗しました。\r\n${err.message}`);
-    })
-  }
+    }).finally(()=>{this.ui.loadend();})
+  }  
   async openCalendar(stay?: Stay) {
     let d = new Date();
     let days: DayConfig[] = [];
