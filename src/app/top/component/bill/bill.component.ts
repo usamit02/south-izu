@@ -3,6 +3,8 @@ import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
 import { APIURL } from '../../../../environments/environment';
+import { Book } from '../../page/book/book.page';
+import { User } from '../../../class';
 declare var Payjp;
 @Component({
   selector: 'app-bill',
@@ -10,8 +12,8 @@ declare var Payjp;
   styleUrls: ['./bill.component.scss'],
 })
 export class BillComponent implements OnInit, OnChanges {
-  @Input() user;
-  @Input() book;
+  @Input() user:User;
+  @Input() book:Book;
   @Output() bill = new EventEmitter();
   payjp;
   card = { last4: "", brand: "", exp_year: null, exp_month: null, change: false };
@@ -52,7 +54,7 @@ export class BillComponent implements OnInit, OnChanges {
     });
   }
   billClick(token: string) {
-    this.api.post('bill', { uid: this.user.id, na: this.user.na, stay_id: this.book.id, token: token, amount: this.book.amount,
+    this.api.post('bill', { uid: this.user.id, na: this.user.na, avatar:this.user.avatar,home:this.book.home,stay: this.book.stay, token: token, amount: this.book.amount,
       from:this.dateFormat(this.book.from),to:this.dateFormat(this.book.to) }, '決済中').then(res => {
       this.bill.emit(res);
     }).catch(() => {

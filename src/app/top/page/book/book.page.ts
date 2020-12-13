@@ -143,7 +143,7 @@ export class BookPage implements OnInit, OnDestroy {
     this.onDestroy$.next();
   }
 }
-interface Book {
+export interface Book {
   stay: number;
   home: number;
   user: string; na: string; avatar: string;

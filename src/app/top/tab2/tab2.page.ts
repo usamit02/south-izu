@@ -123,7 +123,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
   bill(stay){
     if(stay.state){
-      this.ui.pop(`${stay.state}のため予約できません。`);
+      this.ui.pop(`${this.state[stay.state]}のため予約できません。`);
     }else{
       this.router.navigate(['book',stay.id,this.dateFormat(this.from),this.dateFormat(this.to)]);
     }
