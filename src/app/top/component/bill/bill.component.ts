@@ -24,12 +24,10 @@ export class BillComponent implements OnInit, OnChanges {
   whatCvc: boolean = false;
   cardimg = APIURL + "img/visamaster.jpg"; cvcimg = APIURL + "img/cvc.jpg";
   options=[];
-  total:number;
   constructor(private api: ApiService, private ui: UiService, private builder: FormBuilder, ) { }
 
   ngOnInit() {
     Payjp.setPublicKey('pk_test_a77ab4464e1cecb66c3d1b21');//"pk_live_087f0146e09e1f1eceaf0750");
-    this.total=this.book.total;
   }
   ngOnChanges() {
     this.api.get('card', { uid: this.user.id }).then(res => {      

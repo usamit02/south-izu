@@ -1,15 +1,22 @@
-<ng-container *ngIf="book.id">
+
   <ion-header>
     <ion-toolbar>
       <ion-menu-button slot="start"></ion-menu-button>
-      <ion-title>{{book.na}}を予約する</ion-title>
+      <ion-title>{{title}}</ion-title>
       <ion-menu-button menu="end" slot="end">
         <ion-icon name="contacts"></ion-icon>
       </ion-menu-button>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
-    
+    <ion-item *ngIf="book.from">
+      <ion-label>日程</ion-label>
+      <ion-text *ngIf="book.from.getTime()===book.to.getTime() else fromto;">{{book.from|date}}</ion-text>
+      <ng-template #fromto><ion-text>{{book.from|date}}から{{book.to|date}}まで</ion-text></ng-template>
+      <ion-button slot="end" (click)="changeFromto()" fill="clear">
+        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      </ion-button>
+    </ion-item>
     <p></p>    
     <app-bill *ngIf="user.id else login;" [user]="user" [book]="book" (bill)="bill($event)"></app-bill>
     <ng-template #login>
@@ -20,4 +27,3 @@
       </div>
     </ng-template>
   </ion-content>
-</ng-container>

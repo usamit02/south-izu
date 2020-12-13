@@ -6,7 +6,7 @@
 クレジットカード番号はトークン化したうえで通信されます。本システムにカード情報が記録されることはありません。
 <p></p>
 <p></p>
-<ion-title>利用料：{{total}}円</ion-title>
+<ion-title>利用料：{{book.amount}}円</ion-title>
 
 <form [formGroup]="cardForm" *ngIf="!card.last4||card.change">
   <ion-list>
