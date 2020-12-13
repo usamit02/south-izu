@@ -34,7 +34,7 @@ export class UiService {
   }
   async loading(msg?: string, duration?: number) {
     msg = msg ? msg : "処理中...";
-    duration = duration ? duration : 5000;
+    duration = duration ? duration : 30000;
     this.loader = await this.loadingController.create({
       message: msg,
       duration: duration

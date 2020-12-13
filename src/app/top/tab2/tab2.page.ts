@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,7 +22,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;//=[{na:"キャンプ",stays:[]},{na:"車中泊",stays:[]},{na:"民泊",stays:[]},{na:"バンガロー",stays:[]}];
   private onDestroy$ = new Subject();
-  constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,) { }
+  constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService,private router:Router) { }
   ngOnInit() {
     this.ui.loading();
     this.api.get('query', { select: ['*'], table: 'stay_typ' }).then(async res => {
@@ -40,7 +41,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
   load() {
     this.ui.loading("計算中です...");
-    const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to),home:this.home }};    
+    const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to)},home:this.home };    
     this.api.get('query', { select: ['*'], table: 'calendar', where: where }).then(async res => {
       if (res.calendars.filter(calendar => { return calendar.close == 1; }).length) {
         this.stayTyps.map(typ => {
@@ -52,7 +53,7 @@ export class Tab2Page implements OnInit, OnDestroy {
         this.stayTyps.map(typ => {
           typ.stays.map(stay => {
             stay.calendars = stayCalendar.stay_calendars.filter(calendar => { return calendar.id === stay.id; });
-            stay.books = book.books.filter(book => { return book.stay_id === stay.id; });
+            stay.books = book.books.filter(book => { return book.stay === stay.id; });
             let users = [];
             for (let book of stay.books) {
               if (book.na) {
@@ -77,16 +78,16 @@ export class Tab2Page implements OnInit, OnDestroy {
             stay.total += ((this.to.getTime() - this.from.getTime()) / 86400000 - count + 1) * stay.price;
             //}
             if (!stay.state) {
-              let dateds = [];
+              let dated:any={};
               for (let book of stay.books) {
-                if (!dateds[book.dated]) { dateds[book.dated] = []; }
-                dateds[book.dated].push(book);
+                if (!dated[book.dated]) { dated[book.dated] = []; }
+                dated[book.dated].push(book);
               }
-              for (let dated of dateds) {
-                if (dated.length >= stay.num) {
+              Object.keys(dated).forEach(date=>{
+                if (dated[date].length >= stay.num) {
                   stay.state = "full";
                 }
-              }
+              });             
             }
             return stay;
           });
@@ -119,6 +120,13 @@ export class Tab2Page implements OnInit, OnDestroy {
         this.load();
       }
     });
+  }
+  bill(stay){
+    if(stay.state){
+      this.ui.pop(`${stay.state}のため予約できません。`);
+    }else{
+      this.router.navigate(['book',stay.id,this.dateFormat(this.from),this.dateFormat(this.to)]);
+    }
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();

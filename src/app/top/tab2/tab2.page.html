@@ -22,14 +22,14 @@
     <div *ngIf="stayTyp.na" class="title"><h2>{{stayTyp.na}}</h2></div>
     <ion-row>
       <ion-col *ngFor="let stay of stayTyp.stays" size-xs="6" size-sm="4" size-md="3" size-lg="6" size-xl="4">
-        <ion-card [button]="!stay.state" [routerLink]="'/book/' + stay.id + '/' + dateFormat(from) + '/' + dateFormat(to)">
+        <ion-card [button]="!stay.state" (click)="bill(stay)" >
           <ion-card-header>
             <ion-card-title>{{stay.na}}</ion-card-title>            
             <ion-card-subtitle *ngIf="stay.state">{{state[stay.state]}}</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <img [src]="stay.img"/>{{stay.txt}}            
-            <div *ngIf="stay.total!=null" class="total">{{stay.total}}円</div>
+            <div *ngIf="stay.total!=null && !stay.state" class="total">{{stay.total}}円</div>
       <!--      <ion-item *ngIf="stay.users.length">
               <ion-avatar *ngFor="let user of stay.users" button="true"><img [src]="user.avatar" [alt]="user.na"/></ion-avatar>
             </ion-item>-->
@@ -43,6 +43,6 @@
 <!--
  [disabled]="to.getTime()>=now.getTime()&&xScale.value===1"
 
- 
+ [routerLink]="'/book/' + stay.id + '/' + dateFormat(from) + '/' + dateFormat(to)
   
 -->
