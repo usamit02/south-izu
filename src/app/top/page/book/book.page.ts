@@ -23,14 +23,14 @@ export class BookPage implements OnInit, OnDestroy {
   title = "";
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
-    private userService: UserService, private api: ApiService,) { }
+    private userService: UserService, private api: ApiService,private db:AngularFireDatabase,) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.ui.loading("予約確認中...", 60000)
       this.api.get('query', { select: ['*'], table: 'stay', where: { id: params.id } }).then(async res => {
         if (res.stays.length === 1) {
           const stay = res.stays[0];
-          this.title = `${stay.na}を予約する`;
+          this.title = stay.na;
           const now = new Date();
           const upper = new Date();
           upper.setMonth(upper.getMonth() + 1);
@@ -127,8 +127,15 @@ export class BookPage implements OnInit, OnDestroy {
     });
   }
   pay(token) {
+    const dateFormat=(date:Date)=>{
+      return `${date.getMonth()+1}/${date.getDate()}`;
+    }
     this.api.post('bill', { uid: this.user.id, na: this.user.na, avatar:this.user.avatar,home:this.book.home,stay: this.book.stay, token: token, amount: this.book.amount,
       from:this.dateFormat(this.book.from),to:this.dateFormat(this.book.to) }, '決済中').then(res => {
+      let txt=this.book.from.getTime()===this.book.to.getTime()?dateFormat(this.book.from):`${dateFormat(this.book.from)}～${dateFormat(this.book.from)}`;
+      txt = `${txt}\r\n${this.title}`;
+      const book={ uid: this.user.id, na: this.user.na, avatar:this.user.avatar,url:this.location.path(),upd:res.booked,txt:txt};
+      this.db.database.ref(`book/${this.book.home}`).push(book);
       this.ui.alert(`予約しました。`);
       this.location.back();
     }).catch(() => {

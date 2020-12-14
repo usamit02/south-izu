@@ -2,7 +2,7 @@
   <ion-header>
     <ion-toolbar>
       <ion-menu-button slot="start"></ion-menu-button>
-      <ion-title>{{title}}</ion-title>
+      <ion-title *ngIf="title">{{title}}を予約する</ion-title>
       <ion-button (click)="editStay(stay.id)" slot="end" fill="clear">
         <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
       </ion-button>   
