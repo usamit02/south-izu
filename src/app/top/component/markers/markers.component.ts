@@ -8,7 +8,7 @@ import { Marker } from '../../../class';
   templateUrl: './markers.component.html',
   styleUrls: ['./markers.component.scss'],
 })
-export class MarkersComponent implements OnInit, OnDestroy {
+export class MarkersComponent implements OnInit, OnDestroy { 
   markers: Array<Marker> = [];
   private onDestroy$ = new Subject();
   constructor(private store: Store,) { }//private lenPipe:LenPipe,

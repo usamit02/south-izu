@@ -6,9 +6,14 @@
   </ion-menu>
   <ion-menu contentId="menu-content" side="end">
     <ion-content>
-      <app-markers *ngIf="page==='/tabs/marker';else talks"></app-markers>
-      <ng-template #talks>
-        <app-talks [user]="user"></app-talks>
+      <app-markers *ngIf="page==='marker'; else books"></app-markers>
+      <ng-template #books>
+      <app-books *ngIf="page==='book'; else talks" [user]="user" [home]="home"></app-books>
+
+      
+          <ng-template #talks>
+            <app-talks [user]="user"></app-talks>
+          </ng-template>
       </ng-template>
     </ion-content>
   </ion-menu>

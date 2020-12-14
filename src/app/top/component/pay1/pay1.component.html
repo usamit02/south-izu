@@ -6,7 +6,7 @@
 クレジットカード番号はトークン化したうえで通信されます。本システムにカード情報が記録されることはありません。
 <p></p>
 <p></p>
-<ion-title>利用料：{{book.amount}}円</ion-title>
+<ion-title>利用料：{{amount}}円</ion-title>
 
 <form [formGroup]="cardForm" *ngIf="!card.last4||card.change">
   <ion-list>
@@ -32,7 +32,7 @@
     <ion-item>
       <ion-text class="leftText">有効期限</ion-text>
       <ion-datetime display-format="YYYY年M月" picker-format="YYYY年M月" [formControl]="cardRimit" name="cardRimit"
-        placeholder="2021年6月" doneText="決定" cancelText="取消" min="2019" max="2030">
+        placeholder="2022年6月" doneText="決定" cancelText="取消" min="2021" max="2030">
       </ion-datetime>
     </ion-item>
     <div text-center>
@@ -44,8 +44,8 @@
   <p>登録済クレジットカード</p>
   　 <p>カード番号　　{{card.brand}} ****-****-****-{{card.last4}}</p>
   <p>有効期間　　　{{card.exp_year}}年{{card.exp_month}}月</p>
-  <ion-item class="billButton" lines="none">
-    <ion-button color="tertiary" (click)="billClick('')">同意して予約する</ion-button>
+  <ion-item class="payButton" lines="none">
+    <ion-button color="tertiary" (click)="payClick('')">同意して支払う</ion-button>
     <ion-button *ngIf="!card.change" color="light" (click)="card.change=true" slot="end">クレジットカードを変更する</ion-button>
   </ion-item>
 </div>

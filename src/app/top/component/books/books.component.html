@@ -1,0 +1,42 @@
+<ion-list>
+  <ion-item *ngFor="let book of books;index as i" class="wrapItem">
+    <div>
+      <ion-item class="avatarItem" lines="none" button="true" (click)="popUser($event,book.uid)">
+        <ion-avatar>
+          <ion-img [src]="book.avatar" alt="クリックで情報を表示"></ion-img>
+        </ion-avatar>
+      </ion-item>
+    </div>
+    <div #bookDivs style="width:100%;">
+      <ion-item lines="none" button="true" [routerLink]="book.url">
+        <div>
+          <div>
+            <span class="bookna">{{book.na}}</span>
+            <span class="bookdate"> {{book.upd|date:'short'}}</span>
+          </div>
+          <div class="booktxt">{{book.txt}}</div>
+        </div>
+      </ion-item>
+    </div>
+  </ion-item>
+</ion-list>
+<ion-infinite-scroll #infinite position="bottom" threshold="10px" (ionInfinite)="bookLoad($event)">
+  <ion-infinite-scroll-content loadingSpinner="bubbles">
+  </ion-infinite-scroll-content>
+</ion-infinite-scroll>
+<!--
+ 
+<ion-header>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-searchbar placeholder="ユーザー検索" (ionClear)="searchClear()" [(ngModel)]="searchTerm" (keyup.enter)="search()">
+      </ion-searchbar>
+      <ion-button (click)="test()" fill="clear">
+        <ion-icon name="search" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  
+-->

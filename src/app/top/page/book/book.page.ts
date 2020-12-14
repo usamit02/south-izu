@@ -68,7 +68,7 @@ export class BookPage implements OnInit, OnDestroy {
           //const amount=await this.calculate(stay.from,stay.to,params.id,stay.home,stay.price,stay.num);
           this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
             this.user = user;
-            const from = new Date(params.from); const to = new Date(params.to);
+            const from = new Date(new Date(params.from).setHours(0)); const to = new Date(new Date(params.to).setHours(0));
             let amount = 0;
             for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
               amount += this.day[this.dateFormat(d)].price;
@@ -110,8 +110,8 @@ export class BookPage implements OnInit, OnDestroy {
     myCalendar.present();
     myCalendar.onDidDismiss().then(event => {
       if (event.data) {
-        const from = new Date(event.data.from.dateObj);
-        const to = new Date(event.data.to.dateObj);
+        const from = new Date(event.data.from.string);
+        const to = new Date(event.data.to.string);
         let amount = 0; let date: string;
         for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
           date = this.dateFormat(d);
@@ -126,9 +126,14 @@ export class BookPage implements OnInit, OnDestroy {
       }
     });
   }
-  bill(e) {
-    this.ui.pop(`${this.book.na}を予約しました。`);
-    this.location.back();
+  pay(token) {
+    this.api.post('bill', { uid: this.user.id, na: this.user.na, avatar:this.user.avatar,home:this.book.home,stay: this.book.stay, token: token, amount: this.book.amount,
+      from:this.dateFormat(this.book.from),to:this.dateFormat(this.book.to) }, '決済中').then(res => {
+      this.ui.alert(`予約しました。`);
+      this.location.back();
+    }).catch(() => {
+      this.ui.alert(`決済手続きに失敗しました。`);
+    });   
   }
   night(from:Date,to:Date):number{//宿泊数の計算
     return Math.ceil((to.getTime()-from.getTime())/86400000)+1;

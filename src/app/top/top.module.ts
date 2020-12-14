@@ -8,6 +8,7 @@ import { MenuComponent } from './component/menu/menu.component';
 import { UserComponent } from './component/user/user.component';
 import { TalksComponent } from './component/talks/talks.component';
 import { MarkersComponent } from './component/markers/markers.component';
+import { BooksComponent } from './component/books/books.component';
 import { PipeSharedModule } from '../pipe/shared.module';
 const routes: Routes = [
   { path: '', component: TopPage,
@@ -33,7 +34,7 @@ const routes: Routes = [
   }
 ];
 @NgModule({
-  declarations: [TopPage, MenuComponent,UserComponent,TalksComponent,MarkersComponent,],
+  declarations: [TopPage, MenuComponent,UserComponent,TalksComponent,MarkersComponent,BooksComponent,],
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), FormsModule, ReactiveFormsModule, PipeSharedModule,
   ],

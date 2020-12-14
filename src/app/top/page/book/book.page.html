@@ -21,7 +21,7 @@
       </ion-button>
     </ion-item>
     <p></p>    
-    <app-bill *ngIf="user.id else login;" [user]="user" [book]="book" (bill)="bill($event)"></app-bill>
+    <app-pay1 *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
     <ng-template #login>
       <div style="text-align: center">
         <ion-button routerLink="/login">

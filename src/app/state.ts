@@ -4,10 +4,12 @@ export interface State {
   columns: Array<Column>,
   marker:Marker,
   markers:Array<Marker>,
+  home:number,
 }
 export const initialState = {
   user: USER,
   columns: [COLUMN],
   marker:MARKER,
-  markers:[MARKER]
+  markers:[MARKER],
+  home:1,
 }
