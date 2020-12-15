@@ -132,7 +132,8 @@ export class BookPage implements OnInit, OnDestroy {
     }
     this.api.post('bill', { uid: this.user.id, na: this.user.na, avatar:this.user.avatar,home:this.book.home,stay: this.book.stay, token: token, amount: this.book.amount,
       from:this.dateFormat(this.book.from),to:this.dateFormat(this.book.to) }, '決済中').then(res => {
-      let txt=this.book.from.getTime()===this.book.to.getTime()?dateFormat(this.book.from):`${dateFormat(this.book.from)}～${dateFormat(this.book.from)}`;
+      const from=dateFormat(this.book.from);const to=dateFormat(this.book.to);
+      let txt=from===to?from:`${from}～${to}`;
       txt = `${txt}\r\n${this.title}`;
       const book={ uid: this.user.id, na: this.user.na, avatar:this.user.avatar,url:this.location.path(),upd:res.booked,txt:txt};
       this.db.database.ref(`book/${this.book.home}`).push(book);

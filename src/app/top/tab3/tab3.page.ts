@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
 import { ModalController,PopoverController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -15,6 +16,7 @@ import { APIURL } from '../../../environments/environment';
 import { MouseEvent, LatLngBounds } from '@agm/core';
 import { MarkerComponent } from '../../component/marker/marker.component';
 import { UserComponent } from '../component/user/user.component';
+import { HOME } from '../../config';
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
@@ -32,14 +34,25 @@ export class Tab3Page implements OnInit, OnDestroy {
   marker: Marker = MARKER;
   markers: Array<Marker> = [];
   user: User;
+  home=1;
   storys = [];
   view: any = {};//viewカウント重複防止
   eval: string;//評価good、bad
   private debounceTimer = null;
   private onDestroy$ = new Subject();
   constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private pop : PopoverController,private route: ActivatedRoute, private title: Title,
-    private userService: UserService, private db: AngularFireDatabase, private storedb: AngularFirestore, private store: Store) { }
+    private userService: UserService, private db: AngularFireDatabase, private storedb: AngularFirestore, private store: Store,
+    private location:Location,) { }
   ngOnInit() {
+    let paths=this.location.path().split('/');
+    Object.keys(HOME).forEach(key=>{
+      if(HOME[key].path===paths[1]){ 
+        this.home=Number(key);
+        this.lat=HOME[key].lat;
+        this.lng=HOME[key].lng;
+        this.zoom=HOME[key].zoom;
+      }
+    })
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
       this.user = user;
     });
@@ -58,7 +71,7 @@ export class Tab3Page implements OnInit, OnDestroy {
     });
     setTimeout(() => {
       if (!this.marker.id) {
-        let markers = this.markers.filter(marker => { return marker.id === 1; });
+        let markers = this.markers.filter(marker => { return marker.id === HOME[this.home].marker; });
         if (markers.length) {
           this.markerClick(markers[0]);
         }

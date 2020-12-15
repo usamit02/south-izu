@@ -32,11 +32,11 @@ export class TopPage implements OnInit, OnDestroy {
           this.page="";
         }
         if(this.home!==1&&event.url.indexOf('southizu-riderhouse')!=-1){
-          this.store.update(state=> ({ ...state, home: 1 }));
           this.home=1;
+          this.store.update(state=> ({ ...state, home: 1 }));          
         }else if(this.home!==2&&event.url.indexOf('bbload')!=-1){
-          this.store.update(state=> ({ ...state, home: 2 }));
           this.home=2;
+          this.store.update(state=> ({ ...state, home: 2 }));          
         }       
       }
   });

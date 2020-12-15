@@ -15,7 +15,7 @@ export class BooksComponent implements OnInit {
   books = [];
   constructor(private pop: PopoverController, private db: AngularFireDatabase, ) { }
   ngOnInit() {
-    this.db.database.ref('book').orderByChild('upd').startAt(new Date().getTime()).limitToLast(1).on('child_added', snapshot => {
+    this.db.database.ref(`book/${this.home}`).orderByChild('upd').startAt(new Date().getTime()).limitToLast(1).on('child_added', snapshot => {
       const doc = snapshot.val();
       this.books.unshift(doc);
     });
@@ -23,7 +23,7 @@ export class BooksComponent implements OnInit {
   }
   async bookLoad(event) {
     let docs = [];
-    let ref = this.db.database.ref(`book`).orderByChild('upd');
+    let ref = this.db.database.ref(`book/${this.home}`).orderByChild('upd');
     ref = this.books.length ? ref.endAt(this.books[this.books.length - 1].upd - 1).limitToLast(this.limit) : ref.limitToLast(this.limit);
     const query = await ref.once('value');
     query.forEach(doc => {
@@ -32,6 +32,7 @@ export class BooksComponent implements OnInit {
     if (event) event.target.complete();
     if (docs.length) {
       this.books.push(...docs);
+      let a=1;
     } else {
       this.infinite.disabled = true;
     }

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
+import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -8,7 +9,7 @@ import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { Store } from '../../service/store.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
-
+import { STAYTYP,HOME } from '../../config';
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
@@ -23,14 +24,20 @@ export class Tab2Page implements OnInit, OnDestroy {
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;
   private onDestroy$ = new Subject();
-  constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService, private store:Store,private router: Router) { }
+  constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService, 
+    private store:Store,private router: Router,private location:Location,) { }
   ngOnInit() {
     this.ui.loading();
-    this.home=this.store.get('home');
-    this.api.get('query', { select: ['*'], table: 'stay_typ' }).then(async res => {
-      const stay = await this.api.get('query', { select: ['*'], table: 'stay', where: { home: this.home } });
-      this.stayTyps = res.stay_typs.map(typ => {
-        return { na: typ.na, stays: stay.stays.filter(stay => { return stay.typ === typ.id; }) };
+    let paths=this.location.path().split('/');
+    Object.keys(HOME).forEach(key=>{
+      if(HOME[key].path===paths[1]){ 
+        this.home=Number(key);
+      }
+    })
+    const stayTyps=HOME[this.home].stayTyps;
+    this.api.get('query', { select: ['*'], table: 'stay', where: { home: this.home } }).then(async stay => {
+      this.stayTyps = stayTyps.map(typ => {
+        return { na: STAYTYP[typ].na, stays: stay.stays.filter(stay => { return stay.typ === typ; }) };
       });
       let d = new Date();
       const where = { dated: { lower: this.dateFormat(), upper: this.dateFormat(new Date(d.setMonth(d.getMonth() + 1))) }, home: this.home };
