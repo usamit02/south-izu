@@ -21,16 +21,18 @@ export class BookPage implements OnInit, OnDestroy {
   day: any = {};
   days: Array<DayConfig> = [];
   title = "";
+  story;//storyのパラメータ
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
     private userService: UserService, private api: ApiService,private db:AngularFireDatabase,) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
-      this.ui.loading("予約確認中...", 60000)
+      this.ui.loading("予約確認中...")
       this.api.get('query', { select: ['*'], table: 'stay', where: { id: params.id } }).then(async res => {
         if (res.stays.length === 1) {
           const stay = res.stays[0];
           this.title = stay.na;
+          this.story = {id:stay.id};
           const now = new Date();
           const upper = new Date();
           upper.setMonth(upper.getMonth() + 1);
@@ -77,6 +79,7 @@ export class BookPage implements OnInit, OnDestroy {
           });
         } else {
           this.ui.alert('宿泊データがありません。');
+          this.story={id:0};
         }
       }).catch(err => {
         this.ui.alert(`宿泊データの読み込みに失敗しました。\r\n${err.message}`);

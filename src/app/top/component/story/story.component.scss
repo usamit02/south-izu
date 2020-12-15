@@ -1,0 +1,26 @@
+.icon_green{
+  color:lightgreen;
+}
+.icon_red{
+  color:red;
+}
+.icon_yellow{
+  color:yellow;
+}
+.icon_blue{color:blue;}
+.icon_skybule{color:skyblue;}
+.avatarItem{
+  --padding-start:10px;--padding-end:0px;
+  --inner-padding-end:0px;
+}
+.wrapItem{
+  --padding-start:0px;
+  --padding-end:0px;
+  --padding-top:0px;
+  --padding-bottom:0px;
+  --inner-padding-start:0px;
+  --inner-padding-end:0px;
+  --inner-padding-top:0px;
+  --inner-padding-bottom:0px;
+  padding:none;
+}
