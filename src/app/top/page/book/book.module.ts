@@ -6,13 +6,14 @@ import { BookPage } from './book.page';
 import { DatePipe } from './date.pipe';
 import { CalendarModule } from "ion2-calendar";
 import { PaySharedModule } from '../../component/pay1/shared.module';
+import { StorySharedModule } from '../../component/story/shared.module';
 const routes: Routes = [
   { path: ':id/:from/:to', component: BookPage },
 ];
 @NgModule({
   imports: [
-    CommonModule, IonicModule, RouterModule.forChild(routes), CalendarModule,PaySharedModule,
+    CommonModule, IonicModule, RouterModule.forChild(routes), CalendarModule,PaySharedModule,StorySharedModule,
   ],
-  declarations: [BookPage,DatePipe],
+  declarations: [BookPage,DatePipe,],
 })
 export class BookPageModule { }

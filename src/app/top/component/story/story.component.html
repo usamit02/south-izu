@@ -1,5 +1,5 @@
 <ion-grid>
-  <ion-row *ngFor="let story of storys;index as i;">
+  <ion-row *ngFor="let story of storys">
     <ng-container *ngIf="!story.rest;else rest">
       <ion-col *ngIf="story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
         [innerHtml]="story.media | safe">
@@ -25,19 +25,19 @@
 </ion-grid>
 <ion-item *ngIf="user$|async as user" class="WrapItem">
   <ng-container *ngIf="user.na">
-  <ion-item button="true" (click)="popUser(param.user)" lines="none" class="avatarItem">
-    <ion-avatar><img [src]="user.avatar"></ion-avatar>
-  </ion-item>
-  <ion-item button="true" [routerLink]="'/user/' + param.user" lines="none">{{user.na}}</ion-item>
-  <span>
-    <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
-    <ion-icon name="paper" color="primary"></ion-icon>{{user.column}}
-    <ion-icon name="eye" color="secondary"></ion-icon>{{user.view}}
-    <ion-icon name="heart" color="danger"></ion-icon>{{user.supporter}}
-    <ion-icon name="star" color="warning"></ion-icon>{{user.follower}}
-    <ion-icon name="thumbs-up" color="success"></ion-icon>{{user.good}}
-    <ion-icon name="thumbs-down" color="dark"></ion-icon>{{user.bad}}
-  </span>
+    <ion-item button="true" (click)="popUser(param.user)" lines="none" class="avatarItem">
+      <ion-avatar><img [src]="user.avatar"></ion-avatar>
+    </ion-item>
+    <ion-item button="true" [routerLink]="'/user/' + param.user" lines="none">{{user.na}}</ion-item>
+    <span>
+      <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
+      <ion-icon name="paper" color="primary"></ion-icon>{{user.column}}
+      <ion-icon name="eye" color="secondary"></ion-icon>{{user.view}}
+      <ion-icon name="heart" color="danger"></ion-icon>{{user.supporter}}
+      <ion-icon name="star" color="warning"></ion-icon>{{user.follower}}
+      <ion-icon name="thumbs-up" color="success"></ion-icon>{{user.good}}
+      <ion-icon name="thumbs-down" color="dark"></ion-icon>{{user.bad}}
+    </span>
   </ng-container>
   <span *ngIf="param.acked" slot="end">{{param.acked|date:'day'}}　公開 </span>
 </ion-item>

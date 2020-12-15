@@ -21,7 +21,7 @@ export class BookPage implements OnInit, OnDestroy {
   day: any = {};
   days: Array<DayConfig> = [];
   title = "";
-  story;//storyのパラメータ
+  story = {id:0,user:null,acked:null};
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
     private userService: UserService, private api: ApiService,private db:AngularFireDatabase,) { }
@@ -32,7 +32,7 @@ export class BookPage implements OnInit, OnDestroy {
         if (res.stays.length === 1) {
           const stay = res.stays[0];
           this.title = stay.na;
-          this.story = {id:stay.id};
+          this.story = {id:stay.id,user:null,acked:null};
           const now = new Date();
           const upper = new Date();
           upper.setMonth(upper.getMonth() + 1);
@@ -79,7 +79,7 @@ export class BookPage implements OnInit, OnDestroy {
           });
         } else {
           this.ui.alert('宿泊データがありません。');
-          this.story={id:0};
+          this.story={id:0,user:null,acked:null};
         }
       }).catch(err => {
         this.ui.alert(`宿泊データの読み込みに失敗しました。\r\n${err.message}`);
