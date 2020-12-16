@@ -6,10 +6,10 @@
         　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>{{stay.na}}の設定</ion-title>
+    <ion-title>滞在プランの設定</ion-title>
     <ion-buttons slot="end">
-      <ion-button [disabled]="!(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calendarForm.valid)" (click)="save()"
-        fill="clear">
+      <ion-button [disabled]="!(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calendarForm.valid)"
+        (click)="save()" fill="clear">
         　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
       </ion-button>
       <ion-menu-button menu="end">
@@ -18,61 +18,64 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content> 
-    <ion-grid>
-      <ion-row>
-        <form [formGroup]="stayForm">
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <form [formGroup]="stayForm">
         <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
           <ion-item>
             <ion-label position="floating">
               タイトル<ion-text color="danger">*</ion-text>
             </ion-label>
-            <ion-input required [formControl]="na" minlength="2" maxlength="30" placeholder="ソロサイト"></ion-input>
+            <ion-input required [formControl]="stay.na" minlength="2" maxlength="30" placeholder="ソロサイト"></ion-input>
           </ion-item>
-          <span *ngIf="na.errors?.minlength||na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
+          <span *ngIf="stay.na.errors?.minlength||stay.na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
           <ion-item>
             <ion-label position="floating">
               説明文
             </ion-label>
-            <ion-textarea [formControl]="txt" autoGrow="true" maxlength="300"></ion-textarea>
+            <ion-textarea [formControl]="stay.txt" autoGrow="true" maxlength="300"></ion-textarea>
           </ion-item>
-          <span *ngIf="txt.errors?.minlength||txt.errors?.maxlength" class="errmsg">２文字以上３００文字以下で入力してください。</span>
-          <ion-item>          
-              <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe:'url'" />
-              <ng-template #orgimg>
-                <img *ngIf="img.value;else noimg" class="img" [src]="img.value" />
-                <ng-template #noimg>
-                  <img class="img" [src]="noimgUrl"/>
-                </ng-template>
+          <span *ngIf="stay.txt.errors?.minlength||stay.txt.errors?.maxlength" class="errmsg">２文字以上３００文字以下で入力してください。</span>
+          <ion-item>
+            <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe:'url'" />
+            <ng-template #orgimg>
+              <img *ngIf="stay.img.value;else noimg" class="img" [src]="stay.img.value" />
+              <ng-template #noimg>
+                <img class="img" [src]="noimgUrl" />
               </ng-template>
-              <ion-buttons class="imgButtons">
-                <ion-button fill="clear" (click)="upImg.click()">
-                  <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
-                </ion-button>
-                <ion-button *ngIf="imgBlob" slot="end" (click)="imgBlob=''" fill="clear">
-                  <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
-                </ion-button>
-              </ion-buttons>
-          </ion-item> 
+            </ng-template>
+            <ion-buttons class="imgButtons">
+              <ion-button fill="clear" (click)="upImg.click()">
+                <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button *ngIf="imgBlob" slot="end" (click)="imgBlob=''" fill="clear">
+                <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
           <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
           <ion-progress-bar *ngIf="uploading" [value]="progress" color="success"></ion-progress-bar>
           <canvas #canvas style="display: none;"></canvas>
           <ion-item>
             <ion-icon name="chatboxes" color="primary"></ion-icon>
             <ion-label>コメント欄</ion-label>
-            <ion-toggle [formControl]="chat"></ion-toggle>
-            <ion-icon name="lock" color="tertiary"></ion-icon>
-            <ion-label>休止中</ion-label>
-            <ion-toggle [formControl]="close"></ion-toggle>
+            <ion-toggle [formControl]="stay.chat"></ion-toggle>
           </ion-item>
-          <ion-segment scrollable [formControl]="typ">
-          <ion-segment-button *ngFor="let typ of typs" [value]="typ.id">         
-              <img [src]="typ.icon"/>
-              <ion-label>{{typ.na}}</ion-label>         
-          </ion-segment-button>        
-         </ion-segment>   
+          <ion-item>
+            <ion-icon name="pause" color="primary"></ion-icon>
+            <ion-label>休止中</ion-label>
+            <ion-toggle [formControl]="stay.close"></ion-toggle>
+          </ion-item>
+          
+          <ion-segment scrollable [formControl]="stay.typ">
+            <ion-segment-button *ngFor="let typ of stayTyps" [value]="typ.id">
+              <img [src]="typ.icon" />
+              <ion-label>{{typ.na}}</ion-label>
+            </ion-segment-button>
+          </ion-segment>
         </ion-col>
-         </form>
-      </ion-row>
-    </ion-grid> 
+      </form>
+    </ion-row>
+  </ion-grid>
 </ion-content>

@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-menu-button slot="start"></ion-menu-button>
     <ion-title *ngIf="title">{{title}}を予約する</ion-title>
-    <ion-button (click)="editStay(stay.id)" slot="end" fill="clear">
+    <ion-button [disabled]="!editable" [routerLink]="'/post/stay/' + book.stay" slot="end" fill="clear">
       <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
     </ion-button>
     <ion-menu-button menu="end" slot="end">
@@ -18,7 +18,7 @@
       <ion-text>{{book.from|date}}から{{book.to|date}}まで　{{night(book.from,book.to)}}泊</ion-text>
     </ng-template>
     <ion-button slot="end" (click)="changeFromto()" fill="clear">
-      　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      　 <ion-icon name="calendar" slot="icon-only" color="primary"></ion-icon>
     </ion-button>
   </ion-item>
   <p></p>

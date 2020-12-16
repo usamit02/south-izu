@@ -11,6 +11,8 @@ export const STAYTYP={
   4:{na:'バンガロー'}
 }
 export const HOME={
- 1:{na:'南伊豆ライダーハウス',path:'southizu-riderhouse',stayTyps:[1,2,3,4],lat:34.68503331,lng:138.85154339,zoom:12,marker:1},
- 2:{na:'ｂｂロード',path:'bbload',stayTyps:[1,3],lat:34.7660779797,lng:138.93926235,zoom:11,marker:19},
+ 1:{na:'南伊豆ライダーハウス',path:'southizu-riderhouse',stayTyps:[1,2,3,4],lat:34.68503331,lng:138.85154339,zoom:12,marker:1,
+  users:['rbcAU6MV38dArpipevYFLoV4YvK2']},
+ 2:{na:'ｂｂロード',path:'bbload',stayTyps:[1,3],lat:34.7660779797,lng:138.93926235,zoom:11,marker:19,
+  users:['']},
 }

@@ -5,6 +5,7 @@ const routes: Routes = [
   { path: 'post/report', loadChildren: () => import('./post/report/report.module').then(m => m.ReportModule) },
   { path: 'post/column', loadChildren: () => import('./post/column/column.module').then(m => m.ColumnModule) },
   { path: 'post/marker', loadChildren: () => import('./post/marker/marker.module').then(m => m.MarkerModule) },
+  { path: 'post/stay', loadChildren: () => import('./post/stay/stay.module').then(m => m.StayModule) },
   { path: '',loadChildren: () => import('./top/top.module').then(m => m.TopPageModule)}
 ];
 @NgModule({

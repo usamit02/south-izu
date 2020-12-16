@@ -9,7 +9,7 @@ import { EditorModule } from '@tinymce/tinymce-angular';
 import { StoryComponent } from '../component/story/story.component';
 import { PipeSharedModule } from '../../pipe/shared.module';
 const routes: Routes = [  
-  { path: ':id', component: StayPage},{ path: '', component: StayPage}
+  { path: ':id', component: StayPage},
 ];
 
 @NgModule({
@@ -19,4 +19,4 @@ const routes: Routes = [
   ],
   declarations: [StayPage,StoryComponent,]
 })
-export class StayPageModule { }
+export class StayModule { }

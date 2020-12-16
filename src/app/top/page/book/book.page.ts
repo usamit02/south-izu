@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy,ViewChild,ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -10,6 +10,7 @@ import { UiService } from '../../../service/ui.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
 import { UserService } from '../../../service/user.service';
 import { User, USER } from '../../../class';
+import { HOME } from '../../../config';
 @Component({
   selector: 'app-book',
   templateUrl: './book.page.html',
@@ -25,12 +26,13 @@ export class BookPage implements OnInit, OnDestroy {
   day: any = {};
   days: Array<DayConfig> = [];
   title = "";
-  story = {id:0,user:null,acked:null};
-  chatParam ={id:0,topInfinite: false};
+  story = { id: 0, user: null, acked: null };
+  chatParam = { id: 0, topInfinite: false };
+  editable = false;
   currentY: number; scrollH: number; contentH: number; reserveY: number; essayY: number; chatY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
-    private userService: UserService, private api: ApiService,private db:AngularFireDatabase,) { }
+    private userService: UserService, private api: ApiService, private db: AngularFireDatabase,) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.ui.loading("予約確認中...")
@@ -38,8 +40,8 @@ export class BookPage implements OnInit, OnDestroy {
         if (res.stays.length === 1) {
           const stay = res.stays[0];
           this.title = stay.na;
-          this.story = {id:stay.id,user:null,acked:null};
-          this.chatParam.id = stay.chat? stay.id:0;
+          this.story = { id: stay.id, user: null, acked: null };
+          this.chatParam.id = stay.chat ? stay.id : 0;
           const now = new Date();
           const upper = new Date();
           upper.setMonth(upper.getMonth() + 1);
@@ -77,6 +79,7 @@ export class BookPage implements OnInit, OnDestroy {
           //const amount=await this.calculate(stay.from,stay.to,params.id,stay.home,stay.price,stay.num);
           this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
             this.user = user;
+            this.editable = HOME[stay.home].users.filter(user => { return user === this.user.id; }).length === 1 || this.user.admin ? true : false;
             const from = new Date(new Date(params.from).setHours(0)); const to = new Date(new Date(params.to).setHours(0));
             let amount = 0;
             for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
@@ -87,15 +90,15 @@ export class BookPage implements OnInit, OnDestroy {
           this.onScrollEnd();
         } else {
           this.ui.alert('宿泊データがありません。');
-          this.story={id:0,user:null,acked:null};
+          this.story = { id: 0, user: null, acked: null };
         }
       }).catch(err => {
         this.ui.alert(`宿泊データの読み込みに失敗しました。\r\n${err.message}`);
       }).finally(() => {
-        this.ui.loadend();Math.ceil
+        this.ui.loadend(); Math.ceil
       })
     });
-  }  
+  }
   async changeFromto() {
     let d = new Date();
     const title = { close: "休止", full: "満員" };
@@ -137,25 +140,27 @@ export class BookPage implements OnInit, OnDestroy {
     });
   }
   pay(token) {
-    const dateFormat=(date:Date)=>{
-      return `${date.getMonth()+1}/${date.getDate()}`;
+    const dateFormat = (date: Date) => {
+      return `${date.getMonth() + 1}/${date.getDate()}`;
     }
-    this.api.post('bill', { uid: this.user.id, na: this.user.na, avatar:this.user.avatar,home:this.book.home,stay: this.book.stay, token: token, amount: this.book.amount,
-      from:this.dateFormat(this.book.from),to:this.dateFormat(this.book.to) }, '決済中').then(res => {
-      const from=dateFormat(this.book.from);const to=dateFormat(this.book.to);
-      let txt=from===to?from:`${from}～${to}`;
+    this.api.post('bill', {
+      uid: this.user.id, na: this.user.na, avatar: this.user.avatar, home: this.book.home, stay: this.book.stay, token: token, amount: this.book.amount,
+      from: this.dateFormat(this.book.from), to: this.dateFormat(this.book.to)
+    }, '決済中').then(res => {
+      const from = dateFormat(this.book.from); const to = dateFormat(this.book.to);
+      let txt = from === to ? from : `${from}～${to}`;
       txt = `${txt}\r\n${this.title}`;
-      const book={ uid: this.user.id, na: this.user.na, avatar:this.user.avatar,url:this.location.path(),upd:res.booked,txt:txt};
+      const book = { uid: this.user.id, na: this.user.na, avatar: this.user.avatar, url: this.location.path(), upd: res.booked, txt: txt };
       this.db.database.ref(`book/${this.book.home}`).push(book);
       this.ui.alert(`予約しました。`);
       this.location.back();
     }).catch(() => {
       this.ui.alert(`決済手続きに失敗しました。`);
-    });   
+    });
   }
-  night(from:Date,to:Date):number{//宿泊数の計算
-    return Math.ceil((to.getTime()-from.getTime())/86400000)+1;
-  }  
+  night(from: Date, to: Date): number {//宿泊数の計算
+    return Math.ceil((to.getTime() - from.getTime()) / 86400000) + 1;
+  }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();
     var m = ("0" + (date.getMonth() + 1)).slice(-2);
@@ -177,7 +182,7 @@ export class BookPage implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.onDestroy$.next();
-  }  
+  }
 }
 export interface Book {
   stay: number;
@@ -185,7 +190,7 @@ export interface Book {
   user: string; na: string; avatar: string;
   amount: number;
   from: Date; to: Date;
-  options?: Array<Option>;  
+  options?: Array<Option>;
 }
 interface Option {
   id: number;
