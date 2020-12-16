@@ -1,37 +1,60 @@
-
-  <ion-header>
-    <ion-toolbar>
-      <ion-menu-button slot="start"></ion-menu-button>
-      <ion-title *ngIf="title">{{title}}を予約する</ion-title>
-      <ion-button (click)="editStay(stay.id)" slot="end" fill="clear">
-        <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
-      </ion-button>   
-      <ion-menu-button menu="end" slot="end">
-        <ion-icon name="contacts"></ion-icon>
-      </ion-menu-button>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content class="ion-padding">
-    <ion-item *ngIf="book.from">
-      <ion-label>日程</ion-label>
-      <ion-text *ngIf="book.from.getTime()===book.to.getTime() else fromto;">{{book.from|date}}</ion-text>
-      <ng-template #fromto><ion-text>{{book.from|date}}から{{book.to|date}}まで　{{night(book.from,book.to)}}泊</ion-text></ng-template>
-      <ion-button slot="end" (click)="changeFromto()" fill="clear">
-        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
-      </ion-button>
-    </ion-item>
-    <p></p>    
-    <app-pay1 *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
-    <ng-template #login>
-      <div style="text-align: center">
-        <ion-button routerLink="/login">
-          <ion-icon name="log-in"></ion-icon>ログインして続ける
-        </ion-button>
-      </div>
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title *ngIf="title">{{title}}を予約する</ion-title>
+    <ion-button (click)="editStay(stay.id)" slot="end" fill="clear">
+      <ion-icon name="create" slot="icon-only" color="primary"></ion-icon>
+    </ion-button>
+    <ion-menu-button menu="end" slot="end">
+      <ion-icon name="contacts"></ion-icon>
+    </ion-menu-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content #content (ionScrollEnd)="onScrollEnd()">
+  <ion-item *ngIf="book.from">
+    <ion-label>日程</ion-label>
+    <ion-text *ngIf="book.from.getTime()===book.to.getTime() else fromto;">{{book.from|date}}</ion-text>
+    <ng-template #fromto>
+      <ion-text>{{book.from|date}}から{{book.to|date}}まで　{{night(book.from,book.to)}}泊</ion-text>
     </ng-template>
-    <app-story typ="stay" [param]="story" [user]="user"></app-story>
-  </ion-content>
-  <!--
+    <ion-button slot="end" (click)="changeFromto()" fill="clear">
+      　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+    </ion-button>
+  </ion-item>
+  <p></p>
+  <app-pay1 *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
+  <ng-template #login>
+    <div style="text-align: center">
+      <ion-button routerLink="/login">
+        <ion-icon name="log-in"></ion-icon>ログインして続ける
+      </ion-button>
+    </div>
+  </ng-template>
+  <app-story #essay page="stay" [param]="story" [user]="user"></app-story>
+  <app-chat #chat *ngIf="chatParam.id" page="stay" [params]="chatParam" [user]="user" [content]="content"></app-chat>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">
+      <ion-icon name="caret-up"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="chatY&&currentY>chatY+50" (click)="scroll(chatY)" color="light" size="small">
+      Chat
+    </ion-fab-button>
+  </ion-fab>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY+contentH<chatY" (click)="scroll(chatY)" color="light" size="small">
+      Chat
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
+      <ion-icon name="caret-down"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+<ion-footer id="footer">
+  <app-send *ngIf="chatParam.id&&user.id&&currentY+contentH>chatY" [id]="chatParam.id.toString()" page="stay"
+    thread="" [user]="user" [content]="content"></app-send>
+</ion-footer>
+
+<!--
 
 <app-story typ="stay" [param]="story" [user]="user"></app-story>
 

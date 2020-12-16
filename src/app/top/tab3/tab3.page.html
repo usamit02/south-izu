@@ -12,7 +12,7 @@
     </ion-menu-button>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" #content (ionScrollEnd)="onScrollEnd()">
 <agm-map [latitude]='lat' [longitude]='lng' [zoom]='zoom' [fullscreenControl]='true' 
 (boundsChange)="onBoundsChange($event)" (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
     <agm-marker *ngFor="let marker of markers"

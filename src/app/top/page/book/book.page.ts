@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy,ViewChild,ElementRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -16,12 +16,17 @@ import { User, USER } from '../../../class';
   styleUrls: ['./book.page.scss'],
 })
 export class BookPage implements OnInit, OnDestroy {
+  @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
+  @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
+  @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
   user: User = USER;
   book: Book = { stay: null, home: null, user: null, na: "", avatar: null, amount: 0, from: null, to: null };
   day: any = {};
   days: Array<DayConfig> = [];
   title = "";
   story = {id:0,user:null,acked:null};
+  chatParam ={id:0,topInfinite: false};
+  currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
     private userService: UserService, private api: ApiService,private db:AngularFireDatabase,) { }
@@ -33,6 +38,7 @@ export class BookPage implements OnInit, OnDestroy {
           const stay = res.stays[0];
           this.title = stay.na;
           this.story = {id:stay.id,user:null,acked:null};
+          this.chatParam.id = stay.chat? stay.id:0;
           const now = new Date();
           const upper = new Date();
           upper.setMonth(upper.getMonth() + 1);
@@ -77,6 +83,7 @@ export class BookPage implements OnInit, OnDestroy {
             }
             this.book = { stay: params.id, home: stay.home, user: user.id, na: user.na, avatar: user.avatar, amount: amount, from: from, to: to };
           });
+          this.onScrollEnd();
         } else {
           this.ui.alert('宿泊データがありません。');
           this.story={id:0,user:null,acked:null};
@@ -87,8 +94,7 @@ export class BookPage implements OnInit, OnDestroy {
         this.ui.loadend();Math.ceil
       })
     });
-  }
-  
+  }  
   async changeFromto() {
     let d = new Date();
     const title = { close: "休止", full: "満員" };
@@ -155,6 +161,18 @@ export class BookPage implements OnInit, OnDestroy {
     var d = ("0" + date.getDate()).slice(-2);
     return y + "-" + m + "-" + d;//+ " " + h + ":" + min + ":" + sec;
   }
+  async onScrollEnd() {
+    const content = await this.content.nativeElement.getScrollElement();
+    this.currentY = content.scrollTop;
+    this.contentH = content.offsetHeight;
+    this.scrollH = content.scrollHeight;
+    this.essayY = this.essay.nativeElement.offsetTop;
+    this.chatY = this.chat ? this.chat.nativeElement.offsetTop : 0;
+    console.log(`currentY:${this.currentY} scrollH:${this.scrollH} chatY:${this.chatY}`);
+  }
+  scroll(target) {
+    this.content.nativeElement.scrollToPoint(0, target, 500);
+  }
   ngOnDestroy() {
     this.onDestroy$.next();
   }
@@ -165,7 +183,7 @@ export interface Book {
   user: string; na: string; avatar: string;
   amount: number;
   from: Date; to: Date;
-  options?: Array<Option>
+  options?: Array<Option>;  
 }
 interface Option {
   id: number;

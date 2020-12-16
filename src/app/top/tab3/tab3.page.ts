@@ -37,6 +37,7 @@ export class Tab3Page implements OnInit, OnDestroy {
   home=1;
   storys = [];
   view: any = {};//viewカウント重複防止
+  currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
   eval: string;//評価good、bad
   private debounceTimer = null;
   private onDestroy$ = new Subject();
@@ -213,6 +214,17 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
   isInfoWindowOpen(id) {
     return this.openedWindow == id;
+  }
+  async onScrollEnd() {
+    const content = await this.content.nativeElement.getScrollElement();
+    this.currentY = content.scrollTop;
+    this.contentH = content.offsetHeight;
+    this.scrollH = content.scrollHeight;
+    this.essayY = this.essay.nativeElement.offsetTop;
+    this.chatY = this.chat ? this.chat.nativeElement.offsetTop : 0;
+  }
+  scroll(target) {
+    this.content.nativeElement.scrollToPoint(0, target, 500);
   }
   async popUser(uid) {
     const popover = await this.pop.create({

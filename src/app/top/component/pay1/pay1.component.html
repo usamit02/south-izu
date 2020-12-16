@@ -1,9 +1,10 @@
+<div class="ion-padding">
 <ion-title>返金について</ion-title>
 <span></span>
 <span></span>
 <p></p>
 <ion-title>プライバシーポリシー</ion-title>
-クレジットカード番号はトークン化したうえで通信されます。本システムにカード情報が記録されることはありません。
+<ion-text>クレジットカード番号はトークン化したうえで通信されます。本システムにカード情報が記録されることはありません。</ion-text>
 <p></p>
 <p></p>
 <ion-title>利用料：{{amount}}円</ion-title>
@@ -40,7 +41,8 @@
     </div>
   </ion-list>
 </form>
-<div *ngIf="card.last4">
+</div>
+<div *ngIf="card.last4" class="ion-padding">
   <p>登録済クレジットカード</p>
   　 <p>カード番号　　{{card.brand}} ****-****-****-{{card.last4}}</p>
   <p>有効期間　　　{{card.exp_year}}年{{card.exp_month}}月</p>
