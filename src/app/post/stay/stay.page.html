@@ -21,8 +21,8 @@
 <ion-content>
   <ion-grid>
     <ion-row>
-      <form [formGroup]="stayForm">
-        <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+      <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <form [formGroup]="stayForm">
           <ion-item>
             <ion-label position="floating">
               タイトル<ion-text color="danger">*</ion-text>
@@ -36,7 +36,8 @@
             </ion-label>
             <ion-textarea [formControl]="stay.txt" autoGrow="true" maxlength="300"></ion-textarea>
           </ion-item>
-          <span *ngIf="stay.txt.errors?.minlength||stay.txt.errors?.maxlength" class="errmsg">２文字以上３００文字以下で入力してください。</span>
+          <span *ngIf="stay.txt.errors?.minlength||stay.txt.errors?.maxlength"
+            class="errmsg">２文字以上３００文字以下で入力してください。</span>
           <ion-item>
             <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe:'url'" />
             <ng-template #orgimg>
@@ -67,15 +68,18 @@
             <ion-label>休止中</ion-label>
             <ion-toggle [formControl]="stay.close"></ion-toggle>
           </ion-item>
-          
           <ion-segment scrollable [formControl]="stay.typ">
             <ion-segment-button *ngFor="let typ of stayTyps" [value]="typ.id">
               <img [src]="typ.icon" />
               <ion-label>{{typ.na}}</ion-label>
             </ion-segment-button>
           </ion-segment>
-        </ion-col>
-      </form>
+        </form>
+      </ion-col>
+      <ion-col #calendar size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <ion-calendar [(ngModel)]="dateRange" [options]="calendarOption" type="string" [format]="'YYYY-MM-DD'">
+        </ion-calendar>
+      </ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>

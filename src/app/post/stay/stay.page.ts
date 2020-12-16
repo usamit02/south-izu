@@ -11,6 +11,7 @@ import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { UserPage } from 'src/app/top/page/user/user.page';
 import { APIURL } from '../../../environments/environment';
+import { CalendarComponentOptions,DayConfig } from 'ion2-calendar';
 @Component({
   selector: 'app-stay',
   templateUrl: './stay.page.html',
@@ -44,6 +45,11 @@ export class StayPage implements OnInit, OnDestroy {
   stayTyps = [];
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
+  days:DayConfig[]=[];
+  dateRange:{from:Date,to:Date};
+  calendarOption:CalendarComponentOptions={pickMode:'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+  monthPickerFormat:['１月','２月','３月','４月','５月','６月','７月','８月','９月','１０月','１１月','１２月'],
+  monthFormat: 'YYYY年M月', weekStart: 1, daysConfig: this.days,}
   currentY: number; scrollH: number; contentH: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
@@ -53,6 +59,8 @@ export class StayPage implements OnInit, OnDestroy {
     Object.keys(STAYTYP).forEach(key => {
       this.stayTyps.push({ id: Number(key), ...STAYTYP[key] });
     });
+    const d=new Date();
+    this.dateRange={from:new Date(),to:new Date(d.setMonth(d.getMonth()+3))};
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.params.id = params.id;
       if (params.id) {
