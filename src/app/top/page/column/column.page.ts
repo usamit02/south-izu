@@ -18,7 +18,7 @@ export class ColumnPage implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
-  params = { id: null, topInfinite: false };
+  param = { id: null, topInfinite: false };
   column: any;
   storys = [];
   columns = [];
@@ -32,7 +32,7 @@ export class ColumnPage implements OnInit, OnDestroy {
     private store: AngularFirestore, private pop: PopoverController, private title: Title, ) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
-      this.params.id = params.id; this.load();
+      this.param.id = params.id; this.load();
     });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
       this.user = user; this.load();
@@ -40,7 +40,7 @@ export class ColumnPage implements OnInit, OnDestroy {
   }
   load() {
     if (!this.user) return;
-    this.api.get('column', { id: this.params.id, uid: this.user.id }).then(res => {
+    this.api.get('column', { id: this.param.id, uid: this.user.id }).then(res => {
       let column: any = res.column;
       this.storys = res.storys.map(story => {
         story.txt = `<p>　${story.txt}</p>`;
@@ -50,23 +50,23 @@ export class ColumnPage implements OnInit, OnDestroy {
         column.user$ = this.db.object(`user/${column.user}`).valueChanges();
         this.columns = res.columns;
       } else {
-        this.params.topInfinite = true;//chatの上部無限スクロール有効
+        this.param.topInfinite = true;//chatの上部無限スクロール有効
       }
       this.column = column;
       this.title.setTitle(`${column.na} `);
       this.show = true;
-      if (!(this.params.id in this.view) && column.ack === 1) {
+      if (!(this.param.id in this.view) && column.ack === 1) {
         this.db.database.ref(`column/${column.id}/view`).transaction(val => {
           return (val || 0) + 1;
         });
         this.db.database.ref(`user/${column.user}/view`).transaction(val => {
           return (val || 0) + 1;
         });
-        this.view[this.params.id] = "";
+        this.view[this.param.id] = "";
       }
       setTimeout(() => { this.onScrollEnd(); }, 3000);
       if (this.user.id && column.ack === 1 && !column.lock) {
-        this.store.doc(`column/${this.params.id}/eval/${this.user.id}`).get().toPromise().then(snap => {
+        this.store.doc(`column/${this.param.id}/eval/${this.user.id}`).get().toPromise().then(snap => {
           this.eval = snap.exists ? snap.data().id : null;
         });
       } else {
@@ -86,7 +86,7 @@ export class ColumnPage implements OnInit, OnDestroy {
     this.content.nativeElement.scrollToPoint(0, target, 500);
   }
   evaluation(val) {
-    this.store.doc(`column/${this.params.id}/eval/${this.user.id}`).set({ id: val, uid: this.column.user, na: this.column.na, upd: new Date() }).then(() => {
+    this.store.doc(`column/${this.param.id}/eval/${this.user.id}`).set({ id: val, uid: this.column.user, na: this.column.na, upd: new Date() }).then(() => {
       this.eval = val;
     }).catch(err => {
       alert(`評価の書き込みに失敗しました\r\n${err.message}`);

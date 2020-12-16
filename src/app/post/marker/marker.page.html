@@ -49,7 +49,7 @@
     </div>
   </ion-toolbar>
 </ion-header>
-<ion-content #content>  
+<ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()">  
   <form [formGroup]="markerForm">
     <ion-grid>
       <ion-row>

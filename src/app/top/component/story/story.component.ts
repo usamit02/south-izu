@@ -24,7 +24,7 @@ export class StoryComponent implements OnInit, OnChanges {
       this.res = await this.api.get('query', { table: 'story', select: ['*'], where: { typ: this.page, parent: this.param.id } });
       console.log('story loaded!');
     }
-    if (this.res.storys.length && this.param.id) {// && changes.param
+    if (this.res&&this.res.storys.length && this.param.id) {// && changes.param
       console.log(`story changes!`)
       if (this.param.user) this.user$ = this.db.object(`user/${this.param.user}`).valueChanges();
       if (!(this.param.id in this.view) && Number(this.param.ack) === 1) {

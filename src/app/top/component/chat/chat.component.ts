@@ -15,11 +15,11 @@ import { UserComponent } from '../user/user.component';
   styleUrls: ['./chat.component.scss'],
 })
 export class ChatComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() set params(_params) {
-    this.id = _params.id.toString();
-    this.cursor = _params.cursor ? new Date(Number(_params.cursor) * 1000) : null;
-    this.thread = _params.thread ? _params.thread : "";
-    this.topInfinite = _params.topInfinite ? _params.topInfinite : false;
+  @Input() set param(_param) {
+    this.id = _param.id.toString();
+    this.cursor = _param.cursor ? new Date(Number(_param.cursor) * 1000) : null;
+    this.thread = _param.thread ? _param.thread : "";
+    this.topInfinite = _param.topInfinite ? _param.topInfinite : false;
   }
   @Input() page;
   @Input() user;
@@ -223,7 +223,7 @@ export class ChatComponent implements OnInit, OnChanges, OnDestroy {
         this.nomore = true;
       }
       if (this.chats.length || docs.length) {
-        if (this.chats.length || ((this.page === 'report' || this.page === 'column') && !this.cursor)) {
+        if (this.chats.length || ((this.page === 'report' || this.page === 'column') && !this.cursor ||!this.topInfinite)) {
           scrollFin();
         } else {//新規読込で全面チャットページの場合はスクロール
           this.chatDivs.changes.pipe(take(1)).toPromise().then(() => {//チャット再描写後発火

@@ -43,7 +43,12 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.txt=this.txts[i];this.count=i;
     });
   }
-  
+  onScrollEnd(){
+    console.log('scroll end');
+  }
+  onScrolling(){
+    console.log('scrolling');
+  }
   ngOnDestroy() {
     this.onDestroy$.next();
   }

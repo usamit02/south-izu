@@ -10,7 +10,7 @@
     </ion-menu-button>
   </ion-toolbar>
 </ion-header>
-<ion-content #content (ionScrollEnd)="onScrollEnd()">
+<ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()">
   <ion-item *ngIf="book.from">
     <ion-label>日程</ion-label>
     <ion-text *ngIf="book.from.getTime()===book.to.getTime() else fromto;">{{book.from|date}}</ion-text>
@@ -22,7 +22,7 @@
     </ion-button>
   </ion-item>
   <p></p>
-  <app-pay1 *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
+  <app-pay1 #reserve *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
   <ng-template #login>
     <div style="text-align: center">
       <ion-button routerLink="/login">
@@ -31,17 +31,22 @@
     </div>
   </ng-template>
   <app-story #essay page="stay" [param]="story" [user]="user"></app-story>
-  <app-chat #chat *ngIf="chatParam.id" page="stay" [params]="chatParam" [user]="user" [content]="content"></app-chat>
+  <app-chat #chat *ngIf="chatParam.id" page="stay" [param]="chatParam" [user]="user" [content]="content"></app-chat>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">
       <ion-icon name="caret-up"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="reserveY&&currentY>reserveY+50" (click)="scroll(reserveY)" color="light" size="small">
+      予約
     </ion-fab-button>
     <ion-fab-button *ngIf="chatY&&currentY>chatY+50" (click)="scroll(chatY)" color="light" size="small">
       Chat
     </ion-fab-button>
   </ion-fab>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button *ngIf="currentY+contentH<chatY" (click)="scroll(chatY)" color="light" size="small">
+    <ion-fab-button *ngIf="currentY+contentH<reserveY" (click)="scroll(reserveY)" color="light" size="small">
+      予約
+    </ion-fab-button><ion-fab-button *ngIf="currentY+contentH<chatY" (click)="scroll(chatY)" color="light" size="small">
       Chat
     </ion-fab-button>
     <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">

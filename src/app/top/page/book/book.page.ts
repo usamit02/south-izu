@@ -17,6 +17,7 @@ import { User, USER } from '../../../class';
 })
 export class BookPage implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
+  @ViewChild('reserve', { read: ElementRef, static: false }) reserve: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
   user: User = USER;
@@ -26,7 +27,7 @@ export class BookPage implements OnInit, OnDestroy {
   title = "";
   story = {id:0,user:null,acked:null};
   chatParam ={id:0,topInfinite: false};
-  currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
+  currentY: number; scrollH: number; contentH: number; reserveY: number; essayY: number; chatY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
     private userService: UserService, private api: ApiService,private db:AngularFireDatabase,) { }
@@ -166,16 +167,17 @@ export class BookPage implements OnInit, OnDestroy {
     this.currentY = content.scrollTop;
     this.contentH = content.offsetHeight;
     this.scrollH = content.scrollHeight;
+    this.reserveY = this.reserve.nativeElement.offsetTop;
     this.essayY = this.essay.nativeElement.offsetTop;
     this.chatY = this.chat ? this.chat.nativeElement.offsetTop : 0;
-    console.log(`currentY:${this.currentY} scrollH:${this.scrollH} chatY:${this.chatY}`);
+    //console.log(`currentY:${this.currentY} scrollH:${this.scrollH} chatY:${this.chatY}`);
   }
   scroll(target) {
     this.content.nativeElement.scrollToPoint(0, target, 500);
   }
   ngOnDestroy() {
     this.onDestroy$.next();
-  }
+  }  
 }
 export interface Book {
   stay: number;

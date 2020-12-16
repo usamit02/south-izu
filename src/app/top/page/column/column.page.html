@@ -22,7 +22,7 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content #content (ionScrollEnd)="onScrollEnd()" class="ion-padding">
+  <ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()" class="ion-padding">
     <div style="text-align: center;">
       <ion-button *ngIf="column.lock" [routerLink]="'/support/'+column.user" color="tertiary">
         <ion-icon name="heart" color="danger"></ion-icon>サポートして今すぐ見る
@@ -85,7 +85,7 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <app-chat #chat *ngIf="column.chat&&column.ack===1&&!column.lock" page="column" [params]="params" [user]="user"
+    <app-chat #chat *ngIf="column.chat&&column.ack===1&&!column.lock" page="column" [param]="param" [user]="user"
       [content]="content">
     </app-chat>
     <ion-fab vertical="top" horizontal="end" slot="fixed">
