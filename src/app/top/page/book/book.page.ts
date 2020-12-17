@@ -172,7 +172,7 @@ export class BookPage implements OnInit, OnDestroy {
     this.currentY = content.scrollTop;
     this.contentH = content.offsetHeight;
     this.scrollH = content.scrollHeight;
-    this.reserveY = this.reserve.nativeElement.offsetTop;
+    this.reserveY = this.user.id?this.reserve.nativeElement.offsetTop:0;
     this.essayY = this.essay.nativeElement.offsetTop;
     this.chatY = this.chat ? this.chat.nativeElement.offsetTop : 0;
     //console.log(`currentY:${this.currentY} scrollH:${this.scrollH} chatY:${this.chatY}`);

@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { User } from '../../class';
-import { STAYTYP, HOME } from '../../config';
+import { STAYTYP, HOME,HOLIDAYS } from '../../config';
 import { UserService } from '../../service/user.service';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
@@ -23,13 +23,7 @@ export class StayPage implements OnInit, OnDestroy {
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
-  params = { id: null };
-  from: Date = new Date();
-  to: Date = new Date();
-  calendar = { id: new FormControl(0, [Validators.required]), price: new FormControl(0), rate: new FormControl(0), close: new FormControl(0) }
-  calendarForm = this.builder.group({
-    id: this.calendar.id, price: this.calendar.price, rate: this.calendar.rate, close: this.calendar.close,
-  });
+  params = { id: null };  
   stay = {
     id: new FormControl(0, [Validators.required]), typ: new FormControl(0, [Validators.required]),
     na: new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
@@ -45,11 +39,18 @@ export class StayPage implements OnInit, OnDestroy {
   stayTyps = [];
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
+  calendar = { close: new FormControl(0),//weeks:new FormControl(['0']),
+     price: new FormControl(null, [Validators.min(0), Validators.max(100000),Validators.pattern('^[0-9]+$')]),
+     rate: new FormControl(null,[Validators.min(0), Validators.max(10),Validators.pattern('^[0-9.]+$')]),}
+  calendarForm = this.builder.group({
+     close: this.calendar.close, price: this.calendar.price, rate: this.calendar.rate,//weeks:this.calendar.weeks,
+  });  
   days:DayConfig[]=[];
-  dateRange:{from:Date,to:Date};
   calendarOption:CalendarComponentOptions={pickMode:'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
   monthPickerFormat:['１月','２月','３月','４月','５月','６月','７月','８月','９月','１０月','１１月','１２月'],
   monthFormat: 'YYYY年M月', weekStart: 1, daysConfig: this.days,}
+  range={from:new Date(), to:new Date()};
+  weeks=['0'];
   currentY: number; scrollH: number; contentH: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
@@ -58,16 +59,14 @@ export class StayPage implements OnInit, OnDestroy {
   ngOnInit() {
     Object.keys(STAYTYP).forEach(key => {
       this.stayTyps.push({ id: Number(key), ...STAYTYP[key] });
-    });
-    const d=new Date();
-    this.dateRange={from:new Date(),to:new Date(d.setMonth(d.getMonth()+3))};
+    });    
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.params.id = params.id;
       if (params.id) {
         this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
           this.user = user;
           if (!user.id) {
-            this.router.navigate(['login']);
+            //this.router.navigate(['login']);
           } else {
             this.load();
           }
@@ -88,6 +87,23 @@ export class StayPage implements OnInit, OnDestroy {
           controls[key].reset(res.stays[0][key].toString());
         }
       }
+      const calendar=await this.api.get('query',{select:['*'],table:'stay_calendar',where:{id:this.params.id}});
+      this.days=[];
+      for(let day of calendar.stay_calendars){
+        let subTitle:string;
+        if(day.close){
+          subTitle="お休み"
+        }else if(day.price){
+          subTitle=day.price.toString();
+        }else if(day.rate){
+          subTitle=`×${day.rate}`;
+        }
+        this.days.push({date:new Date(day.dated),subTitle:subTitle})
+      }
+      for(let day of HOLIDAYS){
+        this.days.push({date:new Date(day),cssClass:"sunday"});
+      }
+      let a=1;
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
     })
@@ -99,6 +115,11 @@ export class StayPage implements OnInit, OnDestroy {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
   }
+ 
+  rangeSave(){
+  
+  }
+
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();
     this.currentY = content.scrollTop;
@@ -118,7 +139,7 @@ export class StayPage implements OnInit, OnDestroy {
     var min = date.getMinutes();
     var sec = date.getSeconds();
     return y + "-" + m + "-" + d + " " + h + ":" + min + ":" + sec;
-  }
+  }  
   ngOnDestroy() {
     this.onDestroy$.next();
   }

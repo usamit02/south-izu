@@ -8,7 +8,7 @@
     </ion-buttons>
     <ion-title>滞在プランの設定</ion-title>
     <ion-buttons slot="end">
-      <ion-button [disabled]="!(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calendarForm.valid)"
+      <ion-button [disabled]="!(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calrendarForm.valid)"
         (click)="save()" fill="clear">
         　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
       </ion-button>
@@ -76,10 +76,54 @@
           </ion-segment>
         </form>
       </ion-col>
-      <ion-col #calendar size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-        <ion-calendar [(ngModel)]="dateRange" [options]="calendarOption" type="string" [format]="'YYYY-MM-DD'">
+      <ion-col #schedule size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <ion-calendar [(ngModel)]="range" [options]="calendarOption" type="js-date">
         </ion-calendar>
+        <ion-item>
+          <ng-container *ngIf="range.from.getTime()===range.to.getTime();else fromto">{{range.from|date}}
+          </ng-container>
+          <ng-template #fromto>{{range.from|date}}～{{range.to|date}}　
+           <ion-select multiple="true" [(ngModel)]="weeks" slot="end">
+              <ion-select-option value='0'>全日</ion-select-option>
+              <ion-select-option value='7'>土</ion-select-option>
+              <ion-select-option value='8'>祝前日</ion-select-option>
+              <ion-select-option value='1'>日</ion-select-option>
+              <ion-select-option value='2'>月</ion-select-option>
+              <ion-select-option value='3'>火</ion-select-option>
+              <ion-select-option value='4'>水</ion-select-option>
+              <ion-select-option value='5'>木</ion-select-option>
+              <ion-select-option value='6'>金</ion-select-option>
+            </ion-select>
+            　</ng-template>
+        </ion-item>
+        <form [formGroup]="calendarForm">
+          <ion-item>  
+            <ion-label>料金または割引増率</ion-label>
+            <ion-input slot="end" typ="number" [formControl]="calendar.price" min="0" max="100000" placeholder="1000">
+            </ion-input>
+            <ion-input slot="end" typ="number" [formControl]="calendar.rate" min="0" max="10" placeholder="1.2" step="0.1">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="pause" color="warning"></ion-icon>
+            <ion-label>休止</ion-label>
+            <ion-toggle [formControl]="calendar.close"></ion-toggle>
+          </ion-item>
+        </form>
+        <div style="text-align: center;">
+          <ion-button (click)="scheduleAdd()" fill="clear" [disabled]="!(calendarForm.dirty&&calendarForm.valid)">
+            <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+          </ion-button>
+        </div>
       </ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>
+<!--
+<ion-label position="floating">または</ion-label>
+[disabled]="!calendar.price.dirty&&!calendar.rate.dirty"
+<ion-button (click)="rangeSave()" [disabled]="!getPrice.dirty"fill="clear" slot="end">
+              　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+            </ion-button>
+            [formControl]="calendar.weeks"
+-->

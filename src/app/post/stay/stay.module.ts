@@ -7,7 +7,7 @@ import { StayPage } from './stay.page';
 import { CalendarModule } from "ion2-calendar";
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { StoryComponent } from '../component/story/story.component';
-import { PipeSharedModule } from '../../pipe/shared.module';
+import { DatePipe } from './date.pipe';
 const routes: Routes = [  
   { path: ':id', component: StayPage},
 ];
@@ -15,8 +15,8 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule, IonicModule, FormsModule, ReactiveFormsModule,
-    RouterModule.forChild(routes),CalendarModule, EditorModule,PipeSharedModule,
+    RouterModule.forChild(routes),CalendarModule, EditorModule,
   ],
-  declarations: [StayPage,StoryComponent,]
+  declarations: [StayPage,StoryComponent,DatePipe,]
 })
 export class StayModule { }
