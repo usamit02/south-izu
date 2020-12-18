@@ -49,12 +49,18 @@
 ion-calendar{
  .satday{
       p {
-      background-color:lightsteelblue;
+      color:blue !important//background-color:lightsteelblue;
     }    
   } 
   .sunday{
       p {
-      background-color:lightcoral;
+      color:red !important
+    }    
+  } 
+  .holiday{
+      background-color:lightcoral !important;
+     p { color:white !important
+      
     }    
   } 
 }

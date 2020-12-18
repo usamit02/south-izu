@@ -1,17 +1,17 @@
-import { Component, OnDestroy, OnInit,ViewChild,ElementRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ModalController, } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { User } from '../../class';
-import { STAYTYP, HOME,HOLIDAYS } from '../../config';
+import { STAYTYP, HOME, HOLIDAYS } from '../../config';
 import { UserService } from '../../service/user.service';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { UserPage } from 'src/app/top/page/user/user.page';
 import { APIURL } from '../../../environments/environment';
-import { CalendarComponentOptions,DayConfig } from 'ion2-calendar';
+import { CalendarComponentOptions, DayConfig } from 'ion2-calendar';
 @Component({
   selector: 'app-stay',
   templateUrl: './stay.page.html',
@@ -23,7 +23,7 @@ export class StayPage implements OnInit, OnDestroy {
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
-  params = { id: null };  
+  params = { id: null };
   stay = {
     id: new FormControl(0, [Validators.required]), typ: new FormControl(0, [Validators.required]),
     na: new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
@@ -33,24 +33,29 @@ export class StayPage implements OnInit, OnDestroy {
     close: new FormControl(0), chat: new FormControl(1)
   }
   stayForm = this.builder.group({
-    id: this.stay.id, typ:this.stay.typ,na: this.stay.na, txt: this.stay.txt, img: this.stay.img, simg: this.stay.simg, price: this.stay.price,
+    id: this.stay.id, typ: this.stay.typ, na: this.stay.na, txt: this.stay.txt, img: this.stay.img, simg: this.stay.simg, price: this.stay.price,
     num: this.stay.num, icon: this.stay.icon, close: this.stay.close, chat: this.stay.chat
   });
   stayTyps = [];
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
-  calendar = { close: new FormControl(0),//weeks:new FormControl(['0']),
-     price: new FormControl(null, [Validators.min(0), Validators.max(100000),Validators.pattern('^[0-9]+$')]),
-     rate: new FormControl(null,[Validators.min(0), Validators.max(10),Validators.pattern('^[0-9.]+$')]),}
+  calendar = {
+    close: new FormControl(0),//weeks:new FormControl(['0']),
+    price: new FormControl(null, [Validators.min(0), Validators.max(100000), Validators.pattern('^[0-9]+$')]),
+    rate: new FormControl(null, [Validators.min(0), Validators.max(10), Validators.pattern('^[0-9.]+$')]),
+  }
   calendarForm = this.builder.group({
-     close: this.calendar.close, price: this.calendar.price, rate: this.calendar.rate,//weeks:this.calendar.weeks,
-  });  
-  days:DayConfig[]=[];
-  calendarOption:CalendarComponentOptions={pickMode:'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
-  monthPickerFormat:['１月','２月','３月','４月','５月','６月','７月','８月','９月','１０月','１１月','１２月'],
-  monthFormat: 'YYYY年M月', weekStart: 1, daysConfig: this.days,}
-  range={from:new Date(), to:new Date()};
-  weeks=['0'];
+    close: this.calendar.close, price: this.calendar.price, rate: this.calendar.rate,//weeks:this.calendar.weeks,
+  });
+  days: DayConfig[] = [{ date: new Date('2020/12/28'), subTitle: "テスト", cssClass: "holiday" }];
+  calendarOption: CalendarComponentOptions;/* = {
+    pickMode: 'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+    monthPickerFormat: ['１月', '２月', '３月', '４月', '５月', '６月', '７月', '８月', '９月', '１０月', '１１月', '１２月'],
+    monthFormat: 'YYYY年M月', weekStart: 1, daysConfig: this.days,
+  }*/
+  range = { from: new Date(), to: new Date() };
+  weeks = ['0'];
+  show;
   currentY: number; scrollH: number; contentH: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
@@ -59,7 +64,7 @@ export class StayPage implements OnInit, OnDestroy {
   ngOnInit() {
     Object.keys(STAYTYP).forEach(key => {
       this.stayTyps.push({ id: Number(key), ...STAYTYP[key] });
-    });    
+    });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.params.id = params.id;
       if (params.id) {
@@ -87,23 +92,58 @@ export class StayPage implements OnInit, OnDestroy {
           controls[key].reset(res.stays[0][key].toString());
         }
       }
-      const calendar=await this.api.get('query',{select:['*'],table:'stay_calendar',where:{id:this.params.id}});
-      this.days=[];
-      for(let day of calendar.stay_calendars){
-        let subTitle:string;
-        if(day.close){
-          subTitle="お休み"
-        }else if(day.price){
-          subTitle=day.price.toString();
-        }else if(day.rate){
-          subTitle=`×${day.rate}`;
+      const calendar = await this.api.get('query', { select: ['*'], table: 'calendar', where: { home: res.stays[0].home } });
+      const stay_calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { id: this.params.id } });
+      this.days = [];
+      let day: any={};
+      let from = new Date(); let to = new Date(new Date().setMonth(new Date().getMonth() + 12)); let w; let d; let date;
+      for (let d = from; d <= to; d.setDate(d.getDate() + 1)) {
+        w = d.getDay();
+          date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+          day[date].a=1;
+        if (w === 0) {
+          day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`].cssClass = "sunday";
+        } else if (w === 6) {
+          day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`].cssClass = "satday";
         }
-        this.days.push({date:new Date(day.dated),subTitle:subTitle})
       }
-      for(let day of HOLIDAYS){
-        this.days.push({date:new Date(day),cssClass:"sunday"});
+      for (let holiday of HOLIDAYS) {
+        d = new Date(holiday);
+        day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`].cssClass = "sunday";//this.days.push({ date: new Date(day), cssClass: "sunday" });
       }
-      let a=1;
+      let subTitle: string; let disable: boolean;
+      for (let stay of calendar.calendars) {
+        if (stay.close) {
+          subTitle = "お休み"; disable = true;
+        } else if (stay.rate) {
+          subTitle = `×${stay.rate}`; disable = false;
+        }
+        date = `${stay.dated.getFullYear()}-${stay.dated.getMonth() + 1}-${stay.dated.getDate()}`;
+        day[date].subTitle = subTitle;
+        day[date].disable = disable;
+      }
+      for (let stay of stay_calendar.stay_calendars) {
+        if (stay.close) {
+          subTitle = "お休み"; disable = true;
+        } else if (stay.price) {
+          subTitle = stay.price.toString(); disable = false;
+        } else if (stay.rate) {
+          subTitle = `×${stay.rate}`; disable = false;
+        }
+        date = `${stay.dated.getFullYear()}-${stay.dated.getMonth() + 1}-${stay.dated.getDate()}`;
+        if (!day[date].disable) {
+          day[date].subTitle = subTitle;
+          day[date].disable = disable;
+        }
+      }
+      Object.keys(day).forEach(date => {
+        this.days.push({ date: new Date(date), subTitle: day[date].subTitle, disable: day[date].disable, cssClass: day[date].cssClass });
+      });
+      this.calendarOption = {
+        pickMode: 'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+        monthPickerFormat: ['１月', '２月', '３月', '４月', '５月', '６月', '７月', '８月', '９月', '１０月', '１１月', '１２月'],
+        monthFormat: 'YYYY年M月', weekStart: 1, daysConfig: this.days,
+      }
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
     })
@@ -115,9 +155,9 @@ export class StayPage implements OnInit, OnDestroy {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
   }
- 
-  rangeSave(){
-  
+
+  rangeSave() {
+
   }
 
   async onScrollEnd() {
@@ -139,7 +179,7 @@ export class StayPage implements OnInit, OnDestroy {
     var min = date.getMinutes();
     var sec = date.getSeconds();
     return y + "-" + m + "-" + d + " " + h + ":" + min + ":" + sec;
-  }  
+  }
   ngOnDestroy() {
     this.onDestroy$.next();
   }
