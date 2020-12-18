@@ -19,6 +19,7 @@ import { CalendarComponentOptions, DayConfig } from 'ion2-calendar';
 })
 export class StayPage implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
+  @ViewChild('schedule', { read: ElementRef, static: false }) schedule: ElementRef;
   @ViewChild('basic', { read: ElementRef, static: false }) basic: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
@@ -47,15 +48,11 @@ export class StayPage implements OnInit, OnDestroy {
   calendarForm = this.builder.group({
     close: this.calendar.close, price: this.calendar.price, rate: this.calendar.rate,//weeks:this.calendar.weeks,
   });
-  days: DayConfig[] = [{ date: new Date('2020/12/28'), subTitle: "テスト", cssClass: "holiday" }];
-  calendarOption: CalendarComponentOptions;/* = {
-    pickMode: 'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
-    monthPickerFormat: ['１月', '２月', '３月', '４月', '５月', '６月', '７月', '８月', '９月', '１０月', '１１月', '１２月'],
-    monthFormat: 'YYYY年M月', weekStart: 1, daysConfig: this.days,
-  }*/
+  days: DayConfig[] = [];
+  calendarOption: CalendarComponentOptions;
   range = { from: new Date(), to: new Date() };
   weeks = ['0'];
-  show;
+  plans=[];
   currentY: number; scrollH: number; contentH: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
@@ -94,8 +91,8 @@ export class StayPage implements OnInit, OnDestroy {
       }
       const calendar = await this.api.get('query', { select: ['*'], table: 'calendar', where: { home: res.stays[0].home } });
       const stay_calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { id: this.params.id } });
-      this.days = [];
-      let day: any = {}; let w; let d; let date;
+      this.days = [];this.plans=[];
+      let day: any = {}; let w; let d; let date;let plan:any={};let plans=[];
       let from = new Date(); let to = new Date(new Date().setMonth(new Date().getMonth() + 12));
       for (let d = from; d <= to; d.setDate(d.getDate() + 1)) {
         w = d.getDay();
@@ -116,25 +113,44 @@ export class StayPage implements OnInit, OnDestroy {
         if (stay.close) {
           day[date] = { subTitle: "お休み", disable: true, ...day[date] };
         } else if (stay.rate) {
-          day[date] = { subTitle: `×${stay.rate}`, disable:false,...day[date] };
+          day[date] = { subTitle: `×${stay.rate}`, disable:true,...day[date] };
         }
       }
       for (let stay of stay_calendar.stay_calendars) {
         d = new Date(stay.dated);
         date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
         if (stay.close) {
-          day[date] = { subTitle: "お休み", disable: true, ...day[date] };
+          day[date] = { subTitle: "閉鎖", marked: true,...day[date] };
+          plan[date]='close';
         } else if (!(day[date]&&day[date].disable)) {
           if (stay.price) {
-            day[date] = { subTitle: stay.price.toString(), ...day[date] };
+            day[date] = { subTitle: stay.price.toString(),marked:true, ...day[date] };
+            plan[date] = stay.price;
           } else if (stay.rate) {
-            day[date] = { subTitle: `×${stay.rate}`, ...day[date] };
+            day[date] = { subTitle: `×${stay.rate}`,marked:true, ...day[date] };
+            plan[date]=`×${stay.rate}`;
           }
         }
       }
       Object.keys(day).forEach(date => {
         this.days.push({ date: new Date(date), ...day[date] });
       });
+      Object.keys(plan).forEach(date => {
+        let d=new Date(date);
+        plans.push({ date: new Date(d),day:date, time:d.getTime(),plan:plan[date] });
+      });
+      plans.sort((a,b)=>a.time-b.time);
+      let sumPlans=[];let sums=[];
+      for(let i=0;i<plans.length ;i++){
+        sums.push(plans[i]);
+        if(i===plans.length -1||!(plans[i+1].time-plans[i].time===86400000&&plans[i+1].plan===plans[i].plan)){
+          sumPlans.push(sums);
+          sums=[];                 
+        }        
+      }
+      for(let plans of sumPlans){       
+        this.plans.push({from:plans[0].date,to:plans[plans.length-1].date,time:plans[0].time,plan:plans[0].plan,range:plans.length===1?false:true});
+      }
       this.calendarOption = {
         pickMode: 'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
         monthPickerFormat: ['１月', '２月', '３月', '４月', '５月', '６月', '７月', '８月', '９月', '１０月', '１１月', '１２月'],

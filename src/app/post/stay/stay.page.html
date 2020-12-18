@@ -110,6 +110,14 @@
             <ion-toggle [formControl]="calendar.close"></ion-toggle>
           </ion-item>
         </form>
+        <ion-item *ngFor="let plan of plans">
+          <ng-container *ngIf="plan.range;else oneday">
+            {{plan.from|date}}～{{plan.to|date}}<ion-label slot="end">{{plan.plan}}</ion-label>
+          </ng-container>
+          <ng-template #oneday>
+            {{plan.from|date}}<ion-label slot="end">{{plan.plan}}</ion-label>
+          </ng-template>
+        </ion-item>
         <div style="text-align: center;">
           <ion-button (click)="scheduleAdd()" fill="clear" [disabled]="!(calendarForm.dirty&&calendarForm.valid)">
             <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
