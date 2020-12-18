@@ -95,49 +95,45 @@ export class StayPage implements OnInit, OnDestroy {
       const calendar = await this.api.get('query', { select: ['*'], table: 'calendar', where: { home: res.stays[0].home } });
       const stay_calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { id: this.params.id } });
       this.days = [];
-      let day: any={};
-      let from = new Date(); let to = new Date(new Date().setMonth(new Date().getMonth() + 12)); let w; let d; let date;
+      let day: any = {}; let w; let d; let date;
+      let from = new Date(); let to = new Date(new Date().setMonth(new Date().getMonth() + 12));
       for (let d = from; d <= to; d.setDate(d.getDate() + 1)) {
         w = d.getDay();
-          date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-          day[date].a=1;
+        date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
         if (w === 0) {
-          day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`].cssClass = "sunday";
+          day[date] = { cssClass: "sunday", disable: false };
         } else if (w === 6) {
-          day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`].cssClass = "satday";
+          day[date] = { cssClass: "satday", disable: false };
         }
       }
       for (let holiday of HOLIDAYS) {
         d = new Date(holiday);
-        day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`].cssClass = "sunday";//this.days.push({ date: new Date(day), cssClass: "sunday" });
+        day[`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`] = { cssClass: "sunday", disable: false };//this.days.push({ date: new Date(day), cssClass: "sunday" });
       }
-      let subTitle: string; let disable: boolean;
       for (let stay of calendar.calendars) {
+        d = new Date(stay.dated);
+        date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
         if (stay.close) {
-          subTitle = "お休み"; disable = true;
+          day[date] = { subTitle: "お休み", disable: true, ...day[date] };
         } else if (stay.rate) {
-          subTitle = `×${stay.rate}`; disable = false;
+          day[date] = { subTitle: `×${stay.rate}`, disable:false,...day[date] };
         }
-        date = `${stay.dated.getFullYear()}-${stay.dated.getMonth() + 1}-${stay.dated.getDate()}`;
-        day[date].subTitle = subTitle;
-        day[date].disable = disable;
       }
       for (let stay of stay_calendar.stay_calendars) {
+        d = new Date(stay.dated);
+        date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
         if (stay.close) {
-          subTitle = "お休み"; disable = true;
-        } else if (stay.price) {
-          subTitle = stay.price.toString(); disable = false;
-        } else if (stay.rate) {
-          subTitle = `×${stay.rate}`; disable = false;
-        }
-        date = `${stay.dated.getFullYear()}-${stay.dated.getMonth() + 1}-${stay.dated.getDate()}`;
-        if (!day[date].disable) {
-          day[date].subTitle = subTitle;
-          day[date].disable = disable;
+          day[date] = { subTitle: "お休み", disable: true, ...day[date] };
+        } else if (!(day[date]&&day[date].disable)) {
+          if (stay.price) {
+            day[date] = { subTitle: stay.price.toString(), ...day[date] };
+          } else if (stay.rate) {
+            day[date] = { subTitle: `×${stay.rate}`, ...day[date] };
+          }
         }
       }
       Object.keys(day).forEach(date => {
-        this.days.push({ date: new Date(date), subTitle: day[date].subTitle, disable: day[date].disable, cssClass: day[date].cssClass });
+        this.days.push({ date: new Date(date), ...day[date] });
       });
       this.calendarOption = {
         pickMode: 'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],

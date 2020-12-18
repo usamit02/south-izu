@@ -10,7 +10,7 @@ import { UiService } from '../../../service/ui.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
 import { UserService } from '../../../service/user.service';
 import { User, USER } from '../../../class';
-import { HOME } from '../../../config';
+import { HOME, HOLIDAYS } from '../../../config';
 @Component({
   selector: 'app-book',
   templateUrl: './book.page.html',
@@ -46,8 +46,23 @@ export class BookPage implements OnInit, OnDestroy {
           const upper = new Date();
           upper.setMonth(upper.getMonth() + 1);
           const where = { dated: { lower: this.dateFormat(now), upper: this.dateFormat(upper) } };
-          for (let d = now; d <= upper; d.setDate(d.getDate() + 1)) {
-            this.day[this.dateFormat(d)] = { price: stay.price, num: stay.num, book: 0, state: "" }
+          let css; let w;
+          for (let d = new Date(now); d <= upper; d.setDate(d.getDate() + 1)) {
+            w = d.getDay();
+            if (w === 0) {
+              css = "sunday";
+            } else if (w === 6) {
+              css = "satday";
+            } else {
+              css = "";
+            }
+            this.day[this.dateFormat(d)] = { price: stay.price, num: stay.num, book: 0, state: "", css: css }
+          }
+          for (let holiday of HOLIDAYS) {
+            let d = new Date(holiday);
+            if (now.getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
+              this.day[this.dateFormat(d)] = { price: stay.price, num: stay.num, book: 0, state: "", css: "holiday" }
+            }
           }
           const home = await this.api.get('query', { select: ['*'], table: 'calendar', where: { ...where, home: stay.home } });
           for (let calendar of home.calendars) {
@@ -102,10 +117,10 @@ export class BookPage implements OnInit, OnDestroy {
   async changeFromto() {
     let d = new Date();
     const title = { close: "休止", full: "満員" };
-    if (!this.days.length) {
+    if (!this.days.length) {//初回のみ
       Object.keys(this.day).forEach(d => {
         const subTitle = this.day[d].state ? title[this.day[d].state] : this.day[d].price;
-        this.days.push({ date: new Date(d), subTitle: subTitle, disable: this.day[d].state ? true : false })
+        this.days.push({ date: new Date(d), subTitle: subTitle, cssClass: this.day[d].css, disable: this.day[d].state ? true : false })
       })
     }
     const options: CalendarModalOptions = {
@@ -172,7 +187,7 @@ export class BookPage implements OnInit, OnDestroy {
     this.currentY = content.scrollTop;
     this.contentH = content.offsetHeight;
     this.scrollH = content.scrollHeight;
-    this.reserveY = this.user.id?this.reserve.nativeElement.offsetTop:0;
+    this.reserveY = this.user.id ? this.reserve.nativeElement.offsetTop : 0;
     this.essayY = this.essay.nativeElement.offsetTop;
     this.chatY = this.chat ? this.chat.nativeElement.offsetTop : 0;
     //console.log(`currentY:${this.currentY} scrollH:${this.scrollH} chatY:${this.chatY}`);

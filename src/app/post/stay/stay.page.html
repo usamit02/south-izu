@@ -77,7 +77,7 @@
         </form>
       </ion-col>
       <ion-col #schedule size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-        <ion-calendar [(ngModel)]="range" [options]="calendarOption" type="js-date">
+        <ion-calendar class="calendar" [(ngModel)]="range" [options]="calendarOption" type="js-date">
         </ion-calendar>
         <ion-item>
           <ng-container *ngIf="range.from.getTime()===range.to.getTime();else fromto">{{range.from|date}}
