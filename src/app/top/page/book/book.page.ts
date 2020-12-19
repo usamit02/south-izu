@@ -61,7 +61,7 @@ export class BookPage implements OnInit, OnDestroy {
           for (let holiday of HOLIDAYS) {
             let d = new Date(holiday);
             if (now.getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
-              this.day[this.dateFormat(d)] = { price: stay.price, num: stay.num, book: 0, state: "", css: "holiday" }
+              this.day[this.dateFormat(d)] = { price: stay.price, num: stay.num, book: 0, state: "", css: "sunday" }
             }
           }
           const home = await this.api.get('query', { select: ['*'], table: 'calendar', where: { ...where, home: stay.home } });
@@ -186,10 +186,10 @@ export class BookPage implements OnInit, OnDestroy {
     const content = await this.content.nativeElement.getScrollElement();
     this.currentY = content.scrollTop;
     this.contentH = content.offsetHeight;
-    this.scrollH = content.scrollHeight;
-    this.reserveY = this.user.id ? this.reserve.nativeElement.offsetTop : 0;
+    this.scrollH = content.scrollHeight;    
     this.essayY = this.essay.nativeElement.offsetTop;
     this.chatY = this.chat ? this.chat.nativeElement.offsetTop : 0;
+    this.reserveY = this.user.id ? this.reserve.nativeElement.offsetTop : 0;
     //console.log(`currentY:${this.currentY} scrollH:${this.scrollH} chatY:${this.chatY}`);
   }
   scroll(target) {

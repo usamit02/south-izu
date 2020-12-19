@@ -24,17 +24,16 @@ export class StayPage implements OnInit, OnDestroy {
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
-  params = { id: null };
+  params = { id: null ,home:null};
   stay = {
-    id: new FormControl(0, [Validators.required]), typ: new FormControl(0, [Validators.required]),
-    na: new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
+    typ: new FormControl(0, [Validators.required]), na: new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
     txt: new FormControl("", [Validators.minLength(2), Validators.maxLength(600), Validators.required]),
     img: new FormControl(""), simg: new FormControl(""), price: new FormControl(0, [Validators.required]),
     num: new FormControl(0, [Validators.required]), icon: new FormControl(0, [Validators.required]),
     close: new FormControl(0), chat: new FormControl(1)
   }
   stayForm = this.builder.group({
-    id: this.stay.id, typ: this.stay.typ, na: this.stay.na, txt: this.stay.txt, img: this.stay.img, simg: this.stay.simg, price: this.stay.price,
+    typ: this.stay.typ, na: this.stay.na, txt: this.stay.txt, img: this.stay.img, simg: this.stay.simg, price: this.stay.price,
     num: this.stay.num, icon: this.stay.icon, close: this.stay.close, chat: this.stay.chat
   });
   stayTyps = [];
@@ -52,7 +51,7 @@ export class StayPage implements OnInit, OnDestroy {
   calendarOption: CalendarComponentOptions;
   range = { from: new Date(), to: new Date() };
   weeks = ['0'];
-  plans=[];
+  plans = []; monthPlans = [];
   currentY: number; scrollH: number; contentH: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
@@ -89,10 +88,11 @@ export class StayPage implements OnInit, OnDestroy {
           controls[key].reset(res.stays[0][key].toString());
         }
       }
+      this.params.home=res.stays[0].home;
       const calendar = await this.api.get('query', { select: ['*'], table: 'calendar', where: { home: res.stays[0].home } });
       const stay_calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { id: this.params.id } });
-      this.days = [];this.plans=[];
-      let day: any = {}; let w; let d; let date;let plan:any={};let plans=[];
+      this.days = []; this.plans = [];
+      let day: any = {}; let w; let d; let date; let plan: any = {}; let plans = [];
       let from = new Date(); let to = new Date(new Date().setMonth(new Date().getMonth() + 12));
       for (let d = from; d <= to; d.setDate(d.getDate() + 1)) {
         w = d.getDay();
@@ -113,22 +113,22 @@ export class StayPage implements OnInit, OnDestroy {
         if (stay.close) {
           day[date] = { subTitle: "お休み", disable: true, ...day[date] };
         } else if (stay.rate) {
-          day[date] = { subTitle: `×${stay.rate}`, disable:true,...day[date] };
+          day[date] = { subTitle: `×${stay.rate}`, disable: true, ...day[date] };
         }
       }
       for (let stay of stay_calendar.stay_calendars) {
         d = new Date(stay.dated);
         date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
         if (stay.close) {
-          day[date] = { subTitle: "閉鎖", marked: true,...day[date] };
-          plan[date]='close';
-        } else if (!(day[date]&&day[date].disable)) {
+          day[date] = { subTitle: "閉鎖", marked: true, ...day[date] };
+          plan[date] = 'close';
+        } else if (!(day[date] && day[date].disable)) {
           if (stay.price) {
-            day[date] = { subTitle: stay.price.toString(),marked:true, ...day[date] };
+            day[date] = { subTitle: stay.price.toString(), marked: true, ...day[date] };
             plan[date] = stay.price;
           } else if (stay.rate) {
-            day[date] = { subTitle: `×${stay.rate}`,marked:true, ...day[date] };
-            plan[date]=`×${stay.rate}`;
+            day[date] = { subTitle: `×${stay.rate}`, marked: true, ...day[date] };
+            plan[date] = `×${stay.rate}`;
           }
         }
       }
@@ -136,21 +136,23 @@ export class StayPage implements OnInit, OnDestroy {
         this.days.push({ date: new Date(date), ...day[date] });
       });
       Object.keys(plan).forEach(date => {
-        let d=new Date(date);
-        plans.push({ date: new Date(d),day:date, time:d.getTime(),plan:plan[date] });
+        let d = new Date(date);
+        plans.push({ date: new Date(d), day: date, time: d.getTime(), plan: plan[date] });
       });
-      plans.sort((a,b)=>a.time-b.time);
-      let sumPlans=[];let sums=[];
-      for(let i=0;i<plans.length ;i++){
+      plans.sort((a, b) => a.time - b.time);
+      let sumPlans = []; let sums = [];
+      for (let i = 0; i < plans.length; i++) {
         sums.push(plans[i]);
-        if(i===plans.length -1||!(plans[i+1].time-plans[i].time===86400000&&plans[i+1].plan===plans[i].plan)){
+        if (i === plans.length - 1 || !(plans[i + 1].time - plans[i].time === 86400000 && plans[i + 1].plan === plans[i].plan)) {
           sumPlans.push(sums);
-          sums=[];                 
-        }        
+          sums = [];
+        }
       }
-      for(let plans of sumPlans){       
-        this.plans.push({from:plans[0].date,to:plans[plans.length-1].date,time:plans[0].time,plan:plans[0].plan,range:plans.length===1?false:true});
+      for (let plans of sumPlans) {
+        this.plans.push({ from: plans[0].date, to: plans[plans.length - 1].date, fromTime: plans[0].time, toTime: plans[plans.length - 1].time, value: plans[0].plan, range: plans.length === 1 ? false : true });
       }
+      const nowMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      this.onMonthChange({ newMonth: { dateObj: nowMonth, time: nowMonth.getTime() } });
       this.calendarOption = {
         pickMode: 'range', weekdays: ['日', '月', '火', '水', '木', '金', '土'],
         monthPickerFormat: ['１月', '２月', '３月', '４月', '５月', '６月', '７月', '８月', '９月', '１０月', '１１月', '１２月'],
@@ -158,6 +160,35 @@ export class StayPage implements OnInit, OnDestroy {
       }
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
+    })
+  }
+  onMonthChange(e) {
+    const nextMonthTime: Date = e.newMonth.dateObj.setMonth(e.newMonth.dateObj.getMonth() + 1);
+    this.monthPlans = this.plans.filter(plan => {
+      const a = e.newMonth.time <= plan.fromTime && plan.fromTime < nextMonthTime;
+      const b = e.newMonth.time <= plan.toTime && plan.toTime < nextMonthTime;
+      const c = plan.fromTime <= e.newMonth.time && e.newMonth.time < plan.toTime || plan.fromTime <= nextMonthTime && nextMonthTime < plan.toTime;
+      return a || b || c;
+    });
+  }
+  scheduleAdd(){
+    if(!this.params.id || !this.params.home) return;
+    let sqls=[];let idx=1;
+    for (let d = new Date(this.range.from); d <= this.range.to; d.setDate(d.getDate() + 1)) {      
+      sqls.push({table:"stay_calendar",insert:{dated:this.dateFormat(d),id:this.params.id,home:this.params.home,idx:idx,...this.calendarForm.value}});
+    }
+    this.api.post('querys',{inserts:sqls},'保存中...').then(res=>{
+      let value:string="";
+      if(this.calendar.close.value){
+        value="close";
+      }else if(this.calendar.price.value){
+        value=this.calendar.price.value;
+      }else if(this.calendar.rate){
+        value=`×${this.calendar.rate}`;
+      }
+      let plan={from:this.range.from,to:this.range.to,fromTime:this.range.from.getTime(),toTime:this.range.to.getTime(),value:value,range:sqls.length>1?true:false}
+      this.plans.push(plan);
+      this.monthPlans.push(plan);      
     })
   }
   imgChange(e) {

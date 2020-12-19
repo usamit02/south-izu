@@ -9,7 +9,7 @@ import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { Store } from '../../service/store.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
-import { STAYTYP,HOME } from '../../config';
+import { STAYTYP,HOME,HOLIDAYS } from '../../config';
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
@@ -40,11 +40,27 @@ export class Tab2Page implements OnInit, OnDestroy {
         return { na: STAYTYP[typ].na, stays: stay.stays.filter(stay => { return stay.typ === typ; }) };
       });
       let d = new Date();
-      const where = { dated: { lower: this.dateFormat(), upper: this.dateFormat(new Date(d.setMonth(d.getMonth() + 1))) }, home: this.home };
+      const upper=new Date(d.setMonth(d.getMonth() + 1)); 
+      const where = { dated: { lower: this.dateFormat(), upper:upper }, home: this.home };
       const home = await this.api.get('query', { select: ['*'], table: 'calendar', where: where });
       this.homes = home.calendars;
       for (let calendar of home.calendars) {
         if (calendar.close) this.days.push({ date: new Date(calendar.dated), disable: true,subTitle:"お休み" });
+      }
+      let w;
+      for (let d = new Date(); d <= upper; d.setDate(d.getDate() + 1)) {
+        w = d.getDay();
+        if (w === 0) {
+          this.days.push({date:d,cssClass:"sunday"});
+        } else if (w === 6) {
+          this.days.push({date:d,cssClass:"satday"});
+        }
+      }
+      for (let holiday of HOLIDAYS) {
+        let d = new Date(holiday);
+        if (new Date().getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
+          this.days.push({date:d,cssClass:"sunday"});
+        }
       }
       this.ui.loadend();
       this.load();
