@@ -72,7 +72,7 @@ export class BookPage implements OnInit, OnDestroy {
               this.day[calendar.dated].price = Math.floor(stay.price * calendar.rate);
             }
           }
-          const calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { ...where, id: stay.id } });
+          const calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { ...where, stay: stay.id } });
           for (let cal of calendar.stay_calendars) {
             if (cal.close) {
               this.day[cal.dated].state = 'close';

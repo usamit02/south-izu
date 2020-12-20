@@ -82,25 +82,26 @@
           <ng-container *ngIf="range.from.getTime()===range.to.getTime();else fromto">{{range.from|date}}
           </ng-container>
           <ng-template #fromto>{{range.from|date}}～{{range.to|date}}　
-           <ion-select multiple="true" [(ngModel)]="weeks" slot="end">
-              <ion-select-option value='0'>全日</ion-select-option>
-              <ion-select-option value='7'>土</ion-select-option>
-              <ion-select-option value='8'>祝前日</ion-select-option>
-              <ion-select-option value='1'>日</ion-select-option>
-              <ion-select-option value='2'>月</ion-select-option>
-              <ion-select-option value='3'>火</ion-select-option>
-              <ion-select-option value='4'>水</ion-select-option>
-              <ion-select-option value='5'>木</ion-select-option>
-              <ion-select-option value='6'>金</ion-select-option>
-            </ion-select>
-            　</ng-template>
+            <ion-select *ngIf="isWeek()" multiple="true" [(ngModel)]="weeks" slot="end">
+              <ion-select-option value='-1'>全日</ion-select-option>
+              <ion-select-option value='6'>土</ion-select-option>
+              <ion-select-option value='7'>祝前日</ion-select-option>
+              <ion-select-option value='0'>日</ion-select-option>
+              <ion-select-option value='1'>月</ion-select-option>
+              <ion-select-option value='2'>火</ion-select-option>
+              <ion-select-option value='3'>水</ion-select-option>
+              <ion-select-option value='4'>木</ion-select-option>
+              <ion-select-option value='5'>金</ion-select-option>
+            </ion-select>            　
+          </ng-template>
         </ion-item>
         <form [formGroup]="calendarForm">
-          <ion-item>  
+          <ion-item>
             <ion-label>料金または割引増率</ion-label>
             <ion-input slot="end" typ="number" [formControl]="calendar.price" min="0" max="100000" placeholder="1000">
             </ion-input>
-            <ion-input slot="end" typ="number" [formControl]="calendar.rate" min="0" max="10" placeholder="1.2" step="0.1">
+            <ion-input slot="end" typ="number" [formControl]="calendar.rate" min="0" max="10" placeholder="1.2"
+              step="0.1">
             </ion-input>
           </ion-item>
           <ion-item>
@@ -109,7 +110,7 @@
             <ion-toggle [formControl]="calendar.close"></ion-toggle>
           </ion-item>
         </form>
-        <ion-item *ngFor="let plan of monthPlans">
+        <ion-item *ngFor="let plan of monthPlans" lines="none">
           <ng-container *ngIf="plan.range;else oneday">
             {{plan.from|date}}～{{plan.to|date}}<ion-label slot="end">{{plan.value}}</ion-label>
           </ng-container>
@@ -118,7 +119,8 @@
           </ng-template>
         </ion-item>
         <div style="text-align: center;">
-          <ion-button (click)="scheduleAdd()" fill="clear" [disabled]="!(calendarForm.dirty&&calendarForm.valid)||!params.id||!params.home">
+          <ion-button (click)="scheduleAdd()" fill="clear"
+            [disabled]="!(calendarForm.dirty&&calendarForm.valid)||!params.id||!params.home">
             <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
           </ion-button>
         </div>

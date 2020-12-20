@@ -90,7 +90,7 @@ export class Tab2Page implements OnInit, OnDestroy {
         let count: number;
         this.stayTyps.map(typ => {
           typ.stays.map(stay => {
-            stay.calendars = stayCalendar.stay_calendars.filter(calendar => { return calendar.id === stay.id; });
+            stay.calendars = stayCalendar.stay_calendars.filter(calendar => { return calendar.stay === stay.id; });
             stay.books = book.books.filter(book => { return book.stay === stay.id; });
             stay.state="";
             dated = {};

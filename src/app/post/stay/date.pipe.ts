@@ -17,6 +17,7 @@ export class DatePipe implements PipeTransform {
         return "明日";
       }
     }
-    return (date.getMonth() + 1) + "月" + date.getDate() + "日";
+    const weeks=["日","月","火","水","木","金","土"];
+    return `${date.getMonth() + 1}月${date.getDate()}日（${weeks[date.getDay()]}）` ;
   }
 }
