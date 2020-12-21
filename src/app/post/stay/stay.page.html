@@ -8,7 +8,7 @@
     </ion-buttons>
     <ion-title>滞在プランの設定</ion-title>
     <ion-buttons slot="end">
-      <ion-button [disabled]="!(stayForm.dirty)||!(stayForm.valid)" (click)="save()" fill="clear">
+      <ion-button [disabled]="!stayForm.dirty||stayForm.valid" (click)="savePlan=!savePlan;save()" fill="clear">
         <!--
           !(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calrendarForm.valid)
         -->　 
@@ -79,7 +79,7 @@
         </form>
       </ion-col>
       <ion-col #plan size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-        <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" (saved)="planSaved()"></app-plan>
+        <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" [save]="savePlan" (saved)="planSaved()"></app-plan>
       </ion-col>
     </ion-row>
   </ion-grid>

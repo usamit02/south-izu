@@ -39,6 +39,8 @@ export class StayPage implements OnInit, OnDestroy {
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
   undoPlan =false;//undoするたび交互にONOFF
+  savePlan = false;//saveするたび口語にONOFF
+  saving={stay:false,plan:false};
   currentY: number; scrollH: number; contentH: number; planY: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
@@ -87,10 +89,15 @@ export class StayPage implements OnInit, OnDestroy {
     }
   }
   save() {
+    this.saving={stay:true,plan:true};
+    this.api.post('query',{insert:{stay:this.stay,home:this.home,...this.stayForm.value}}).then(res=>{
 
+    }).finally(()=>{
+      this.saving.stay=false;
+    });    
   }
   planSaved(){
-
+    this.saving.plan=false;
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

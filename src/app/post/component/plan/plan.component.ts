@@ -1,4 +1,4 @@
-import { Component, OnChanges, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnChanges, OnInit, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { HOLIDAYS } from '../../../config';
 import { ApiService } from '../../../service/api.service';
@@ -10,10 +10,11 @@ import { CalendarComponentOptions, DayConfig } from 'ion2-calendar';
   styleUrls: ['./plan.component.scss'],
 })
 export class PlanComponent implements OnInit, OnChanges {
-  @Input() stay:number;
-  @Input() home:number;
-  @Input() isStayCalendarLoad:boolean;
-  @Input() undo:boolean;
+  @Input() stay: number;
+  @Input() home: number;
+  @Input() isStayCalendarLoad: boolean;
+  @Input() undo: boolean;
+  @Input() save: boolean;
   @Output() saved = new EventEmitter();
   calendar = {
     close: new FormControl(0),//weeks:new FormControl(['0']),
@@ -31,22 +32,38 @@ export class PlanComponent implements OnInit, OnChanges {
   range = { from: new Date(), to: new Date() };
   weeks = ['-1'];//１週間以上range選択時のみ現れる曜日選択セレクトボックスの値　-1は全日　7は祝前日 1-6はgetDay()の値
   month = new Date(new Date().getFullYear(), new Date().getMonth(), 1);//現在のカレンダー表示月の初日
-  plan: any = {}; plans = []; monthPlans = [];
+  plan: any = {}; plans: Plan[] = []; monthPlans: Plan[] = [];
+  data: any = {};
   constructor(private api: ApiService, private ui: UiService, private builder: FormBuilder,) { }
   ngOnInit() {
 
   }
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {
     if (this.stay && this.home) {
-      this.load(this.isStayCalendarLoad);
+      if (changes.save) {
+        let inserts = []; let idx = 1;
+        Object.keys(this.data).forEach(date=>{
+          let d=new Date(date);
+          inserts.push({ dated: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`, stay: this.stay, home: this.home, idx: idx, ...this.data[date] });
+          idx++;
+        });
+        this.api.post('querys', { table: "stay_calendar", delete:{stay:this.stay},inserts: inserts }, '予定保存中...').then(res => {          
+          this.saved.emit(true);
+        }).catch(() => {
+          this.saved.emit(false);
+        });
+      } else {
+        this.load(this.isStayCalendarLoad);
+      }
     }
   }
   load(isStayCalendarLoad?: boolean) {
+    this.ui.loading(`予定読込中...`);
     this.api.get('query', { select: ['*'], table: 'calendar', where: { home: this.home } }).then(async calendar => {
-      this.day = {}; let w; let d; let date;
+      this.day = {}; let d; let date: string;
       let from = new Date(); let to = new Date(new Date().setMonth(new Date().getMonth() + 12));
       for (let d = from; d <= to; d.setDate(d.getDate() + 1)) {
-        w = d.getDay();
+        let w = d.getDay();
         date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
         if (w === 0) {
           this.day[date] = { cssClass: "sunday", disable: false };
@@ -67,7 +84,7 @@ export class PlanComponent implements OnInit, OnChanges {
           this.day[date] = { subTitle: `×${stay.rate}`, disable: false, ...this.day[date] };
         }
       }
-      this.plan = {};
+      this.plan = {};this.data={};
       if (isStayCalendarLoad) {
         const stay_calendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: { stay: this.stay } });
         for (let stay of stay_calendar.stay_calendars) {
@@ -77,20 +94,22 @@ export class PlanComponent implements OnInit, OnChanges {
       this.setDays();
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
-    })
+    }).finally(()=>{
+      this.ui.loadend();
+    });
   }
   setStayCalendar(d: Date, stay: any) {
     const date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     if (stay.close) {
       this.day[date] = { ...this.day[date], subTitle: "閉鎖", marked: true };
-      this.plan[date] = 'close';
+      this.plan[date] = '閉鎖';this.data[date]={close:true};
     } else if (!(this.day[date] && this.day[date].disable)) {
       if (stay.price) {
         this.day[date] = { ...this.day[date], subTitle: stay.price.toString(), marked: true };
-        this.plan[date] = stay.price;
+        this.plan[date] = stay.price;this.data[date]={price:stay.price};
       } else if (stay.rate) {
         this.day[date] = { ...this.day[date], subTitle: `×${stay.rate}`, marked: true };
-        this.plan[date] = `×${stay.rate}`;
+        this.plan[date] = `×${stay.rate}`;this.data[date]={rate:stay.rate};
       }
     }
   }
@@ -122,7 +141,8 @@ export class PlanComponent implements OnInit, OnChanges {
   }
   onMonthChange(e) {
     this.month = new Date(e.newMonth.dateObj);
-    const nextMonthTime: Date = e.newMonth.dateObj.setMonth(e.newMonth.dateObj.getMonth() + 1);
+    e.newMonth.dateObj.setMonth(e.newMonth.dateObj.getMonth() + 1);
+    const nextMonthTime = e.newMonth.dateObj.getTime();
     this.monthPlans = this.plans.filter(plan => {
       const a = e.newMonth.time <= plan.fromTime && plan.fromTime < nextMonthTime;
       const b = e.newMonth.time <= plan.toTime && plan.toTime < nextMonthTime;
@@ -131,7 +151,7 @@ export class PlanComponent implements OnInit, OnChanges {
       return a || b || c || d;
     });
   }
-  scheduleAdd() {
+  addPlan() {
     for (let d = new Date(this.range.from); d <= this.range.to; d.setDate(d.getDate() + 1)) {
       const nextDay = new Date(d);
       nextDay.setDate(nextDay.getDate() + 1);
@@ -142,36 +162,24 @@ export class PlanComponent implements OnInit, OnChanges {
     }
     this.setDays();
   }
+  delPlan(plan) {
+    for (let d = new Date(plan.from); d <= plan.to; d.setDate(d.getDate() + 1)) {
+      const date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      delete this.day[date];
+      delete this.plan[date];
+      delete this.data[date];
+    }
+    this.setDays();
+  }
   isWeek(): boolean {
     return (this.range.to.getTime() - this.range.from.getTime()) / 86400000 > 7;
   }
-  save() {
-    let inserts = []; let idx = 1;
-    for (let d = new Date(this.range.from); d <= this.range.to; d.setDate(d.getDate() + 1)) {
-      inserts.push({ dated: this.dateFormat(d), stay: this.stay, home: this.home, idx: idx, ...this.calendarForm.value });
-      idx++;
-    }
-    this.api.post('querys', { table: "stay_calendar", inserts: inserts }, '保存中...').then(res => {
-      let value: string = "";
-      if (this.calendar.close.value) {
-        value = "close";
-      } else if (this.calendar.price.value) {
-        value = this.calendar.price.value;
-      } else if (this.calendar.rate) {
-        value = `×${this.calendar.rate}`;
-      }
-      let plan = { from: this.range.from, to: this.range.to, fromTime: this.range.from.getTime(), toTime: this.range.to.getTime(), value: value, range: inserts.length > 1 ? true : false }
-      this.plans.push(plan);
-      this.monthPlans.push(plan);
-      this.saved.emit(true);
-    }).catch(() => {
-      this.saved.emit(false);
-    });
-  }
-  dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'
-    var y = date.getFullYear();
-    var m = date.getMonth() + 1;
-    var d = date.getDate();
-    return y + "-" + m + "-" + d + " ";
-  }
+}
+interface Plan {
+  from: Date;
+  to: Date;
+  fromTime?: number;
+  toTime?: number;
+  value: string;
+  range: boolean;
 }

@@ -47,9 +47,8 @@ export class Tab2Page implements OnInit, OnDestroy {
       for (let calendar of home.calendars) {
         if (calendar.close) this.days.push({ date: new Date(calendar.dated), disable: true,subTitle:"お休み" });
       }
-      let w;
       for (let d = new Date(); d <= upper; d.setDate(d.getDate() + 1)) {
-        w = d.getDay();
+        let w = d.getDay();
         if (w === 0) {
           this.days.push({date:d,cssClass:"sunday"});
         } else if (w === 6) {
