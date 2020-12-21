@@ -8,7 +8,13 @@
     </ion-buttons>
     <ion-title>滞在プランの設定</ion-title>
     <ion-buttons slot="end">
-      <ion-button [disabled]="!stayForm.dirty||stayForm.valid" (click)="savePlan=!savePlan;save()" fill="clear">
+      <ion-button (click)="erase()" color="danger" slot="end" fill="clear">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="newStay()" slot="end" fill="clear">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button [disabled]="!dirty&&!stayForm.dirty||stayForm.valid||saving.stay||saving.plan" (click)="save()" fill="clear">
         <!--
           !(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calrendarForm.valid)
         -->　 
@@ -32,6 +38,12 @@
             <ion-input required [formControl]="stay.na" minlength="2" maxlength="30" placeholder="ソロサイト"></ion-input>
           </ion-item>
           <span *ngIf="stay.na.errors?.minlength||stay.na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
+          <ion-segment scrollable [formControl]="stay.typ">
+            <ion-segment-button *ngFor="let typ of stayTyps" [value]="typ.id">
+              <img [src]="typ.icon" />
+              <ion-label>{{typ.na}}</ion-label>
+            </ion-segment-button>
+          </ion-segment>         
           <ion-item>
             <ion-label position="floating">
               説明文
@@ -61,6 +73,18 @@
           <ion-progress-bar *ngIf="uploading" [value]="progress" color="success"></ion-progress-bar>
           <canvas #canvas style="display: none;"></canvas>
           <ion-item>
+            <ion-label>収容数</ion-label>
+            <ion-input slot="end" typ="number" [formControl]="stay.num" min="0" max="100" placeholder="5">
+            </ion-input>
+          </ion-item>
+          <span *ngIf="stay.num.errors?.min||stay.num.errors?.max" class="errmsg">0～100の整数を入力してください。</span>
+          <ion-item>
+            <ion-label>標準料金</ion-label>
+            <ion-input slot="end" typ="number" [formControl]="stay.price" min="0" max="100000" placeholder="1000">
+            </ion-input>           
+          </ion-item>
+           <span *ngIf="stay.price.errors?.min||stay.price.errors?.max" class="errmsg">0～100000の整数を入力してください。</span>
+          <ion-item>
             <ion-icon name="chatboxes" color="primary"></ion-icon>
             <ion-label>コメント欄</ion-label>
             <ion-toggle [formControl]="stay.chat"></ion-toggle>
@@ -69,17 +93,11 @@
             <ion-icon name="pause" color="primary"></ion-icon>
             <ion-label>休止中</ion-label>
             <ion-toggle [formControl]="stay.close"></ion-toggle>
-          </ion-item>
-          <ion-segment scrollable [formControl]="stay.typ">
-            <ion-segment-button *ngFor="let typ of stayTyps" [value]="typ.id">
-              <img [src]="typ.icon" />
-              <ion-label>{{typ.na}}</ion-label>
-            </ion-segment-button>
-          </ion-segment>
+          </ion-item> 
         </form>
       </ion-col>
       <ion-col #plan size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-        <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" [save]="savePlan" (saved)="planSaved()"></app-plan>
+        <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" (dirty)="planDirty($event)" [save]="savePlan" (saved)="planSaved($event)"></app-plan>
       </ion-col>
     </ion-row>
   </ion-grid>

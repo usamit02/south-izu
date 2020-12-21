@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
+import { AngularFireStorage } from '@angular/fire/storage';
 import { User } from '../../class';
 import { STAYTYP, HOME } from '../../config';
 import { UserService } from '../../service/user.service';
@@ -22,29 +23,31 @@ export class StayPage implements OnInit, OnDestroy {
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
-  id:number=null;
-  home:number=null;
+  id: number = null;
+  home: number = null;
   stay = {
     typ: new FormControl(0, [Validators.required]), na: new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
     txt: new FormControl("", [Validators.minLength(2), Validators.maxLength(600), Validators.required]),
-    img: new FormControl(""), simg: new FormControl(""), price: new FormControl(0, [Validators.required]),
-    num: new FormControl(0, [Validators.required]), icon: new FormControl(0, [Validators.required]),
+    img: new FormControl(""), simg: new FormControl(""),
+    price: new FormControl(0, [Validators.min(0), Validators.max(100000), Validators.pattern('^[0-9]+$'), Validators.required]),
+    num: new FormControl(0, [Validators.min(0), Validators.max(100), Validators.pattern('^[0-9]+$'), Validators.required]),
     close: new FormControl(0), chat: new FormControl(1)
   }
   stayForm = this.builder.group({
     typ: this.stay.typ, na: this.stay.na, txt: this.stay.txt, img: this.stay.img, simg: this.stay.simg, price: this.stay.price,
-    num: this.stay.num, icon: this.stay.icon, close: this.stay.close, chat: this.stay.chat
+    num: this.stay.num, close: this.stay.close, chat: this.stay.chat
   });
   stayTyps = [];
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
-  undoPlan =false;//undoするたび交互にONOFF
+  undoPlan = false;//undoするたび交互にONOFF
   savePlan = false;//saveするたび口語にONOFF
-  saving={stay:false,plan:false};
+  saving = { stay: false, plan: false };
+  dirty: boolean = false;//planFormが変更されたか
   currentY: number; scrollH: number; contentH: number; planY: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
-    private ui: UiService, private builder: FormBuilder,) { }
+    private ui: UiService, private builder: FormBuilder, private storage: AngularFireStorage,) { }
   ngOnInit() {
     Object.keys(STAYTYP).forEach(key => {
       this.stayTyps.push({ id: Number(key), ...STAYTYP[key] });
@@ -68,7 +71,7 @@ export class StayPage implements OnInit, OnDestroy {
       if (res.stays.length !== 1) {
         throw { message: '無効なparam.idです。' };
       };
-      this.home= res.stays[0].home;
+      this.home = res.stays[0].home;
       const controls = this.stayForm.controls
       for (let key of Object.keys(controls)) {
         if (res.stays[0][key] == null) {
@@ -77,6 +80,7 @@ export class StayPage implements OnInit, OnDestroy {
           controls[key].reset(res.stays[0][key].toString());
         }
       }
+      this.stayForm.markAsPristine();
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
     })
@@ -88,16 +92,74 @@ export class StayPage implements OnInit, OnDestroy {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
   }
-  save() {
-    this.saving={stay:true,plan:true};
-    this.api.post('query',{insert:{stay:this.stay,home:this.home,...this.stayForm.value}}).then(res=>{
-
-    }).finally(()=>{
-      this.saving.stay=false;
-    });    
+  async save() {
+    if (this.stayForm.dirty) {
+      this.saving.stay = true;
+      this.ui.loading('保存中...');
+      let update: any = { home: this.home, ...this.stayForm.value };
+      if (this.imgBlob) {
+        if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
+          Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+              let canvas = this;
+              setTimeout(function () {
+                var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+                  len = binStr.length,
+                  arr = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                  arr[i] = binStr.charCodeAt(i);
+                }
+                callback(new Blob([arr], { type: type || 'image/jpeg' }));
+              });
+            }
+          });
+        }
+        const imagePut = (id: number, typ: string) => {
+          return new Promise<string>(resolve => {
+            if (!this.imgBlob) return resolve("");
+            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+            let ctx = canvas.getContext('2d');
+            let image = new Image();
+            image.onload = () => {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              const px = typ == 'small' ? 160 : 640;
+              let w, h;
+              if (image.width > image.height) {
+                w = image.width > px ? px : image.width;//横長
+                h = image.height * (w / image.width);
+              } else {
+                h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
+                w = image.width * (h / image.height);
+              }
+              canvas.width = w; canvas.height = h;
+              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob(async blob => {
+                const ref = this.storage.ref(`marker/${id}/${typ}.jpg`);
+                await ref.put(blob);
+                const url = await ref.getDownloadURL().toPromise();
+                return resolve(url);
+              }, "image/jpeg")
+            }
+            image.src = this.imgBlob;
+          });
+        }
+        update.img = await imagePut(this.id, "medium");
+        update.simg = await imagePut(this.id, "small");
+      }
+      await this.api.post('query', { table: "stay", update: update, where: { stay: this.id } });
+      this.saving.stay = false;
+      this.ui.loadend();
+    }
+    if(this.dirty){
+      this.savePlan = !this.savePlan;
+      this.saving.plan = true;
+    }
   }
-  planSaved(){
-    this.saving.plan=false;
+  planDirty(e) {
+    this.dirty = e;
+  }
+  planSaved() {
+    this.saving.plan = false;
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

@@ -16,6 +16,7 @@ export class PlanComponent implements OnInit, OnChanges {
   @Input() undo: boolean;
   @Input() save: boolean;
   @Output() saved = new EventEmitter();
+  @Output() dirty = new EventEmitter();
   calendar = {
     close: new FormControl(0),//weeks:new FormControl(['0']),
     price: new FormControl(null, [Validators.min(0), Validators.max(100000), Validators.pattern('^[0-9]+$')]),
@@ -92,6 +93,7 @@ export class PlanComponent implements OnInit, OnChanges {
         }
       }
       this.setDays();
+      this.dirty.emit(false);
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
     }).finally(()=>{
@@ -161,6 +163,7 @@ export class PlanComponent implements OnInit, OnChanges {
       }
     }
     this.setDays();
+    this.dirty.emit(true);
   }
   delPlan(plan) {
     for (let d = new Date(plan.from); d <= plan.to; d.setDate(d.getDate() + 1)) {
@@ -170,6 +173,7 @@ export class PlanComponent implements OnInit, OnChanges {
       delete this.data[date];
     }
     this.setDays();
+    this.dirty.emit(true);
   }
   isWeek(): boolean {
     return (this.range.to.getTime() - this.range.from.getTime()) / 86400000 > 7;
