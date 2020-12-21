@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StayPage } from './stay.page';
 import { PlanModule } from '../component/plan/plan.module';
 import { StoryComponent } from '../component/story/story.component';
+import { SafePipe } from './safe.pipe';
 const routes: Routes = [
   { path: ':id', component: StayPage },
 ];
@@ -15,6 +16,6 @@ const routes: Routes = [
     CommonModule, IonicModule, FormsModule, ReactiveFormsModule,
     RouterModule.forChild(routes), PlanModule,
   ],
-  declarations: [StayPage, StoryComponent]
+  declarations: [StayPage, StoryComponent,SafePipe]
 })
 export class StayModule { }

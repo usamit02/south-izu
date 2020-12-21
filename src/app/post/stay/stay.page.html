@@ -14,8 +14,9 @@
       <ion-button (click)="newStay()" slot="end" fill="clear">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="!dirty&&!stayForm.dirty||stayForm.valid||saving.stay||saving.plan" (click)="save()" fill="clear">
+      <ion-button [disabled]="!dirty&&!stayForm.dirty||saving.stay||saving.plan||stayForm.invalid" (click)="save()" fill="clear">
         <!--
+         
           !(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calrendarForm.valid)
         -->　 
         <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
@@ -90,7 +91,7 @@
             <ion-toggle [formControl]="stay.chat"></ion-toggle>
           </ion-item>
           <ion-item>
-            <ion-icon name="pause" color="primary"></ion-icon>
+            <ion-icon name="pause" color="warning"></ion-icon>
             <ion-label>休止中</ion-label>
             <ion-toggle [formControl]="stay.close"></ion-toggle>
           </ion-item> 

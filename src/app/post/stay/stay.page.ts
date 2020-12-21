@@ -25,13 +25,15 @@ export class StayPage implements OnInit, OnDestroy {
   user: User;
   id: number = null;
   home: number = null;
+  STAY={typ:0,na:"",txt:"",img:"",simg:"",price:0,num:0,close:0,chat:1};
   stay = {
-    typ: new FormControl(0, [Validators.required]), na: new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
-    txt: new FormControl("", [Validators.minLength(2), Validators.maxLength(600), Validators.required]),
-    img: new FormControl(""), simg: new FormControl(""),
-    price: new FormControl(0, [Validators.min(0), Validators.max(100000), Validators.pattern('^[0-9]+$'), Validators.required]),
-    num: new FormControl(0, [Validators.min(0), Validators.max(100), Validators.pattern('^[0-9]+$'), Validators.required]),
-    close: new FormControl(0), chat: new FormControl(1)
+    typ: new FormControl(this.STAY.typ, [Validators.required]),
+    na: new FormControl(this.STAY.na, [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
+    txt: new FormControl(this.STAY.txt, [Validators.minLength(2), Validators.maxLength(600), Validators.required]),
+    img: new FormControl(this.STAY.img), simg: new FormControl(this.STAY.simg),
+    price: new FormControl(this.STAY.price, [Validators.min(0), Validators.max(100000), Validators.pattern('^[0-9]+$'), Validators.required]),
+    num: new FormControl(this.STAY.num, [Validators.min(0), Validators.max(100), Validators.pattern('^[0-9]+$'), Validators.required]),
+    close: new FormControl(this.STAY.close), chat: new FormControl(this.STAY.chat)
   }
   stayForm = this.builder.group({
     typ: this.stay.typ, na: this.stay.na, txt: this.stay.txt, img: this.stay.img, simg: this.stay.simg, price: this.stay.price,
@@ -75,9 +77,9 @@ export class StayPage implements OnInit, OnDestroy {
       const controls = this.stayForm.controls
       for (let key of Object.keys(controls)) {
         if (res.stays[0][key] == null) {
-          controls[key].reset();
+          controls[key].reset(this.STAY[key]);
         } else {
-          controls[key].reset(res.stays[0][key].toString());
+          controls[key].reset(res.stays[0][key]);
         }
       }
       this.stayForm.markAsPristine();
@@ -134,7 +136,7 @@ export class StayPage implements OnInit, OnDestroy {
               canvas.width = w; canvas.height = h;
               ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
               canvas.toBlob(async blob => {
-                const ref = this.storage.ref(`marker/${id}/${typ}.jpg`);
+                const ref = this.storage.ref(`stay/${id}/${typ}.jpg`);
                 await ref.put(blob);
                 const url = await ref.getDownloadURL().toPromise();
                 return resolve(url);
@@ -146,8 +148,9 @@ export class StayPage implements OnInit, OnDestroy {
         update.img = await imagePut(this.id, "medium");
         update.simg = await imagePut(this.id, "small");
       }
-      await this.api.post('query', { table: "stay", update: update, where: { stay: this.id } });
+      await this.api.post('query', { table: "stay", update: update, where: { id: this.id } });
       this.saving.stay = false;
+      this.stayForm.markAsPristine();
       this.ui.loadend();
     }
     if(this.dirty){
