@@ -1,15 +1,17 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { AngularFireStorage } from '@angular/fire/storage';
+import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFirestore } from '@angular/fire/firestore';
 import { User } from '../../class';
-import { STAYTYP, HOME } from '../../config';
+import { STAYTYP } from '../../config';
 import { UserService } from '../../service/user.service';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
-import { UserPage } from 'src/app/top/page/user/user.page';
 import { APIURL } from '../../../environments/environment';
 @Component({
   selector: 'app-stay',
@@ -49,7 +51,8 @@ export class StayPage implements OnInit, OnDestroy {
   currentY: number; scrollH: number; contentH: number; planY: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
-    private ui: UiService, private builder: FormBuilder, private storage: AngularFireStorage,) { }
+    private ui: UiService, private builder: FormBuilder, private storage: AngularFireStorage,private alert:AlertController,
+    private db:AngularFireDatabase,private storedb:AngularFirestore,) { }
   ngOnInit() {
     Object.keys(STAYTYP).forEach(key => {
       this.stayTyps.push({ id: Number(key), ...STAYTYP[key] });
@@ -71,6 +74,7 @@ export class StayPage implements OnInit, OnDestroy {
   undo() {
     this.api.get('query', { select: ['*'], table: 'stay', where: { id: this.id } }).then(async res => {
       if (res.stays.length !== 1) {
+        this.id=null;
         throw { message: '無効なparam.idです。' };
       };
       this.home = res.stays[0].home;
@@ -163,6 +167,78 @@ export class StayPage implements OnInit, OnDestroy {
   }
   planSaved() {
     this.saving.plan = false;
+  }
+  async new() {
+    const alert = await this.alert.create({
+      header: '新しい滞在プランを作成',
+      message: '現在の内容を元にして新しい滞在プランを作成しますか。<br>「いいえ」で現在の編集内容を破棄します。',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+        }, {
+          text: 'いいえ',
+          handler: () => {
+            this.create({ home: this.home});
+          }
+        }, {
+          text: 'はい',
+          handler: () => {
+            this.create({ home: this.home, ...this.stayForm.value}, true);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+  async create(insert, copy?: boolean) {
+    this.api.post("query", { table: "stay", insert: insert }).then(async res => {
+      if (copy && res.stay) {
+        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "stay", parent: this.id } });
+         if (doc.storys.length) {
+          doc.storys.map(story => {
+            story.parent = res.stay.id;
+            return story;
+          });
+          await this.api.post('querys', { table: "story", inserts: doc.storys });
+        }
+        let calendar = await this.api.get('query', { table: "stay_calendar", select: ["*"], where: { stay: this.id } });
+         if (calendar.stay_calendars.length) {
+          calendar.stay_calendars.map(calendar => {
+            calendar.stay = res.stay.id;
+            return calendar;
+          });
+          await this.api.post('querys', { table: "stay_calendar", inserts: calendar.stay_calendars });
+        }
+      }
+      this.id=res.stay.id;
+      this.undo();
+    }).catch(err => {
+      this.ui.alert(`新規滞在プランの作成に失敗しました。\r\n${err.message}`);
+    });
+  }
+  async erase() {
+    const confirm = await this.ui.confirm("削除確認", `滞在プラン「${this.stay.na.value}」を削除します。`);
+    if (!confirm || !this.id) return;
+    this.ui.loading('削除中...');
+    this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'stay', parent: this.id } }).then(async res => {
+      for (let story of res.storys) {
+        if (story.file) this.storage.ref(`stay/${this.id}/${story.file}`).delete();
+      }
+      await this.api.post('querys', { deletes: [{ parent: this.id,typ:'stay',table:"story" },{stay:this.id,table:"stay_calendar"},{id:this.id,table:"stay"}] });
+      await this.db.list(`stay/${this.id}`).remove();
+      await this.db.database.ref(`post/stay${this.id}`).remove();
+      await this.storedb.collection('stay').doc(this.id.toString()).delete();
+      if(this.stay.img.value){
+        await this.storage.ref(`stay/${this.id}/medium.jpg`).delete();
+        await this.storage.ref(`stay/${this.id}/small.jpg`).delete();
+      }
+      this.id=null;this.home=null; this.stayForm.reset(); 
+      this.ui.pop("滞在プランを削除しました。");
+    }).catch(err => {
+      this.ui.alert(`滞在プランを削除できませんでした。\r\n${err.message}`);
+    }).finally(()=>{this.ui.loadend();});
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

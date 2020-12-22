@@ -2,19 +2,19 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
-      <ion-button (click)="undoPlan=!undoPlan;undo()" fill="clear">
+      <ion-button (click)="undoPlan=!undoPlan;undo()" fill="clear" [disabled]="!id">
         　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>滞在プランの設定</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="erase()" color="danger" slot="end" fill="clear">
+      <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!id">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="newStay()" slot="end" fill="clear">
+      <ion-button (click)="new()" slot="end" fill="clear" [disabled]="!id">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="!dirty&&!stayForm.dirty||saving.stay||saving.plan||stayForm.invalid" (click)="save()" fill="clear">
+      <ion-button [disabled]="!dirty&&!stayForm.dirty||saving.stay||saving.plan||stayForm.invalid||!id" (click)="save()" fill="clear">
         <!--
          
           !(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calrendarForm.valid)
@@ -74,19 +74,21 @@
           <ion-progress-bar *ngIf="uploading" [value]="progress" color="success"></ion-progress-bar>
           <canvas #canvas style="display: none;"></canvas>
           <ion-item>
+            <ion-icon name="people-circle" color="success"></ion-icon>
             <ion-label>収容数</ion-label>
             <ion-input slot="end" typ="number" [formControl]="stay.num" min="0" max="100" placeholder="5">
             </ion-input>
           </ion-item>
           <span *ngIf="stay.num.errors?.min||stay.num.errors?.max" class="errmsg">0～100の整数を入力してください。</span>
           <ion-item>
+            <ion-icon name="card" color="tertiary"></ion-icon>
             <ion-label>標準料金</ion-label>
             <ion-input slot="end" typ="number" [formControl]="stay.price" min="0" max="100000" placeholder="1000">
             </ion-input>           
           </ion-item>
            <span *ngIf="stay.price.errors?.min||stay.price.errors?.max" class="errmsg">0～100000の整数を入力してください。</span>
           <ion-item>
-            <ion-icon name="chatboxes" color="primary"></ion-icon>
+            <ion-icon name="chatbubbles" color="primary"></ion-icon>
             <ion-label>コメント欄</ion-label>
             <ion-toggle [formControl]="stay.chat"></ion-toggle>
           </ion-item>

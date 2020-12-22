@@ -240,13 +240,14 @@ export class MarkerPage implements OnInit, OnDestroy {
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `マーカー「${this.marker.na}」を削除します。`);
     if (!confirm || !this.marker.id) return;
-    this.ui.loading('削除中です。。。',30000);
+    this.ui.loading('削除中です...');
     this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'marker', parent: this.marker.id } }).then(async res => {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`marker/${this.marker.id}/${story.file}`).delete();
       }
-      await this.api.post('query', { table: 'marker', delete: { id: this.marker.id, user: this.user.id } });
-      await this.api.post('query', { table: 'story', delete: { typ: 'marker', parent: this.marker.id } });
+      await this.api.post('querys', { deletes: [{ id: this.marker.id,usar:this.user.id,table:"marker" },{typ:"marker",parent:this.marker.id,table:"story"}]});
+      //await this.api.post('query', { table: 'marker', delete: { id: this.marker.id, user: this.user.id } });
+      //await this.api.post('query', { table: 'story', delete: { typ: 'marker', parent: this.marker.id } });
       await this.db.list(`marker/${this.marker.id}`).remove();
       await this.db.database.ref(`post/marker${this.marker.id}`).remove();
       await this.storedb.collection('marker').doc(this.marker.id.toString()).delete();

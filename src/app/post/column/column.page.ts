@@ -295,12 +295,14 @@ export class ColumnPage implements OnInit, OnDestroy {
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `コラム「${this.column.na}」を削除します。`);
     if (!confirm || !this.column.id) return;
+    this.ui.loading('削除中...');
     this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'column', parent: this.column.id } }).then(async res => {
       for (let story of res.storys) {
         if (story.file) this.strage.ref(`column/${this.column.id}/${story.file}`).delete();
       }
-      await this.api.post('query', { table: 'colum', delete: { id: this.column.id, user: this.user.id } });
-      await this.api.post('query', { table: 'story', delete: { typ: 'column', parent: this.column.id } });
+      await this.api.post('querys', { deletes: [{ id: this.column.id,usar:this.user.id,table:"colum" },{typ:"column",parent:this.column.id,table:"story"}]});
+      //await this.api.post('query', { table: 'colum', delete: { id: this.column.id, user: this.user.id } });
+      //await this.api.post('query', { table: 'story', delete: { typ: 'column', parent: this.column.id } });
       await this.db.list(`column/${this.column.id}`).remove();
       await this.db.database.ref(`post/column${this.column.id}`).remove();
       await this.storedb.collection('column').doc(this.column.id.toString()).delete();
@@ -313,7 +315,7 @@ export class ColumnPage implements OnInit, OnDestroy {
       this.undo({ id: null, parent: null, user: this.user.id, na: "", kana: "", description: "" });
     }).catch(err => {
       this.ui.alert(`コラムを削除できませんでした。\r\n${err.message}`);
-    });;
+    }).finally(()=>{this.ui.loadend();});
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

@@ -75,7 +75,7 @@ export class StoryComponent implements OnInit {
       });
     }
   }
-  constructor(private strage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController, ) { }
+  constructor(private storage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController, ) { }
   ngOnInit() {
   }
   storyAdd() {
@@ -213,7 +213,7 @@ export class StoryComponent implements OnInit {
         resolve();
       } else {
         this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { typ: this.typ, parent: this.parent, id: idx } });
-        this.strage.ref(`${this.typ}/${this.parent}/${this.files[idx]}`).delete().toPromise().catch(err => {
+        this.storage.ref(`${this.typ}/${this.parent}/${this.files[idx]}`).delete().toPromise().catch(err => {
           this.ui.alert("ファイルの削除に失敗しました。\r\n" + err.message);
         }).finally(() => {
           resolve();
@@ -231,7 +231,7 @@ export class StoryComponent implements OnInit {
     const send = async (file) => {
       await this.mediaDel(idx);
       fileName = Math.floor(new Date().getTime() / 1000).toString() + "." + fileName.split('.').pop();//アップロードファイルの拡張子
-      const ref = this.strage.ref(`${this.typ}/${this.parent}/${fileName}`);
+      const ref = this.storage.ref(`${this.typ}/${this.parent}/${fileName}`);
       const uploadTask = ref.put(file);
       uploadTask.percentageChanges().subscribe(progress => {
         this.progress = progress / 100;

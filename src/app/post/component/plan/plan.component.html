@@ -18,6 +18,7 @@
 </ion-item>
 <form [formGroup]="calendarForm">
   <ion-item>
+    <ion-icon name="card" color="tertiary"></ion-icon>
     <ion-label>料金または割引増率</ion-label>
     <ion-input slot="end" typ="number" [formControl]="calendar.price" min="0" max="100000" placeholder="1000">
     </ion-input>
