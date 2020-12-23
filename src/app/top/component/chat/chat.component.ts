@@ -177,7 +177,7 @@ export class ChatComponent implements OnInit, OnChanges, OnDestroy {
           docs1 = docsPush(query);
           let limit: number = direction === 'btm' && !this.chats.length && docs1.length < this.limit ? this.limit - docs1.length : 0;
           db = limit ? this.dbcon.collection('chat', ref => ref.where('upd', "<=", cursor).orderBy('upd', 'desc').limit(limit)) : null;
-          resolve();
+          resolve(true);
         }).catch((err) => {
           reject(err);
         });
@@ -189,13 +189,13 @@ export class ChatComponent implements OnInit, OnChanges, OnDestroy {
           db.get().toPromise().then(query => {
             docs2 = docsPush(query);
             docs = docs2.reverse().concat(docs1);
-            resolve();
+            resolve(true);
           }).catch((err) => {
             reject(err);
           });
         } else {
           docs = docs1;
-          resolve();
+          resolve(true);
         }
       });
     }

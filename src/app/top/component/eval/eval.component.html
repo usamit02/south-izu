@@ -1,0 +1,8 @@
+<ng-container *ngIf="!eval">
+  <ion-fab-button (click)="evaluation('good')" size="small" color="clear">
+    <ion-icon name="thumbs-up" color="success"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-button (click)="evaluation('bad')" size="small" color="clear">
+    <ion-icon name="thumbs-down" color="dark"></ion-icon>
+  </ion-fab-button>
+</ng-container>

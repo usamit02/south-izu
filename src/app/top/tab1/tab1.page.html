@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 <ion-content (ionScrollEnd)="onScrollEnd()">
-  <ion-slides #slides pager="true" [options]="slideOpts" (ionSlideDidChange)="slideChange($event)">
+  <ion-slides #slides *ngIf="id" pager="true" [options]="slideOpts" (ionSlideDidChange)="slideChange($event)">
     <ion-slide *ngFor="let img of imgs">
       <img [src]="img.url" />
     </ion-slide>
@@ -28,6 +28,19 @@
           <ion-icon name="chevron-forward-circle" slot="icon-only"></ion-icon>
         </ion-button>
       </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-grid>
+    <ion-row *ngFor="let story of storys;index as i;">
+        <ion-col *ngIf="story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
+          [innerHtml]="story.media | safe">
+        </ion-col>
+        <ion-col *ngIf="story.txt && story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
+          [innerHtml]="story.txt | safe">
+        </ion-col>
+        <ion-col *ngIf="story.txt && !story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="12"
+          [innerHtml]="story.txt | safe">
+        </ion-col>     
     </ion-row>
   </ion-grid>
 </ion-content>

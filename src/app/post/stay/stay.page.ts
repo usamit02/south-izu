@@ -19,9 +19,9 @@ import { APIURL } from '../../../environments/environment';
   styleUrls: ['./stay.page.scss'],
 })
 export class StayPage implements OnInit, OnDestroy {
-  @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
-  @ViewChild('plan', { read: ElementRef, static: false }) plan: ElementRef;
+  @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;  
   @ViewChild('basic', { read: ElementRef, static: false }) basic: ElementRef;
+  @ViewChild('plan', { read: ElementRef, static: false }) plan: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;

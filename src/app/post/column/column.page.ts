@@ -279,12 +279,8 @@ export class ColumnPage implements OnInit, OnDestroy {
         id: this.column.id, na: this.na.value, parent: this.parent.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
         description: this.description.value, image: update.image ? update.image : null, created: this.column.created,
       }
-      let columns = this.allColumns.filter(column => { return column.id === this.column.id; });
-      if (columns.length) {
-        columns[0] = newColumn;
-      } else {
-        this.allColumns.push(newColumn);
-      }
+      this.allColumns = this.allColumns.filter(column => { return column.id !== this.column.id; });      
+      this.allColumns.push(newColumn);
       this.loadColumns();
       this.undo({ id: this.column.id, user: this.user.id, ...update });
       this.ui.pop(`${msg[ack + 1]}しました。`);

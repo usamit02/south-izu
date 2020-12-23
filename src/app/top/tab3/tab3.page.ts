@@ -34,11 +34,11 @@ export class Tab3Page implements OnInit, OnDestroy {
   marker: Marker = MARKER;
   markers: Array<Marker> = [];
   user: User;
-  home=1;
-  storys = [];
-  view: any = {};//viewカウント重複防止
+  home:number;
+  //storys = [];
+  //view: any = {};//viewカウント重複防止
   currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
-  eval: string;//評価good、bad
+  chatParam={id:null};//chat componentへ値渡し
   private debounceTimer = null;
   private onDestroy$ = new Subject();
   constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private pop : PopoverController,private route: ActivatedRoute, private title: Title,
@@ -149,44 +149,9 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
   markerClick(marker) {
     this.openedWindow = marker.id;
+    this.chatParam.id=marker.id;
     this.marker = marker;
     this.title.setTitle(`${marker.na}`);
-    this.marker.user$ = this.db.object(`user/${marker.user}`).valueChanges();
-    if (!(marker.id in this.view) && Number(marker.ack) === 1) {
-      this.db.database.ref(`marker/${marker.id}/view`).transaction(val => {
-        return (val || 0) + 1;
-      });
-      this.db.database.ref(`user/${marker.user}/view`).transaction(val => {
-        return (val || 0) + 1;
-      });
-      this.view[marker.id] = "";
-    }    //setTimeout(() => { this.onScrollEnd(); }, 3000);     
-    if (this.user.id && marker.ack === 1) {
-      this.storedb.doc(`marker/${marker.id}/eval/${this.user.id}`).get().toPromise().then(snap => {
-        this.eval = snap.exists ? snap.data().id : null;
-      });
-    } else {
-      this.eval = "disabled";
-    }
-    this.api.get('query', { table: 'story', select: ['*'], where: { typ: "marker", parent: this.marker.id } }).then(async res => {
-      let support = null;
-      this.storys = await Promise.all(res.storys.map(async story => {
-        if (story.rested) {//非公開の記事
-          if (support || this.user.id === this.marker.user) {//||this.user.admin
-            story.rested = null;
-          } else {
-            if (support == null && this.user.id) {
-              const doc = await this.db.database.ref(`friend/${this.user.id}/${this.marker.user}`).once('value');
-              support = doc.val() === "support" ? true : false;
-            }
-            if (support || new Date(story.rested).getTime() < new Date().getTime()) {
-              story.rested = null;
-            }
-          }
-        }
-        return story;
-      }));
-    });
   }
   async markerRightClick(marker) {
     if (this.user.admin || marker.user == this.user.id) {
@@ -238,3 +203,38 @@ export class Tab3Page implements OnInit, OnDestroy {
     this.onDestroy$.next();
   }
 }
+
+/*
+    this.marker.user$ = this.db.object(`user/${marker.user}`).valueChanges();
+    if (!(marker.id in this.view) && Number(marker.ack) === 1) {
+      this.db.database.ref(`marker/${marker.id}/view`).transaction(val => {
+        return (val || 0) + 1;
+      });
+      this.db.database.ref(`user/${marker.user}/view`).transaction(val => {
+        return (val || 0) + 1;
+      });
+      this.view[marker.id] = "";
+    }    //setTimeout(() => { this.onScrollEnd(); }, 3000);         
+    this.api.get('query', { table: 'story', select: ['*'], where: { typ: "marker", parent: this.marker.id } }).then(async res => {
+      let support = null;
+      this.storys = await Promise.all(res.storys.map(async story => {
+        if (story.rested) {//非公開の記事
+          if (support || this.user.id === this.marker.user) {//||this.user.admin
+            story.rested = null;
+          } else {
+            if (support == null && this.user.id) {
+              const doc = await this.db.database.ref(`friend/${this.user.id}/${this.marker.user}`).once('value');
+              support = doc.val() === "support" ? true : false;
+            }
+            if (support || new Date(story.rested).getTime() < new Date().getTime()) {
+              story.rested = null;
+            }
+          }
+        }
+        return story;
+      }));
+    });
+
+
+
+*/

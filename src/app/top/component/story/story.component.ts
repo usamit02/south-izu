@@ -11,7 +11,7 @@ import { UserComponent } from '../user/user.component';
 export class StoryComponent implements OnInit, OnChanges {
   @Input() user;
   @Input() page;
-  @Input() param;
+  @Input() param;//column,markerなど親ページの基本データ
   storys = [];
   user$;
   view: any = {};//viewカウント重複防止
@@ -19,13 +19,10 @@ export class StoryComponent implements OnInit, OnChanges {
   constructor(private pop: PopoverController, private db: AngularFireDatabase, private api: ApiService,) { }
   ngOnInit() { }
   async ngOnChanges(changes: SimpleChanges) {
-    let e = changes;
     if (!this.res && this.param.id) {
       this.res = await this.api.get('query', { table: 'story', select: ['*'], where: { typ: this.page, parent: this.param.id } });
-      console.log('story loaded!');
     }
     if (this.res&&this.res.storys.length && this.param.id) {// && changes.param
-      console.log(`story changes!`)
       if (this.param.user) this.user$ = this.db.object(`user/${this.param.user}`).valueChanges();
       if (!(this.param.id in this.view) && Number(this.param.ack) === 1) {
         this.db.database.ref(`${this.page}/${this.param.id}/view`).transaction(val => {

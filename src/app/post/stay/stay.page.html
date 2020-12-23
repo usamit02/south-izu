@@ -11,14 +11,10 @@
       <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!id">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="new()" slot="end" fill="clear" [disabled]="!id">
+      <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!id">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button [disabled]="!dirty&&!stayForm.dirty||saving.stay||saving.plan||stayForm.invalid||!id" (click)="save()" fill="clear">
-        <!--
-         
-          !(stayForm.dirty||calendarForm.dirty)||!(stayForm.valid&&calrendarForm.valid)
-        -->　 
         <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
       </ion-button>
       <ion-menu-button menu="end">
@@ -27,10 +23,11 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content>
+<ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()">
   <ion-grid>
-    <ion-row>
-      <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+    <ion-row>      
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <ion-title #basic class="Text">Basic</ion-title>
         <form [formGroup]="stayForm">
           <ion-item>
             <ion-label position="floating">
@@ -99,11 +96,30 @@
           </ion-item> 
         </form>
       </ion-col>
-      <ion-col #plan size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <ion-title #plan class="Text">Plan</ion-title>
         <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" (dirty)="planDirty($event)" [save]="savePlan" (saved)="planSaved($event)"></app-plan>
       </ion-col>
     </ion-row>
   </ion-grid>
+  <ion-title #essay class="Text">Essay</ion-title>
+  <app-story typ="stay" [document]="{id:id,user:user.id}" [user]="user"></app-story>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
+      Basic
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY>planY+50" (click)="scroll(planY)" color="light" size="small">
+      Plan
+    </ion-fab-button>
+  </ion-fab>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY+contentH<planY" (click)="scroll(planY)" color="light" size="small">
+      Plan
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<essayY" (click)="scroll(essayY)" color="light" size="small">
+      Essay
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
 <!--
 <ion-label position="floating">または</ion-label>

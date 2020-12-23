@@ -7,6 +7,8 @@ import { Tab3Page } from './tab3.page';
 import { MarkerModule } from '../../component/marker/marker.module'
 import { AgmCoreModule } from '@agm/core';
 import { ChatSharedModule } from './../component/chat/shared.module';
+import { EvalComponent } from './../component/eval/eval.component';
+import { StorySharedModule } from './../component/story/shared.module';
 //import { UserComponent } from '../component/user/user.component';
 const routes: Routes = [
   { path: ':id', component: Tab3Page },
@@ -15,8 +17,8 @@ const routes: Routes = [
 @NgModule({
   imports: [
     IonicModule, CommonModule, FormsModule,MarkerModule,AgmCoreModule,//.forRoot({apiKey: 'AIzaSyB4D969VIv64a6rMFtrtX2wpHUhuosD9h0'}),//'AIzaSyDTHLyzh5B37YJPU8esWD0fV0ntvE9QOwI'})
-    RouterModule.forChild(routes),ChatSharedModule,
+    RouterModule.forChild(routes),ChatSharedModule,StorySharedModule,
   ],
-  declarations: [Tab3Page,]//UserComponent,
+  declarations: [Tab3Page,EvalComponent]//UserComponent,
 })
 export class Tab3PageModule { }

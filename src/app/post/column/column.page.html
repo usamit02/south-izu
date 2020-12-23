@@ -20,10 +20,10 @@
           <ion-avatar>
             <img [src]="column.author.avatar" />
           </ion-avatar>
-          {{column.author.na}}
+          <ion-text>{{column.author.na}}</ion-text>
         </ion-item>
         <ion-button *ngIf="column.id" (click)="newColumn()" slot="end" fill="clear">
-          <ion-icon name="create" slot="icon-only"></ion-icon>
+          <ion-icon name="create" slot="icon-only" color="secondary"></ion-icon>
         </ion-button>
         <ion-button (click)="preview()" slot="end" fill="clear">
           <ion-icon name="browsers" slot="icon-only"></ion-icon>
@@ -33,7 +33,7 @@
             <ion-icon name="checkmark" slot="icon-only"></ion-icon>
           </ion-button>
           <ion-button [disabled]="!columnForm.valid" (click)="save(0)" slot="end" fill="clear">
-            <ion-icon name="send" slot="icon-only" color="secondary"></ion-icon>
+            <ion-icon name="send" slot="icon-only" color="success"></ion-icon>
           </ion-button>
         </ng-container>
         <ng-container *ngIf="user.admin">

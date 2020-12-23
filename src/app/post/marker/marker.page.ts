@@ -224,12 +224,8 @@ export class MarkerPage implements OnInit, OnDestroy {
         id: this.marker.id, na: this.na.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
         txt: this.txt.value, img: update.img ? update.img : null, simg: update.simg ? update.simg : null, created: this.marker.created,
       }
-      let markers = this.allMarkers.filter(marker => { return marker.id === this.marker.id; });
-      if (markers.length) {
-        markers[0] = newMarker;
-      } else {
-        this.allMarkers.push(newMarker);
-      }
+      this.allMarkers = this.allMarkers.filter(marker => { return marker.id !== this.marker.id; });
+      this.allMarkers.push(newMarker);
       this.loadMarkers();
       this.undo({ id: this.marker.id, user: this.user.id, ...update });
       this.ui.pop(`${msg[ack + 1]}しました。`);
