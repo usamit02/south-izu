@@ -5,9 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StayPage } from './stay.page';
 import { PlanModule } from '../component/plan/plan.module';
-import { EditorModule } from '@tinymce/tinymce-angular';
-import { StoryComponent } from '../component/story/story.component';
-import { SafePipe } from './safe.pipe';
+import { SharedModule } from '../component/shared.module';
 const routes: Routes = [
   { path: ':id', component: StayPage },
 ];
@@ -15,8 +13,8 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule, IonicModule, FormsModule, ReactiveFormsModule,
-    RouterModule.forChild(routes), PlanModule,EditorModule,
+    RouterModule.forChild(routes), PlanModule,SharedModule,
   ],
-  declarations: [StayPage, StoryComponent,SafePipe]
+  declarations: [StayPage]
 })
 export class StayModule { }
