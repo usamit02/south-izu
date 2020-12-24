@@ -24,8 +24,8 @@ export class ColumnPage implements OnInit, OnDestroy {
   columns = [];
   show: boolean = false;
   user;
-  eval: string;//評価good、bad
   view: any = {};
+  isStory:boolean;
   currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private api: ApiService, private db: AngularFireDatabase, private userService: UserService,
@@ -55,23 +55,6 @@ export class ColumnPage implements OnInit, OnDestroy {
       this.column = column;
       this.title.setTitle(`${column.na} `);
       this.show = true;
-      if (!(this.param.id in this.view) && column.ack === 1) {
-        this.db.database.ref(`column/${column.id}/view`).transaction(val => {
-          return (val || 0) + 1;
-        });
-        this.db.database.ref(`user/${column.user}/view`).transaction(val => {
-          return (val || 0) + 1;
-        });
-        this.view[this.param.id] = "";
-      }
-      setTimeout(() => { this.onScrollEnd(); }, 3000);
-      if (this.user.id && column.ack === 1 && !column.lock) {
-        this.store.doc(`column/${this.param.id}/eval/${this.user.id}`).get().toPromise().then(snap => {
-          this.eval = snap.exists ? snap.data().id : null;
-        });
-      } else {
-        this.eval = "disabled";
-      }
     });
   }
   async onScrollEnd() {
@@ -84,13 +67,6 @@ export class ColumnPage implements OnInit, OnDestroy {
   }
   scroll(target) {
     this.content.nativeElement.scrollToPoint(0, target, 500);
-  }
-  evaluation(val) {
-    this.store.doc(`column/${this.param.id}/eval/${this.user.id}`).set({ id: val, uid: this.column.user, na: this.column.na, upd: new Date() }).then(() => {
-      this.eval = val;
-    }).catch(err => {
-      alert(`評価の書き込みに失敗しました\r\n${err.message}`);
-    });
   }
   async popUser(uid) {
     const popover = await this.pop.create({

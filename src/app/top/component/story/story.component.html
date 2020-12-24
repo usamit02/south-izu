@@ -26,9 +26,8 @@
 <ion-item *ngIf="user$|async as user" class="WrapItem">
   <ng-container *ngIf="user.na">
     <ion-item button="true" (click)="popUser(param.user)" lines="none" class="avatarItem">
-      <ion-avatar><img [src]="user.avatar"></ion-avatar>
+      <ion-avatar><img [src]="user.avatar"></ion-avatar><ion-text>{{user.na}}</ion-text>
     </ion-item>
-    <ion-item button="true" [routerLink]="'/user/' + param.user" lines="none">{{user.na}}</ion-item>
     <span>
       <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
       <ion-icon name="paper" color="primary"></ion-icon>{{user.column}}

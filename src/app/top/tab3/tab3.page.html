@@ -26,7 +26,7 @@
       </agm-info-window>
     </agm-marker>
   </agm-map>
-  <app-story #essay page="marker" [param]="marker" [user]="user"></app-story>
+  <app-story #essay page="marker" [param]="marker" [user]="user" (isStory)="isStory=$event"></app-story>
   <app-chat #chat *ngIf="marker.chat&&marker.ack===1&&!marker.rest" page="marker" [param]="chatParam" [user]="user"
     [content]="content">
   </app-chat>
@@ -45,7 +45,7 @@
     <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
       <ion-icon name="caret-down"></ion-icon>
     </ion-fab-button>
-    <app-eval *ngIf="currentY+contentH===scrollH && user.id && marker.user" typ="marker" [id]="marker.id"
+    <app-eval *ngIf="currentY+contentH===scrollH && user.id && marker.user && isStory" typ="marker" [id]="marker.id"
       [user]="user.id" [author]="marker.user" [na]="marker.na"></app-eval><!--    marker.user!==user.id       -->
   </ion-fab>
 </ion-content>
@@ -55,67 +55,5 @@
 </ion-footer>
 
 <!--
- <i class="fas fa-car"></i>
-      <i class="fas fa-faucet"></i>
-      <i class="fab fa-hotjar"></i>
-      <i class="fas fa-plug"></i>
-      <i class="fas fa-shower"></i>
-      <i class="fas fa-solar-panel"></i>
-      <i class="fas fa-toilet"></i>
-<ng-container *ngIf="currentY+contentH===scrollH && user.id && !eval && storys.length">
-    <ion-fab-button (click)="evaluation('good')" size="small" color="clear">
-      <ion-icon name="thumbs-up" color="success"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-button (click)="evaluation('bad')" size="small" color="clear">
-      <ion-icon name="thumbs-down" color="dark"></ion-icon>
-    </ion-fab-button>
-  </ng-container>
-
-<ion-grid #essay>
-    <ion-row *ngFor="let story of storys;index as i;">
-      <ng-container *ngIf="!story.rest;else rest">
-        <ion-col *ngIf="story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
-          [innerHtml]="story.media | safe">
-        </ion-col>
-        <ion-col *ngIf="story.txt && story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="6"
-          [innerHtml]="story.txt | safe">
-        </ion-col>
-        <ion-col *ngIf="story.txt && !story.media" size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="12"
-          [innerHtml]="story.txt | safe">
-        </ion-col>
-      </ng-container>
-      <ng-template #rest>
-        <ion-col size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="12">
-          <ion-item>
-            <ion-text color="tertiary">続きはあと{{story.rested|date:'last'}}で公開されます</ion-text>
-            <ion-button slot="end" [routerLink]="'/support/'+marker.user" color="tertiary">
-              <ion-icon name="heart" color="danger"></ion-icon>サポートして今すぐ見る
-            </ion-button>
-          </ion-item>
-        </ion-col>
-      </ng-template>
-    </ion-row>
-  </ion-grid>
-  <ion-item *ngIf="marker.user$|async as user" class="WrapItem">
-    <ng-container *ngIf="user.na">
-      <ion-item button="true" (click)="popUser(marker.user)" lines="none" class="avatarItem">
-        <ion-avatar><img [src]="user.avatar"></ion-avatar>
-      </ion-item>
-      <ion-item button="true" [routerLink]="'/user/' + marker.user" lines="none">{{user.na}}</ion-item>
-      <span>
-        <ion-icon name="document" color="primary"></ion-icon>{{user.report}}
-        <ion-icon name="paper" color="primary"></ion-icon>{{user.column}}
-        <ion-icon name="eye" color="secondary"></ion-icon>{{user.view}}
-        <ion-icon name="heart" color="danger"></ion-icon>{{user.supporter}}
-        <ion-icon name="star" color="warning"></ion-icon>{{user.follower}}
-        <ion-icon name="thumbs-up" color="success"></ion-icon>{{user.good}}
-        <ion-icon name="thumbs-down" color="dark"></ion-icon>{{user.bad}}
-      </span>
-    </ng-container>
-    <span *ngIf="marker.acked" slot="end">{{marker.acked|date:'day'}}　公開 </span>
-  </ion-item>
-
-
-
 
 -->

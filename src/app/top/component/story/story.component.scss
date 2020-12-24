@@ -12,6 +12,9 @@
 .avatarItem{
   --padding-start:10px;--padding-end:0px;
   --inner-padding-end:0px;
+  ion-text{
+     margin-left:10px;margin-right:10px;
+  }
 }
 .wrapItem{
   --padding-start:0px;

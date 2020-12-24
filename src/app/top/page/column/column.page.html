@@ -103,14 +103,8 @@
       <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
         <ion-icon name="caret-down"></ion-icon>
       </ion-fab-button>
-      <ng-container *ngIf="currentY+contentH===scrollH && user.id && !eval && storys.length">
-        <ion-fab-button (click)="evaluation('good')" size="small" color="clear">
-          <ion-icon name="thumbs-up" color="success"></ion-icon>
-        </ion-fab-button>
-        <ion-fab-button (click)="evaluation('bad')" size="small" color="clear">
-          <ion-icon name="thumbs-down" color="dark"></ion-icon>
-        </ion-fab-button>
-      </ng-container>
+      <app-eval *ngIf="currentY+contentH===scrollH && user.id && column.user && isStory" typ="column" [id]="column.id"
+      [user]="user.id" [author]="column.user" [na]="column.na"></app-eval><!--    marker.user!==user.id       -->
     </ion-fab>
   </ion-content>
   <ion-footer id="footer">

@@ -6,7 +6,6 @@ import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
-import { AngularFirestore } from '@angular/fire/firestore';
 import { Store } from '../../service/store.service';
 import { UiService } from '../../service/ui.service';
 import { ApiService } from '../../service/api.service';
@@ -25,6 +24,7 @@ import { HOME } from '../../config';
 export class Tab3Page implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
+  @ViewChild('essayEnd', { read: ElementRef, static: false }) essayEnd: ElementRef;
   @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
   lat: number = 34.68503331;
   lng: number = 138.85154339;
@@ -35,14 +35,13 @@ export class Tab3Page implements OnInit, OnDestroy {
   markers: Array<Marker> = [];
   user: User;
   home:number;
-  //storys = [];
-  //view: any = {};//viewカウント重複防止
+  isStory:boolean;
   currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
   chatParam={id:null};//chat componentへ値渡し
   private debounceTimer = null;
   private onDestroy$ = new Subject();
   constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private pop : PopoverController,private route: ActivatedRoute, private title: Title,
-    private userService: UserService, private db: AngularFireDatabase, private storedb: AngularFirestore, private store: Store,
+    private userService: UserService, private db: AngularFireDatabase, private store: Store,
     private location:Location,) { }
   ngOnInit() {
     let paths=this.location.path().split('/');
@@ -152,6 +151,7 @@ export class Tab3Page implements OnInit, OnDestroy {
     this.chatParam.id=marker.id;
     this.marker = marker;
     this.title.setTitle(`${marker.na}`);
+    setTimeout(()=>{this.onScrollEnd()},3000)
   }
   async markerRightClick(marker) {
     if (this.user.admin || marker.user == this.user.id) {
