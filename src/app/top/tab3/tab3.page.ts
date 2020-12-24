@@ -1,11 +1,10 @@
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
-import { ModalController,PopoverController } from '@ionic/angular';
+import { Component, OnInit, ViewChild, OnDestroy, ElementRef } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AngularFireDatabase } from '@angular/fire/database';
 import { Store } from '../../service/store.service';
 import { UiService } from '../../service/ui.service';
 import { ApiService } from '../../service/api.service';
@@ -14,7 +13,6 @@ import { User, Marker, MARKER } from '../../class';
 import { APIURL } from '../../../environments/environment';
 import { MouseEvent, LatLngBounds } from '@agm/core';
 import { MarkerComponent } from '../../component/marker/marker.component';
-import { UserComponent } from '../component/user/user.component';
 import { HOME } from '../../config';
 @Component({
   selector: 'app-tab3',
@@ -40,8 +38,8 @@ export class Tab3Page implements OnInit, OnDestroy {
   chatParam={id:null};//chat componentへ値渡し
   private debounceTimer = null;
   private onDestroy$ = new Subject();
-  constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private pop : PopoverController,private route: ActivatedRoute, private title: Title,
-    private userService: UserService, private db: AngularFireDatabase, private store: Store,
+  constructor(private ui: UiService, private api: ApiService, private modal: ModalController,private route: ActivatedRoute, private title: Title,
+    private userService: UserService,  private store: Store,
     private location:Location,) { }
   ngOnInit() {
     let paths=this.location.path().split('/');
@@ -190,14 +188,6 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
   scroll(target) {
     this.content.nativeElement.scrollToPoint(0, target, 500);
-  }
-  async popUser(uid) {
-    const popover = await this.pop.create({
-      component: UserComponent,
-      componentProps: { id: uid, self: this.user },
-      cssClass: 'user'
-    });
-    return await popover.present();
   }
   ngOnDestroy() {
     this.onDestroy$.next();

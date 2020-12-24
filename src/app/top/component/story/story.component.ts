@@ -12,6 +12,7 @@ export class StoryComponent implements OnInit, OnChanges {
   @Input() user;
   @Input() page;
   @Input() param;//column,markerなど親ページの基本データ
+  @Input() datas;
   @Output() isStory= new EventEmitter();
   storys = [];
   user$;
@@ -24,7 +25,12 @@ export class StoryComponent implements OnInit, OnChanges {
   }
   async ngOnChanges(changes: SimpleChanges) {
     if (changes.param && this.param.id) {
-      this.res = await this.api.get('query', { table: 'story', select: ['*'], where: { typ: this.page, parent: this.param.id } });
+      if(this.page==="column"){
+        this.res.storys=this.datas;
+        if(!this.datas.length) {this.param.user=null;}
+      }else{
+        this.res = await this.api.get('query', { table: 'story', select: ['*'], where: { typ: this.page, parent: this.param.id } });
+      }
       this.user$ = this.param.user ? this.db.object(`user/${this.param.user}`).valueChanges() : null;
       if(this.res.storys.length){
         this.isStory.emit(true);
@@ -59,10 +65,10 @@ export class StoryComponent implements OnInit, OnChanges {
       return story;
     }));
   }
-  async popUser(event, uid) {
+  async popUser(event) {
     const popover = await this.pop.create({
       component: UserComponent,
-      componentProps: { id: uid, self: this.user },
+      componentProps: { id: this.param.user, self: this.user },
       cssClass: 'user'
     });
     return await popover.present();

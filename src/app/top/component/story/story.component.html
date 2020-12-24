@@ -25,7 +25,7 @@
 </ion-grid>
 <ion-item *ngIf="user$|async as user" class="WrapItem">
   <ng-container *ngIf="user.na">
-    <ion-item button="true" (click)="popUser(param.user)" lines="none" class="avatarItem">
+    <ion-item button="true" (click)="popUser()" lines="none" class="avatarItem">
       <ion-avatar><img [src]="user.avatar"></ion-avatar><ion-text>{{user.na}}</ion-text>
     </ion-item>
     <span>
