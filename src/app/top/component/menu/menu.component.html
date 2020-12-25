@@ -1,7 +1,7 @@
 <ion-header>
-  <ion-toolbar button="true" routerLink="/">
+  <ion-toolbar button="true" (click)="link('')">
     <ion-title>
-      <ion-icon name="bicycle"></ion-icon>ライダーハウス
+      <ion-icon name="bicycle"></ion-icon>ツーリングスティ
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -18,10 +18,10 @@
     <ion-reorder-group (ionItemReorder)="reorderColumns($event)" [disabled]="!user.admin">
       <ion-item *ngFor="let col of columns">
         <ion-reorder slot="start"></ion-reorder>
-        <ion-item button="true" [routerLink]="'/column/'+col.id">
+        <ion-item button="true" (click)="link('column/'+col.id)">
           {{col.na}}
         </ion-item>
-        <ion-button *ngIf="column.lock;else free" [routerLink]="'/support/'+col.user" slot="end" fill="clear">
+        <ion-button *ngIf="column.lock;else free" (click)="link('support/'+col.user)" slot="end" fill="clear">
           　 <ion-icon name="lock-closed" slot="icon-only" color="tertiary"></ion-icon>
         </ion-button>
         <ng-template #free>
@@ -52,7 +52,7 @@
             </ion-avatar>
           </ion-item>
         </div>
-        <ion-item lines="none" button="true" [routerLink]="post.url" class="innerItem">
+        <ion-item lines="none" button="true" (click)="link(post.url)" class="innerItem">
           <div>
             <div>
               <span class="na">{{post.user.na}}</span>
@@ -83,7 +83,7 @@
             </ion-avatar>
           </ion-item>
         </div>
-        <ion-item lines="none" button="true" [routerLink]="direct.url" class="innerItem">
+        <ion-item lines="none" button="true" (click)="link(direct.url)" class="innerItem">
           <div>
             <div>
               <span class="na">{{direct.na}}</span>
@@ -112,7 +112,7 @@
             </ion-avatar>
           </ion-item>
         </div>
-        <ion-item lines="none" button="true" [routerLink]="mention.url" class="innerItem">
+        <ion-item lines="none" button="true" (click)="link(mention.url)" class="innerItem">
           <div>
             <div>
               <span class="na">{{mention.na}}</span>
@@ -131,27 +131,26 @@
     <ion-icon name="settings"></ion-icon><span>設定</span>
   </ion-item>
   <ion-list *ngIf="mode==='config'">
-    <ion-item button="true" routerLink="/regist">個人情報</ion-item>
-    <ion-item button="true" routerLink="/notify">通知</ion-item>
-    <ion-item button="true" routerLink="/design">デザイン</ion-item>
+    <ion-item button="true" (click)="link('regist')">個人情報</ion-item>
+    <ion-item button="true" (click)="link('notify')">通知</ion-item>
+    <ion-item button="true" (click)="link('design')">デザイン</ion-item>
   </ion-list>
   <ion-item button="true" (click)="contact()">
     <ion-icon name="help-circle"></ion-icon><span>お問い合わせ</span>
   </ion-item>
-  <ion-item button="true" (click)="logout.emit(true)">
+  <ion-item button="true" (click)="logout.emit(true);close.emit()">
     <ion-icon name="log-out"></ion-icon><span>ログアウト</span>
   </ion-item>
 </ion-list>
 <ng-template #guest>
-  <ion-item routerLink="/login">
+  <ion-item button="true" (click)="link('login')">
     <ion-icon name="log-in"></ion-icon><span>ログイン</span>
   </ion-item>
 </ng-template>
-<ion-item button="true" routerLink="/users/view">
+<ion-item button="true" (click)="link('users/view')">
   <ion-icon name="people"></ion-icon><span>ユーザー一覧</span>
 </ion-item>
 <!--
-
     <ion-segment name="shopOrder" scrollable="true" (ionChange)="shopOrder($event)" color="secondary">
       <ion-segment-button value="投稿順">
         <ion-label>投稿</ion-label>

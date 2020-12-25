@@ -1,5 +1,6 @@
 import { Component, OnInit, OnChanges, Input,Output,SimpleChanges,EventEmitter } from '@angular/core';
 import { PopoverController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { ApiService } from '../../../service/api.service';
 import { UserComponent } from '../user/user.component';
@@ -18,7 +19,7 @@ export class StoryComponent implements OnInit, OnChanges {
   user$;
   view: any = {};//viewカウント重複防止
   res:any={};
-  constructor(private pop: PopoverController, private db: AngularFireDatabase, private api: ApiService,) {
+  constructor(private pop: PopoverController, private db: AngularFireDatabase, private api: ApiService,private router:Router,) {
     this.res.storys = [];
    }
   ngOnInit() {        
@@ -65,7 +66,10 @@ export class StoryComponent implements OnInit, OnChanges {
       return story;
     }));
   }
-  async popUser(event) {
+  support(){
+    this.router.navigate(['/support/',this.param.user]);
+  }
+  async popUser() {
     const popover = await this.pop.create({
       component: UserComponent,
       componentProps: { id: this.param.user, self: this.user },

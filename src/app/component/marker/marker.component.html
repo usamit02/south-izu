@@ -71,6 +71,5 @@
       </ion-buttons>
   </ion-item> 
   <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
-  <ion-progress-bar *ngIf="uploading" [value]="progress" color="success"></ion-progress-bar>
   <canvas #canvas style="display: none;"></canvas>
 </ion-content>

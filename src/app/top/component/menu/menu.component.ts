@@ -17,6 +17,7 @@ import { UserComponent } from '../user/user.component';
 export class MenuComponent implements OnInit, OnChanges, OnDestroy {
   @Input() user: User;
   @Output() logout = new EventEmitter();
+  @Output() close = new EventEmitter();
   mode: string;
   direct$: Observable<any>;
   mention$: Observable<any>;//mentions: Array<Mention> = [];
@@ -87,25 +88,28 @@ export class MenuComponent implements OnInit, OnChanges, OnDestroy {
     if (this.user.id) {
       this.router.navigate([`/post/column/${parent}`]);
     } else {
-      this.router.navigate([`/login`]);
+      this.router.navigate([`/login`]);this.close.emit();
     }
   }
   postReport() {
     if (this.user.id) {
       this.router.navigate(['/post/report']);
     } else {
-      this.router.navigate([`/login`]);
+      this.router.navigate([`/login`]);this.close.emit();
     }
   }
   deletePost(id) {
     this.db.database.ref(`post/${id}`).remove();
   }
-
+  link(url){
+    this.router.navigate([`/${url}`]);
+    this.close.emit();
+  }
   direct(unread: number) {
     if (unread) {
       this.mode = this.mode === 'direct' ? '' : 'direct'
     } else {
-      this.router.navigate(['/directs']);
+      this.router.navigate(['/directs']);this.close.emit();
     }
   }
   delete(url: string, typ: string) {
@@ -118,6 +122,7 @@ export class MenuComponent implements OnInit, OnChanges, OnDestroy {
   contact() {
     this.db.database.ref(`admin`).orderByValue().limitToLast(1).once('value').then(admin => {
       this.router.navigate([`/direct`], { queryParams: { user: Object.keys(admin.val())[0], self: this.user.id } });
+      this.close.emit();
     }).catch(err => {
       this.ui.alert(`データベースの読込に失敗しました。\r\n${err.message}`);
     });

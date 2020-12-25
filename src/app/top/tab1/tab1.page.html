@@ -9,7 +9,7 @@
     </ion-menu-button>
   </ion-toolbar>
 </ion-header>
-<ion-content (ionScrollEnd)="onScrollEnd()">
+<ion-content>
   <ion-slides #slides *ngIf="id" pager="true" [options]="slideOpts" (ionSlideDidChange)="slideChange($event)">
     <ion-slide *ngFor="let img of imgs">
       <img [src]="img.url" />

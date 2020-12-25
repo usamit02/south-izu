@@ -68,7 +68,6 @@
             </ion-buttons>
           </ion-item>
           <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
-          <ion-progress-bar *ngIf="uploading" [value]="progress" color="success"></ion-progress-bar>
           <canvas #canvas style="display: none;"></canvas>
           <ion-item>
             <ion-icon name="people-circle" color="success"></ion-icon>
@@ -98,7 +97,7 @@
       </ion-col>
       <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
         <ion-title #plan class="Text">Plan</ion-title>
-        <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" (dirty)="planDirty($event)" [save]="savePlan" (saved)="planSaved($event)"></app-plan>
+        <app-plan [stay]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" (dirty)="planDirty($event)" [save]="savePlan" (saved)="planSaved()"></app-plan>
       </ion-col>
     </ion-row>
   </ion-grid>

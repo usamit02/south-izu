@@ -112,6 +112,9 @@ export class MarkerPage implements OnInit, OnDestroy {
       });
     });;
   }
+  refresh(){
+    
+  }
   async undo(marker) {
     this.undoing = true;
     if (this.user.id !== marker.user||!marker.author) {

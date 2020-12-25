@@ -19,7 +19,6 @@ export class Tab1Page implements OnInit, OnDestroy {
     initialSlide: 0, speed: 500, loop: true, slidesPerView: 1,
     autoplay: { delay: 3000,}
   }
-  count;
   storys=[];
   private onDestroy$ = new Subject();
   constructor(private api: ApiService,private location:Location,) { }
@@ -37,23 +36,17 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.storys=res.storys;    
     });      
   }  
-  slideChange(e){
+  slideChange(e){    
     this.slides.getActiveIndex().then(i=>{
       if(i===0){
-        i=length-1;
-      }else if(i>length){
+        i=HOME[this.id].txts.length-1;
+      }else if(i>HOME[this.id].txts.length){
         i=0;
       }else{
         i--;
       }
-      this.txt=HOME[this.id].txts[i];this.count=i;
+      this.txt=HOME[this.id].txts[i];
     });
-  }
-  onScrollEnd(){
-    console.log('scroll end');
-  }
-  onScrolling(){
-    console.log('scrolling');
   }
   ngOnDestroy() {
     this.onDestroy$.next();

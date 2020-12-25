@@ -129,7 +129,7 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <app-chat #chat page="report" [params]="params" [user]="user" [content]="content">
+    <app-chat #chat page="report" [param]="params" [user]="user" [content]="content">
     </app-chat>
     <ion-fab vertical="top" horizontal="end" slot="fixed">
       <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">

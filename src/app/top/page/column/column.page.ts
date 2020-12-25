@@ -74,4 +74,5 @@ interface Column {
   ackuser: string;
   rest: boolean;
   chat: boolean;
+  lock?:boolean;
 }

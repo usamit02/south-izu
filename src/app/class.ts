@@ -46,7 +46,7 @@ export interface Marker {
   iconurl?:string;
   user:string;
   user$?:Object;
-  author?:Object;
+  author?:any;
   created?:Date|string;
   ack?:number;
   ackuser?:string;

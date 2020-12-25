@@ -1,7 +1,7 @@
 <ion-split-pane contentId="menu-content">
   <ion-menu contentId="menu-content" side="start">
     <ion-content>
-      <app-menu [user]="user" (logout)="logout($event)"></app-menu>
+      <app-menu [user]="user" (logout)="logout($event)" (close)="menu.close()"></app-menu>
     </ion-content>
   </ion-menu>
   <ion-menu contentId="menu-content" side="end">

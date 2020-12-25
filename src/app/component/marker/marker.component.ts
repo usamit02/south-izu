@@ -69,6 +69,9 @@ export class MarkerComponent implements OnInit {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
   }
+  refresh(){
+    
+  }
   async save() {
     if (this.saving) return;
     this.saving = true;

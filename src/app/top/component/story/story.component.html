@@ -15,7 +15,7 @@
       <ion-col size-xs="12" size-sm="12" size-md="12" size-lg="12" size-xl="12">
         <ion-item>
           <ion-text color="tertiary">続きはあと{{story.rested|date:'last'}}で公開されます</ion-text>
-          <ion-button slot="end" [routerLink]="'/support/' + param.user" color="tertiary">
+          <ion-button slot="end" (click)="support()" color="tertiary">
             <ion-icon name="heart" color="danger"></ion-icon>サポートして今すぐ見る
           </ion-button>
         </ion-item>
