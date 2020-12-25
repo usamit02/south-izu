@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { IonSlides } from '@ionic/angular';
 import { Location } from '@angular/common';
+import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { ApiService } from '../../service/api.service';
 import { APIURL } from '../../../environments/environment';
@@ -13,6 +14,8 @@ import { HOME } from '../../config';
 export class Tab1Page implements OnInit, OnDestroy {  
   @ViewChild('slides', { static: false }) slides: IonSlides;
   id:number;
+  na:string="";
+  icon:string="";
   imgs:Array<Object>=[];
   txt:string="";
   slideOpts = {
@@ -21,12 +24,15 @@ export class Tab1Page implements OnInit, OnDestroy {
   }
   storys=[];
   private onDestroy$ = new Subject();
-  constructor(private api: ApiService,private location:Location,) { }
+  constructor(private api: ApiService,private location:Location,private title:Title) { }
   ngOnInit() {
     let paths=this.location.path().split('/');
     Object.keys(HOME).forEach(key=>{
       if(HOME[key].path===paths[1]){ 
         this.id=Number(key);
+        this.title=HOME[key].na;
+        this.na=HOME[key].na;
+        this.icon=HOME[key].icon;
       }
     });
     for(let i=0;i< HOME[this.id].txts.length;i++){

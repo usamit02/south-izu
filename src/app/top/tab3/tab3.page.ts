@@ -32,23 +32,23 @@ export class Tab3Page implements OnInit, OnDestroy {
   marker: Marker = MARKER;
   markers: Array<Marker> = [];
   user: User;
-  home:number;
-  isStory:boolean;
+  home: number;
+  isStory: boolean;
   currentY: number; scrollH: number; contentH: number; essayY: number; chatY: number;
-  chatParam={id:null};//chat componentへ値渡し
+  chatParam = { id: null };//chat componentへ値渡し
   private debounceTimer = null;
   private onDestroy$ = new Subject();
-  constructor(private ui: UiService, private api: ApiService, private modal: ModalController,private route: ActivatedRoute, private title: Title,
-    private userService: UserService,  private store: Store,
-    private location:Location,) { }
+  constructor(private ui: UiService, private api: ApiService, private modal: ModalController, private route: ActivatedRoute, private title: Title,
+    private userService: UserService, private store: Store,
+    private location: Location,) { }
   ngOnInit() {
-    let paths=this.location.path().split('/');
-    Object.keys(HOME).forEach(key=>{
-      if(HOME[key].path===paths[1]){ 
-        this.home=Number(key);
-        this.lat=HOME[key].lat;
-        this.lng=HOME[key].lng;
-        this.zoom=HOME[key].zoom;
+    let paths = this.location.path().split('/');
+    Object.keys(HOME).forEach(key => {
+      if (HOME[key].path === paths[1]) {
+        this.home = Number(key);
+        this.lat = HOME[key].lat;
+        this.lng = HOME[key].lng;
+        this.zoom = HOME[key].zoom;
       }
     })
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
@@ -85,15 +85,15 @@ export class Tab3Page implements OnInit, OnDestroy {
       const nlat = bounds.getNorthEast().lat();
       const nlng = bounds.getNorthEast().lng();
       const slat = bounds.getSouthWest().lat();
-      const slng = bounds.getSouthWest().lng();      
+      const slng = bounds.getSouthWest().lng();
       this.center.lat = bounds.getCenter().lat();
       this.center.lng = bounds.getCenter().lng();
-      const lat=this.marker.lat?this.marker.lat:this.center.lat;
-      const lng=this.marker.lng?this.marker.lng:this.center.lng;
-      this.api.get('map', { nlat: nlat, nlng: nlng, slat: slat, slng: slng,lat:lat,lng:lng }).then(res => {
+      const lat = this.marker.lat ? this.marker.lat : this.center.lat;
+      const lng = this.marker.lng ? this.marker.lng : this.center.lng;
+      this.api.get('map', { nlat: nlat, nlng: nlng, slat: slat, slng: slng, lat: lat, lng: lng ,user:this.user.id}).then(res => {
         this.markers = [];
         for (let i = 0; i < res.markers.length; i++) {
-          res.markers[i].len=res.markers[i].len * 111.3194;
+          res.markers[i].len = res.markers[i].len * 111.3194;
           res.markers[i].label = (i + 1).toString();
           this.markers.push(res.markers[i]);
         }
@@ -125,31 +125,35 @@ export class Tab3Page implements OnInit, OnDestroy {
     this.openedWindow = marker.id;
   }
   async mapRightClick(lat: number, lng: number) {
-    const confirm = await this.ui.confirm('マーカー登録', '登録しますか');
-    if (confirm) {
-      const modal = await this.modal.create({
-        component: MarkerComponent, componentProps: {
-          prop: {
-            marker: { user: this.user.id, id: 0, lat: lat, lng: lng, na: "", txt: "", phone: "", url: "", img: APIURL + 'img/noimg.jpg', simg: APIURL + 'img/noimgs.jpg' }
+    if (this.user.id) {
+      const confirm = await this.ui.confirm('マーカー登録', '登録しますか');
+      if (confirm) {
+        const modal = await this.modal.create({
+          component: MarkerComponent, componentProps: {
+            prop: {
+              marker: { user: this.user.id, id: 0, lat: lat, lng: lng, na: "", txt: "", phone: "", url: "", img: APIURL + 'img/noimg.jpg', simg: APIURL + 'img/noimgs.jpg' }
+            }
           }
-        }
-      })
-      return await modal.present().then(() => {
-        modal.onDidDismiss().then(event => {
-          if (event.data) {
-            this.markers.unshift(event.data);
-            this.openedWindow = event.data.id;
-          }
+        })
+        return await modal.present().then(() => {
+          modal.onDidDismiss().then(event => {
+            if (event.data) {
+              this.markers.unshift(event.data);
+              this.openedWindow = event.data.id;
+            }
+          });
         });
-      });
+      }
+    } else {
+      this.ui.pop("ログインすると右クリックで自由にマーカーを登録できます。");
     }
   }
   markerClick(marker) {
     this.openedWindow = marker.id;
-    this.chatParam.id=marker.id;
+    this.chatParam.id = marker.id;
     this.marker = marker;
     this.title.setTitle(`${marker.na}`);
-    setTimeout(()=>{this.onScrollEnd()},3000)
+    setTimeout(() => { this.onScrollEnd() }, 3000)
   }
   async markerRightClick(marker) {
     if (this.user.admin || marker.user == this.user.id) {
@@ -204,7 +208,7 @@ export class Tab3Page implements OnInit, OnDestroy {
         return (val || 0) + 1;
       });
       this.view[marker.id] = "";
-    }    //setTimeout(() => { this.onScrollEnd(); }, 3000);         
+    }    //setTimeout(() => { this.onScrollEnd(); }, 3000);
     this.api.get('query', { table: 'story', select: ['*'], where: { typ: "marker", parent: this.marker.id } }).then(async res => {
       let support = null;
       this.storys = await Promise.all(res.storys.map(async story => {

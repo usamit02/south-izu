@@ -15,7 +15,7 @@ export class TopPage implements OnInit, OnDestroy {
   page;
   home = 1;
   private onDestroy$ = new Subject();
-  constructor(private userService: UserService, private router: Router, private menu: MenuController,) {}
+  constructor(private userService: UserService, private router: Router, public menu: MenuController,) {}
   ngOnInit() {
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
       this.user = user;

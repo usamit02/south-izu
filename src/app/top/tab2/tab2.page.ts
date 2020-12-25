@@ -1,13 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
+import { ModalController,LoadingController} from '@ionic/angular';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
-import { Store } from '../../service/store.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
 import { STAYTYP,HOME,HOLIDAYS } from '../../config';
 @Component({
@@ -23,11 +21,13 @@ export class Tab2Page implements OnInit, OnDestroy {
   days: DayConfig[] = [];
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;
+  loading1;loading2;
   private onDestroy$ = new Subject();
   constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService, 
-    private store:Store,private router: Router,private location:Location,) { }
-  ngOnInit() {
-    this.ui.loading();
+    private router: Router,private location:Location,private loader:LoadingController,) { }
+  async ngOnInit() {    
+    this.loading1= await this.loader.create({ message: '計算中です...', duration: 30000 });//this.ui.loading();    
+    await this.loading1.present();        
     let paths=this.location.path().split('/');
     Object.keys(HOME).forEach(key=>{
       if(HOME[key].path===paths[1]){ 
@@ -61,13 +61,13 @@ export class Tab2Page implements OnInit, OnDestroy {
           this.days.push({date:d,cssClass:"sunday"});
         }
       }
-      this.ui.loadend();
+      this.loading1.dismiss(); //this.ui.loadend();
       this.load();
       this.openCalendar();//setTimeout(()=>{this.openCalendar();},2000);
     }).catch(err => {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
     }).finally(() => {
-      this.ui.loadend();
+      this.loading1.dismiss();//this.ui.loadend();
     });
   }
   async load() {
@@ -81,7 +81,9 @@ export class Tab2Page implements OnInit, OnDestroy {
           typ.stays.map(stay => { stay.state = "close"; return stay; });
         });
       } else {
-        this.ui.loading("計算中です...");
+        //this.ui.loading("計算中です...");
+        this.loading2= await this.loader.create({ message: '計算中です...', duration: 30000 });
+        await this.loading2.present();        
         const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to) }, home: this.home };
         const stayCalendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: where });
         const book = await this.api.get('query', { select: ['*'], table: 'book', where: where });
@@ -130,7 +132,7 @@ export class Tab2Page implements OnInit, OnDestroy {
             return stay;
           });
         });
-        this.ui.loadend();
+        this.loading2.dismiss();//this.ui.loadend();
       }
     } catch (err) {
       this.ui.alert(`施設カレンダーの読み込みに失敗しました。\r\n${err.message}`);
