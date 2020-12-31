@@ -30,6 +30,7 @@
     "@tinymce/tinymce-angular": "^4.2.0",
     "@types/googlemaps": "^3.39.12",
     "@types/nodemailer": "^6.4.0",
+    "exif-js": "^2.3.0",
     "firebase": "^8.0.1",
     "ion2-calendar": "^3.5.0",
     "moment": "^2.29.1",

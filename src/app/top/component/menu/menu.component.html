@@ -130,7 +130,7 @@
   <ion-item button="true" (click)="mode=mode==='config'?'':'config'">
     <ion-icon name="settings"></ion-icon><span>設定</span>
   </ion-item>
-  <ion-list *ngIf="mode==='config'">
+  <ion-list *ngIf="mode==='config'" class="config">
     <ion-item button="true" (click)="link('regist')">個人情報</ion-item>
     <ion-item button="true" (click)="link('notify')">通知</ion-item>
     <ion-item button="true" (click)="link('design')">デザイン</ion-item>
