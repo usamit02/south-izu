@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { AlertController } from '@ionic/angular';
+import * as EXIF from 'exif-js'
 import { User } from '../../../class';
 import { APIURL } from '../../../../environments/environment';
 import { ApiService } from '../../../service/api.service';
@@ -29,6 +30,7 @@ export class StoryComponent implements OnInit {
     return this._parent;
   }
   @ViewChild('upmedia', { read: ElementRef, static: false }) upmedia: ElementRef;//メディアファイル選択
+  @ViewChild('mediaDiv', { read: ElementRef, static: false }) mediaDiv: ElementRef;//メディアファイル選択
   txts: Array<string> = [];
   medias: Array<string> = [];//メディアのhtml
   files: Array<string> = [];
@@ -75,7 +77,7 @@ export class StoryComponent implements OnInit {
       });
     }
   }
-  constructor(private storage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController, ) { }
+  constructor(private storage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController,) { }
   ngOnInit() {
   }
   storyAdd() {
@@ -159,7 +161,7 @@ export class StoryComponent implements OnInit {
     this.setButtons = [];
     if (!parent) return;
     let where: any = { typ: this.typ, parent: this.parent };
-    this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file', 'rest', 'restdate'], where: where }).then(res => {
+    this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file','latlng', 'rest', 'restdate'], where: where }).then(res => {
       for (let story of res.storys) {
         if (story.rest && !(this.user.id === this.document.user || this.user.admin)) {
           this.txts.push('非公開記事');
@@ -223,11 +225,27 @@ export class StoryComponent implements OnInit {
       }
     })
   }
+  setMarker(idx) {
+    let element = this.mediaDiv.nativeElement.firstElementChild;
+    if (element.tagName === 'IMG') {
+      EXIF.getData(element, () => {
+        let gpsLat = EXIF.getTag(element, "GPSLatitude");
+        let gpsLng = EXIF.getTag(element, "GPSLongitude");
+        let lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
+        let lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
+        console.log(`lat:${lat} lng:${lng}`);
+      })
+    }
+    let c = this.mediaDiv;
+    let b = 1;
+
+  }
   upload(e, idx) {
     const files = e.target.files;
     if (!files.length) return;
     let fileName = files[0].name;
     this.uploading = idx;
+    let latlng = "";
     const send = async (file) => {
       await this.mediaDel(idx);
       fileName = Math.floor(new Date().getTime() / 1000).toString() + "." + fileName.split('.').pop();//アップロードファイルの拡張子
@@ -250,7 +268,12 @@ export class StoryComponent implements OnInit {
           }
           this.medias[idx] = html;//setValue(html);
           this.files[idx] = fileName;
-          this.api.post("query", { table: 'story', insert: { typ: this.typ, parent: this.parent, id: idx, media: html, file: fileName }, duplicate: ['media', 'file'] });
+          let sql:any={ table: 'story', insert: { typ: this.typ, parent: this.parent, id: idx, media: html, file: fileName }, duplicate: ['media', 'file'] }
+          if(latlng){
+            sql.insert={...sql.insert,latlng:latlng};
+            sql.duplicate=['media','file','latlng'];
+          }
+          this.api.post("query",sql );
         })
       }).catch(err => {
         this.ui.alert("ファイルアップロードに失敗しました。\r\n" + err.toString());
@@ -275,6 +298,16 @@ export class StoryComponent implements OnInit {
           }
         });
       }
+      EXIF.getData(files[0], () => {
+        let gpsLat = EXIF.getTag(files[0], "GPSLatitude");
+        let gpsLng = EXIF.getTag(files[0], "GPSLongitude");
+        if (gpsLat&& gpsLng) {
+          const lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
+          const lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
+          console.log(`lat:${lat} lng:${lng}`);
+          latlng = `POINT(${lng} ${lat})`;
+        }
+      })
       var canvas = document.querySelector('canvas');
       var ctx = canvas.getContext('2d');
       var img = new Image();

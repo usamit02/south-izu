@@ -8,17 +8,17 @@
           </ion-button>
           <ng-container *ngIf="medias[i]">
             <ion-button *ngIf="i" (click)="storyUp(i,true)" slot="start" fill="clear">
-              <ion-icon name="arrow-dropup-circle" slot="icon-only" color="warning"></ion-icon>
+              <ion-icon name="arrow-up-circle" slot="icon-only" color="warning"></ion-icon>
             </ion-button>
             <ion-button *ngIf="i<medias.length-1" (click)="storyDown(i,true)" fill="clear">
-              <ion-icon name="arrow-dropdown-circle" slot="icon-only" color="warning"></ion-icon>
+              <ion-icon name="arrow-down-circle" slot="icon-only" color="warning"></ion-icon>
             </ion-button>
             <ion-button fill="clear" (click)="mediaDel(i)">
               <ion-icon name="close-circle" color="danger" slot="icon-only"></ion-icon>
             </ion-button>
           </ng-container>
         </ion-buttons>
-        <div [innerHtml]="medias[i]|safe:'html'"></div>
+        <div #mediaDiv [innerHtml]="medias[i]|safe:'html'"></div>
       </div>
       <input #upmedia style="display: none;" type="file" (change)="upload($event,i)">
       <ion-progress-bar *ngIf="uploading===i" [value]="progress" color="success"></ion-progress-bar>
@@ -27,6 +27,9 @@
       <editor [id]="'tiny' + i" class="tiny" [class.rest]="rests[i]"
         apiKey="k5ac3vz6w0fxrw863ng9oartu6tyagjk7kmra9jetazslyfz" [init]="tinyinit" inline="true"></editor>
       <ion-buttons *ngIf="setButtons[i]" class="setButton">
+        <ion-button *ngIf="typ==='report'||typ==='plan'" (click)="setMarker(i)" fill="clear">
+          <ion-icon name="location" slot="icon-only" color="primary"></ion-icon>
+        </ion-button>
         <ion-button (click)="storyRest(i)" fill="clear">
           <ion-icon name="lock-closed" slot="icon-only" color="tertiary"></ion-icon>
         </ion-button>

@@ -59,10 +59,17 @@
         <ion-col #basic size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
           <ion-title class="caption">Basic</ion-title>            
           <ion-item>
+            <ion-label position="floating">
+              タイトル<ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-input required [formControl]="na" minlength="2" maxlength="30" placeholder="何とかについて"
+              (ionBlur)="naBlur()"></ion-input>
+          </ion-item>
+          <span *ngIf="na.errors?.minlength||na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
+          <ion-item>
             <ion-label class="leftLabel" slot="start">種類<ion-text color="danger">*</ion-text>
             </ion-label>
-            <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre"
-              (ionChange)="clearShop()">
+            <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre">
               <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
                 <span #genreOptions>{{genre.na}}</span>
               </ion-select-option>
@@ -70,10 +77,31 @@
             <ion-button slot="end" class="search" (click)="add('genre','種類','バイク')" fill="clear">
               <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>　
             </ion-button>
-          </ion-item>          
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">
+              説明文
+            </ion-label>
+            <ion-textarea [formControl]="description" autoGrow="true" maxlength="300"></ion-textarea>
+          </ion-item>
+          <span *ngIf="description.errors?.minlength||description.errors?.maxlength"
+            class="errmsg">２文字以上３００文字以下で入力してください。</span>
+          <ion-item>
+            <ion-label>イメージ画像</ion-label>
+            <img *ngIf="imgBase64;else orgimg" class="img" [src]="imgBase64" />
+            <ng-template #orgimg>
+              <img *ngIf="report.image" class="img" [src]="report.image" alt="イメージ" />
+            </ng-template>
+            <ion-button slot="end" (click)="popCrop()" fill="clear">
+              　 <ion-icon name="image" slot="icon-only" color="success"></ion-icon>
+            </ion-button>
+            <ion-button *ngIf="imgBase64" slot="end" (click)="imgBase64=''" fill="clear">
+              　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+            </ion-button>
+          </ion-item>  
         </ion-col>
         <ion-col #map size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-          <ion-title class="caption">Map</ion-title>          
+          <app-map typ="report" [id]="report.id"></app-map>
         </ion-col>
       </ion-row>
     </ion-grid>

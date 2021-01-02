@@ -5,13 +5,13 @@ import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
-import { ListComponent } from '../component/list/list.component';
-import { StoryComponent } from '../component/story/story.component';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { APIURL } from '../../../environments/environment';
 import { User } from '../../class';
+import { CropComponent } from '../component/crop/crop.component';
+import { ListComponent } from '../component/list/list.component';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { UserService } from '../../service/user.service';
@@ -31,19 +31,20 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   undoing: boolean = false;
   genre = new FormControl("", [Validators.required]);
   na = new FormControl("", [Validators.minLength(2), Validators.maxLength(30), Validators.required]);
-  txt = new FormControl("", [Validators.minLength(2), Validators.maxLength(300)]);  
+  description = new FormControl("", [Validators.minLength(2), Validators.maxLength(300)]);  
   rest = new FormControl(0);
   chat = new FormControl(1);
   reportForm = this.builder.group({
-    genre: this.genre,na:this.na,txt:this.txt,rest: this.rest, chat: this.chat
+    genre: this.genre,na:this.na,description:this.description,rest: this.rest, chat: this.chat
   });  
   user: User;
   id: number;
   report: any = { id: null, user: null };
-  reports = { drafts: [], requests: [], posts: [], acks: [] };
+  reports = { drafts: [], requests: [], posts: [], acks: [] };  
+  imgBase64: string;
   currentY: number; scrollH: number; contentH: number; basicY: number; mapY: number; essayY: number; scoreY: number;
   private onDestroy$ = new Subject();
-  constructor(private api: ApiService, private userService: UserService, private builder: FormBuilder, private strage: AngularFireStorage,
+  constructor(private api: ApiService, private userService: UserService, private builder: FormBuilder, private storage: AngularFireStorage,
     private pop: PopoverController, private modal: ModalController, private alert: AlertController, private ui: UiService,
     private db: AngularFireDatabase, private route: ActivatedRoute, private router: Router, private store: AngularFirestore,
     private title: Title, ) {
@@ -67,6 +68,12 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });    
+    this.api.get('query', { table: 'genre' }).then(res => {
+      this.genres = res.genres; this.selects.genres = res.genres;
+      this.genreOptions.changes.pipe(take(1)).toPromise().then(() => {
+        this.genre.setValue(res.genres[0].id.toString());
+      });
+    });
     setTimeout(() => {
       if (!this.user.id) {
         //this.router.navigate(['/login']);
@@ -95,6 +102,19 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         if (event.data) {
           this.undo(event.data);//this.castimg = event.data.castimg; this.shopimg = event.data.shopimg;          
         }
+      });
+    });;
+  }
+  async popCrop() {
+    const popover = await this.pop.create({
+      component: CropComponent,
+      componentProps: { prop: { typ: 'card' } },
+      translucent: true,
+      cssClass: 'cropper'
+    });
+    return await popover.present().then(() => {
+      popover.onDidDismiss().then(event => {
+        if (event.data) this.imgBase64 = event.data;
       });
     });;
   }
@@ -142,7 +162,11 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     });
     await alert.present();
   }
-  create(insert, storyCopy: boolean) {
+  naBlur() {
+    if (this.report.id || this.reportForm.invalid) return;
+    this.create({ user: this.user.id, na: this.na.value});
+  }
+  create(insert, storyCopy?: boolean) {
     this.api.post("query", { table: "report", insert: insert }).then(async res => {
       if (storyCopy) {
         let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "report", parent: this.report.id } });
@@ -182,8 +206,6 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     this.report = report;
     const genreOptions = this.genreOptions.changes.pipe(take(1)).toPromise();
     this.genres = this.selects.genres;//.filter(genre => { return genre.id === report.genre; });
-    const res = await this.api.get('query', { table: 'area', where: { region: report.region } }).catch(() => { return; });
-    
     await Promise.all([genreOptions]);//各select optionsが描画されてからselectに値を入れないと選択されない
     const controls = this.reportForm.controls
     for (let key of Object.keys(controls)) {
@@ -202,11 +224,28 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     }
     this.router.navigate(['/report', this.report.id]);
   }
-  save(ack) {
+  async save(ack) {
     let update: any = { ...this.reportForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
     if (ack === 1) {
       update.acked = this.dateFormat();
       update.ackuser = this.user.id;
+    }
+    if (this.imgBase64) {
+      let bin = atob(this.imgBase64.replace(/^.*,/, ''));
+      let buffer = new Uint8Array(bin.length);
+      let blob: Blob;
+      for (var i = 0; i < bin.length; i++) {
+        buffer[i] = bin.charCodeAt(i);
+      }
+      try {
+        blob = new Blob([buffer.buffer], { type: 'image/jpeg' });
+      } catch (e) {
+        alert("ブロッブデータの作成に失敗しました。");
+        return;
+      }
+      const ref = this.storage.ref(`report/${this.report.id}/image.jpg`);
+      await ref.put(blob);
+      update.image = await ref.getDownloadURL().toPromise();
     }
     this.api.post('query', { table: 'report', update: update, where: { id: this.report.id } }).then(() => {
       if (ack === 0) {
@@ -232,7 +271,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           const description = res.storys.length ? res.storys[0].txt.match(/[^ -~｡-ﾟ]/).slice(0, 50) : "";
           this.db.list(`report/`).update(this.report.id.toString(),
             {
-              na: this.na.value, uid: this.report.user, description: this.txt.value, image: this.report.cast_img, upd: new Date().getTime(),
+              na: this.na.value, uid: this.report.user, description: this.description.value, image: this.report.cast_img, upd: new Date().getTime(),
             });
         });
       }
@@ -251,13 +290,15 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     for (let id of ids) {
       this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'report', parent: id } }).then(async res => {
         for (let story of res.storys) {
-          if (story.file) this.strage.ref(`report/${id}/${story.file}`).delete();
+          if (story.file) this.storage.ref(`report/${id}/${story.file}`).delete();
         }
-        await this.api.post('query', { table: 'report', delete: { id: id } });
-        await this.api.post('query', { table: 'story', delete: { typ: 'report', parent: id } });
+        await this.api.post('querys', { deletes: [{ id: this.report.id,usar:this.user.id,table:"report" },{typ:"report",parent:this.report.id,table:"story"}]});
+        //await this.api.post('query', { table: 'report', delete: { id: id } });
+        //await this.api.post('query', { table: 'story', delete: { typ: 'report', parent: id } });
         await this.db.list(`report/${id}`).remove();
         await this.db.database.ref(`post/report${id}`).remove();
-        await this.store.collection('report').doc(id.toString()).delete();
+        await this.store.collection('report').doc(id.toString()).delete();        
+        if(this.report.image) this.storage.ref(`column/${this.report.id}/image.jpg`).delete();
         this.reports.drafts = this.reports.drafts.filter(report => { return report.id !== id; });
         this.reports.requests = this.reports.requests.filter(report => { return report.id !== id; });
         this.reports.posts = this.reports.posts.filter(report => { return report.id !== id; });

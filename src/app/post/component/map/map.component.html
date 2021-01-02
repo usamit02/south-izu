@@ -1,0 +1,11 @@
+<agm-map [latitude]='lat' [longitude]='lng' [zoom]='zoom' [fullscreenControl]='true'>
+<agm-marker *ngFor="let marker of markers" (markerClick)="markerClick(marker);"
+  (markerRightClick)="markerRightClick(marker)" (mouseOver)="mouseOver($event,marker)" [latitude]="marker.lat"
+  [longitude]="marker.lng" [label]="marker.idx"
+  [iconUrl]="{ url: marker.icon, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
+  <agm-info-window #infoWindow [isOpen]="isInfoWindowOpen(marker.id)">
+    <div>{{marker.txt}}</div>
+    <img *ngIf="marker.img" [src]="marker.img" />
+  </agm-info-window>
+</agm-marker>
+</agm-map>

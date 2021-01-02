@@ -12,36 +12,22 @@
 <ion-content class="ion-padding">
   <ion-grid *ngIf="lists.length;else noList">
     <ion-row>
-      <ng-container *ngIf="prop.reports;else notReport">
+      <ng-container *ngIf="prop.columns||prop.reports;else notColumn">
         <ion-col *ngFor="let list of lists" button="true" size-xs="6" size-sm="4" size-md="4" size-lg="4" size-xl="4"
           (click)="pop.dismiss(list)" [class.hidden]="list.hidden">
-          <div style="display:flex;">
-            <img *ngIf="list.castimg" [src]="list.castimg" class="castImg">
-            <div>{{list.cast_na}}</div>
-          </div>
-          <img *ngIf="list.shopimg" [src]="list.shopimg" class="shopImg" style="margin-top: 5px;">
-          <div>{{list.shop_na}}</div>
+          <div>{{list.na}}</div>
+          <img *ngIf="list.image" [src]="list.image" class="columnImg">
+          <div>{{list.discription}}</div>
           <div class="created">{{list.created|date:'chat'}}</div>
         </ion-col>
-      </ng-container>
-      <ng-template #notReport>
-        <ng-container *ngIf="prop.columns;else notColumn">
-          <ion-col *ngFor="let list of lists" button="true" size-xs="6" size-sm="4" size-md="4" size-lg="4" size-xl="4"
-            (click)="pop.dismiss(list)" [class.hidden]="list.hidden">
-            <div>{{list.na}}</div>
-            <img *ngIf="list.image" [src]="list.image" class="columnImg">
-            <div>{{list.discription}}</div>
-            <div class="created">{{list.created|date:'chat'}}</div>
-          </ion-col>
         </ng-container>
         <ng-template #notColumn>
           <ion-col *ngFor="let list of lists" button="true" size-xs="6" size-sm="4" size-md="4" size-lg="4" size-xl="4"
             (click)="pop.dismiss(list)" [class.hidden]="list.hidden">
             <ion-text> {{list.na}}</ion-text>
-            <img *ngIf="list.simg" [src]="list.simg" class="img">            
+            <img *ngIf="list.simg" [src]="list.simg" class="img">
           </ion-col>
-        </ng-template>
-      </ng-template>
+        </ng-template>      
     </ion-row>
   </ion-grid>
   <ng-template #noList>
