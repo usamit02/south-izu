@@ -30,7 +30,7 @@ export class StoryComponent implements OnInit {
     return this._parent;
   }
   @ViewChild('upmedia', { read: ElementRef, static: false }) upmedia: ElementRef;//メディアファイル選択
-  @ViewChild('mediaDiv', { read: ElementRef, static: false }) mediaDiv: ElementRef;//メディアファイル選択
+  storys: Array<Story> = [];
   txts: Array<string> = [];
   medias: Array<string> = [];//メディアのhtml
   files: Array<string> = [];
@@ -62,17 +62,23 @@ export class StoryComponent implements OnInit {
       });
       editor.on('init', (e) => {
         let idx = Number(e.target.id.replace("tiny", ""));
-        editor.setContent(this.txts[idx]);
+        editor.setContent(this.storys[idx].txt);
       });
       editor.on('blur', (e) => {
         let html = editor.getContent({ format: "html" });
         let idx = Number(e.target.id.replace("tiny", ""));
-        if (this.txts[idx] !== html) {
-          this.txts[idx] = html;
-          if (this.user.id === this.document.user || this.user.admin)
-            this.api.post("query", {
-              table: 'story', insert: { typ: this.typ, parent: this.parent, id: idx, txt: html }, duplicate: ['txt']
-            });
+        if (this.storys[idx].txt !== html) {
+          this.storys[idx].txt = html;
+          if (this.user.id === this.document.user || this.user.admin) {
+            let sql: any = { table: 'story' };
+            if (this.storys[idx].id) {
+              sql.update = { txt: html };
+              sql.where = { id: this.storys[idx].id };
+            } else {
+              sql.insert = { typ: this.typ, parent: this.parent, idx: idx, txt: html };
+            }
+            this.api.post("query", sql);
+          }
         }
       });
     }
@@ -81,39 +87,24 @@ export class StoryComponent implements OnInit {
   ngOnInit() {
   }
   storyAdd() {
-    this.txts.push('');
-    this.medias.push('');
-    this.files.push('');
-    this.rows.push('');
-    this.rests.push(null);
-    this.restdates.push(null);
-    this.setButtons.push(false);
+    this.storys.push(STORY);
   }
   async storyDel(idx) {
     let confirm: boolean = true;
-    if (this.txts[idx] || this.medias[idx]) {
+    if (this.storys[idx].txt || this.storys[idx].media) {
       confirm = await this.ui.confirm(`削除確認`, `第${idx + 1}段落を削除してよろしいですか。`);
     }
     if (confirm) {
       await this.mediaDel(idx);
-      this.txts.splice(idx, 1);
-      this.medias.splice(idx, 1);
-      this.files.splice(idx, 1);
-      this.rows.splice(idx, 1);
-      this.rests.splice(idx, 1);
-      this.restdates.splice(idx, 1);
-      this.setButtons.splice(idx, 1);
-      for (let i = idx; i < this.txts.length; i++) {
-        tinymce.editors[i].setContent(this.txts[i]);
+      this.storys.splice(idx, 1);
+      for (let i = idx; i < this.storys.length; i++) {
+        tinymce.editors[i].setContent(this.storys[i].txt);
       }
-      await this.api.post('query', { table: 'story', delete: { typ: this.typ, parent: this.parent, id: idx } });
-      this.api.post('query', {
-        table: 'story', update: { id: 'id' }, where: { id: idx, typ: this.typ, parent: this.parent },
-        sign: { update: "-1", where: { id: ">" } }
-      });
+      await this.api.post('querys', { table: 'story', delete: { id: this.storys[idx].id },updates:[{
+        update:{idx:'idx'},where: { idx: idx, typ: this.typ, parent: this.parent }, sign: { update: "-1", where: { idx: ">" }}}]});      
     }
   }
-  storyUp(idx, mediaOnly) {
+  storyUp(idx) {
     let temp = this.storyUpDown(idx, idx - 1, mediaOnly);
     this.medias[idx] = this.medias[idx - 1];
     this.medias[idx - 1] = temp.media;
@@ -126,8 +117,12 @@ export class StoryComponent implements OnInit {
       tinymce.editors[idx - 1].setContent(temp.txt);
     }
   }
-  storyDown(idx, mediaOnly) {
-    let temp = this.storyUpDown(idx, idx + 1, mediaOnly);
+  storyDown(idx) {
+    this.storyUpDown(idx, idx + 1).then(()=>{
+      let temp={...this.storys[idx]};
+      
+
+    });
     this.medias[idx] = this.medias[idx + 1];
     this.medias[idx + 1] = temp.media;
     this.files[idx] = this.files[idx + 1];
@@ -139,46 +134,29 @@ export class StoryComponent implements OnInit {
       tinymce.editors[idx + 1].setContent(temp.txt);
     }
   }
-  storyUpDown(idx, idz, mediaOnly): any {
-    const temp = { txt: this.txts[idx], media: this.medias[idx], file: this.files[idx] };
-    let update1: any = { media: temp.media, file: temp.file };
-    let update2: any = { media: this.medias[idz], file: this.files[idz] };
-    if (!mediaOnly) {
-      update1.txt = temp.txt;
-      update2.txt = this.txts[idz];
-    }
-    this.api.post('query', { table: 'story', update: update1, where: { typ: this.typ, parent: this.parent, id: idz } });
-    this.api.post('query', { table: 'story', update: update2, where: { typ: this.typ, parent: this.parent, id: idx } });
-    return temp;
+  storyUpDown(idx, idz):Promise<void> {
+    return new Promise((resolve,reject) => {
+      this.api.post('query',{table:'story',updates:[
+        {update:{idx:idz},where:{typ:this.typ,parent:this.parent,idx:idx}},
+        {update:{idx:idx},where:{typ:this.typ,parent:this.parent,idx:idz}}
+      ]}).then(res=>{
+        resolve();
+      }).catch(err=>{
+        this.ui.alert(`並べ替えに失敗しました。`);
+        reject();
+      });
+    });
   }
   undo(parent) {
-    this.txts = [];
-    this.medias = [];
-    this.files = [];
-    this.rows = [];
-    this.rests = [];
-    this.restdates = [];
-    this.setButtons = [];
+    this.storys = [];
     if (!parent) return;
     let where: any = { typ: this.typ, parent: this.parent };
-    this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file','latlng', 'rest', 'restdate'], where: where }).then(res => {
+    this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file', 'latlng', 'rest', 'restdate'], where: where }).then(res => {
       for (let story of res.storys) {
         if (story.rest && !(this.user.id === this.document.user || this.user.admin)) {
-          this.txts.push('非公開記事');
-          this.medias.push(null);
-          this.files.push(null);
-          this.rows.push('');
-          this.rests.push(story.rest);
-          this.restdates.push(story.restdate);
-          this.setButtons.push(false);
+          this.storys.push({ ...story, txt: '非公開記事', media: null, file: null, lat: null, lng: null, button: false });
         } else {
-          this.txts.push(story.txt);
-          this.medias.push(story.media);
-          this.files.push(story.file);
-          this.rows.push('');
-          this.rests.push(story.rest);
-          this.restdates.push(story.restdate);
-          this.setButtons.push(false);
+          this.storys.push({ ...story, button: false });//txt:story.txt,media:story.media,file:story.file,lat:story.lat,lng:story.lng,rest:story.rest,restdate:story.restdate,button:false
         }
       }
       if (!res.storys.length) this.storyAdd();
@@ -195,13 +173,13 @@ export class StoryComponent implements OnInit {
       {
         text: 'Ok', handler: (data) => {
           if (Number(data.restdate)) {
-            this.rests[idx] = 1;
-            this.restdates[idx] = data.restdate;
+            this.storys[idx].rest = 1;
+            this.storys[idx].restdate = data.restdate;
           } else {
-            this.rests[idx] = null;
-            this.restdates[idx] = null;
+            this.storys[idx].rest = null;
+            this.storys[idx].restdate = null;
           }
-          const update = { rest: this.rests[idx], restdate: this.restdates[idx] };
+          const update = { rest: this.storys[idx].rest, restdate: this.storys[idx].restdate };
           this.api.post('query', { table: 'story', update: update, where: { typ: this.typ, parent: this.parent, id: idx } });
         }
       }
@@ -211,33 +189,21 @@ export class StoryComponent implements OnInit {
   }
   mediaDel(idx): Promise<void> {
     return new Promise((resolve) => {
-      if (!this.files[idx]) {
+      if (!this.storys[idx].file) {
         resolve();
       } else {
         this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { typ: this.typ, parent: this.parent, id: idx } });
-        this.storage.ref(`${this.typ}/${this.parent}/${this.files[idx]}`).delete().toPromise().catch(err => {
+        this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete().toPromise().catch(err => {
           this.ui.alert("ファイルの削除に失敗しました。\r\n" + err.message);
         }).finally(() => {
           resolve();
         });
-        this.medias[idx] = "";
-        this.files[idx] = "";
+        this.storys[idx].media = "";
+        this.storys[idx].file = "";
       }
     })
   }
   setMarker(idx) {
-    let element = this.mediaDiv.nativeElement.firstElementChild;
-    if (element.tagName === 'IMG') {
-      EXIF.getData(element, () => {
-        let gpsLat = EXIF.getTag(element, "GPSLatitude");
-        let gpsLng = EXIF.getTag(element, "GPSLongitude");
-        let lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
-        let lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
-        console.log(`lat:${lat} lng:${lng}`);
-      })
-    }
-    let c = this.mediaDiv;
-    let b = 1;
 
   }
   upload(e, idx) {
@@ -266,14 +232,14 @@ export class StoryComponent implements OnInit {
           } else {
             html = `<a href="${url}" download="${fileName}"><img src="${APIURL}img/download.jpg"></a>`;
           }
-          this.medias[idx] = html;//setValue(html);
-          this.files[idx] = fileName;
-          let sql:any={ table: 'story', insert: { typ: this.typ, parent: this.parent, id: idx, media: html, file: fileName }, duplicate: ['media', 'file'] }
-          if(latlng){
-            sql.insert={...sql.insert,latlng:latlng};
-            sql.duplicate=['media','file','latlng'];
+          this.storys[idx].media = html;//setValue(html);
+          this.storys[idx].file = fileName;
+          let sql: any = { table: 'story', insert: { typ: this.typ, parent: this.parent, id: idx, media: html, file: fileName }, duplicate: ['media', 'file'] }
+          if (latlng) {
+            sql.insert = { ...sql.insert, latlng: latlng };
+            sql.duplicate = ['media', 'file', 'latlng'];
           }
-          this.api.post("query",sql );
+          this.api.post("query", sql);
         })
       }).catch(err => {
         this.ui.alert("ファイルアップロードに失敗しました。\r\n" + err.toString());
@@ -301,7 +267,7 @@ export class StoryComponent implements OnInit {
       EXIF.getData(files[0], () => {
         let gpsLat = EXIF.getTag(files[0], "GPSLatitude");
         let gpsLng = EXIF.getTag(files[0], "GPSLongitude");
-        if (gpsLat&& gpsLng) {
+        if (gpsLat && gpsLng) {
           const lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
           const lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
           console.log(`lat:${lat} lng:${lng}`);
@@ -335,3 +301,15 @@ export class StoryComponent implements OnInit {
     }
   }
 }
+interface Story {
+  id: number;
+  txt: string;
+  media: string;
+  file: string;
+  lat: number;
+  lng: number;
+  rest: number;
+  restdate: number;
+  button: boolean;
+}
+const STORY = { id: null, txt: "", media: "", file: "", lat: null, lng: null, rest: null, restdate: null, button: false };
