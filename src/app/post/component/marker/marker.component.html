@@ -1,0 +1,45 @@
+<ion-menu side="start" menuId="first" contentId="main">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Start Menu</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-list>
+      <ion-item>Menu Item</ion-item>
+      <ion-item>Menu Item</ion-item>
+      <ion-item>Menu Item</ion-item>
+      <ion-item>Menu Item</ion-item>
+      <ion-item>Menu Item</ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="start">
+        <ion-icon name="location"></ion-icon>
+      </ion-menu-button>
+      <ion-button (click)="modal.dismiss()" fill="clear">
+        　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>マーカー設定</ion-title>
+    <ion-button slot="end" [disabled]="" (click)="save()" fill="clear">
+      　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content id="main">
+  <agm-map [latitude]='lat' [longitude]='lng' [zoom]='zoom' [fullscreenControl]='true'>
+    <agm-marker *ngFor="let marker of markers" (markerClick)="markerClick(marker);"
+      (markerRightClick)="markerRightClick(marker)" (mouseOver)="mouseOver($event,marker)" [latitude]="marker.lat"
+      [longitude]="marker.lng" [label]="marker.idx"
+      [iconUrl]="{ url: marker.icon, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
+      <agm-info-window #infoWindow [isOpen]="isInfoWindowOpen(marker.id)">
+        <div>{{marker.txt}}</div>
+        <img *ngIf="marker.img" [src]="marker.img" />
+      </agm-info-window>
+    </agm-marker>
+  </agm-map>
+</ion-content>

@@ -9,6 +9,7 @@ import { ReportPage } from './report.page';
 import { PipeSharedModule } from '../../pipe/shared.module';
 import { SharedModule } from '../component/shared.module';
 import { MapModule } from '../component/map/map.module';
+import { MarkerModule } from '../component/marker/marker.module';
 const routes: Routes = [
   { path: '', component: ReportPage },
   { path: ':id', component: ReportPage },
@@ -16,7 +17,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), FormsModule, ReactiveFormsModule,
-    EditorModule, ImageCropperModule, PipeSharedModule, SharedModule,MapModule
+    EditorModule, ImageCropperModule, PipeSharedModule, SharedModule,MapModule,MarkerModule,
   ],
   declarations: [ReportPage],
 })

@@ -15,7 +15,7 @@ export class MapComponent implements OnInit, OnChanges {
   @Output() saved = new EventEmitter();
   lat: number = 34.68503331;
   lng: number = 138.85154339;
-  zoom: number = 6;
+  zoom: number = 8;
   center = { lat: this.lat, lng: this.lng };
   openedWindow: number = 1;
   marker: Marker = MARKER;

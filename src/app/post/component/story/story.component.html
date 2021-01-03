@@ -5,18 +5,10 @@
         <ion-buttons *ngIf="document.user===user.id||user.admin" class="mediaButton">
           <ion-button fill="clear" (click)="upmedia.click()">
             <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ng-container *ngIf="story.media">
-            <ion-button *ngIf="i" (click)="storyUp(i)" slot="start" fill="clear">
-              <ion-icon name="arrow-up-circle" slot="icon-only" color="warning"></ion-icon>
-            </ion-button>
-            <ion-button *ngIf="i<storys.length-1" (click)="storyDown(i)" fill="clear">
-              <ion-icon name="arrow-down-circle" slot="icon-only" color="warning"></ion-icon>
-            </ion-button>
-            <ion-button fill="clear" (click)="mediaDel(i)">
+          </ion-button>         
+            <ion-button *ngIf="story.media" fill="clear" (click)="mediaDel(i)">
               <ion-icon name="close-circle" color="danger" slot="icon-only"></ion-icon>
             </ion-button>
-          </ng-container>
         </ion-buttons>
         <div [innerHtml]="story.media|safe:'html'"></div>
       </div>

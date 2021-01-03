@@ -1,11 +1,12 @@
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/storage';
-import { AlertController } from '@ionic/angular';
+import { AlertController,ModalController } from '@ionic/angular';
 import * as EXIF from 'exif-js'
-import { User } from '../../../class';
+import { User,Marker } from '../../../class';
 import { APIURL } from '../../../../environments/environment';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
+import { MarkerComponent } from '../marker/marker.component';
 declare var tinymce;
 @Component({
   selector: 'app-story',
@@ -30,14 +31,8 @@ export class StoryComponent implements OnInit {
     return this._parent;
   }
   @ViewChild('upmedia', { read: ElementRef, static: false }) upmedia: ElementRef;//メディアファイル選択
-  storys: Array<Story> = [];
-  txts: Array<string> = [];
-  medias: Array<string> = [];//メディアのhtml
-  files: Array<string> = [];
-  rows: Array<string> = [];//ダミー
-  rests: Array<number> = [];
-  restdates: Array<number> = [];
-  setButtons: Array<boolean>;//段落設定ボタンの開閉
+  storys: Story[] = [];
+  markers:Marker[]=[];
   progress;//メディアファイルのアップロード経過
   uploading: number;//アップロード中の段落番号(idx)  
   tinyinit = {
@@ -85,7 +80,8 @@ export class StoryComponent implements OnInit {
       });
     }
   }
-  constructor(private storage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController,) { }
+  constructor(private storage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController,
+    private modal:ModalController,) { }
   ngOnInit() {
   }
   storyAdd() {
@@ -192,8 +188,19 @@ export class StoryComponent implements OnInit {
       }
     })
   }
-  setMarker(idx) {
-
+  async setMarker(idx) {
+    let lat=this.storys[idx].lat?this.storys[idx].lat:34.68503331;
+    let lng=this.storys[idx].lng?this.storys[idx].lng:138.85154339;
+    let marker = await this.modal.create({
+      component: MarkerComponent,
+      componentProps: { typ:this.typ,parent:this.parent,lat:lat,lng:lng,markers:this.markers,story:this.storys[idx] }
+    });
+    marker.present();
+    marker.onDidDismiss().then(event => {
+      if (event.data) {
+        this.markers=event.data.markers;
+      }
+    });
   }
   upload(e, idx) {
     const files = e.target.files;
@@ -293,7 +300,7 @@ export class StoryComponent implements OnInit {
     }
   }
 }
-interface Story {
+export interface Story {
   id: number;
   txt: string;
   media: string;
