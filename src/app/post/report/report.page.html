@@ -14,6 +14,9 @@
       <ion-button *ngIf="reports.acks.length" slot="start" color="success" (click)="popReports(reports.acks,$event)">
         公開済{{reports.acks.length}}件
       </ion-button>
+      <ion-button (click)="undo(report)" fill="clear" [disabled]="!report.id">
+        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      </ion-button>
       <ion-title>レポート投稿</ion-title>
       <ng-container *ngIf="report.id">
         <ion-item *ngIf="report.author" button="true" [routerLink]="'/user/'+report.author.id">

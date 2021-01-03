@@ -77,7 +77,9 @@ export class StoryComponent implements OnInit {
             } else {
               sql.insert = { typ: this.typ, parent: this.parent, idx: idx, txt: html };
             }
-            this.api.post("query", sql);
+            this.api.post("query", sql).then(res=>{
+              this.storys[idx]={...this.storys[idx],...res.story};
+            });
           }
         }
       });
@@ -95,53 +97,40 @@ export class StoryComponent implements OnInit {
       confirm = await this.ui.confirm(`削除確認`, `第${idx + 1}段落を削除してよろしいですか。`);
     }
     if (confirm) {
-      await this.mediaDel(idx);
-      this.storys.splice(idx, 1);
-      for (let i = idx; i < this.storys.length; i++) {
-        tinymce.editors[i].setContent(this.storys[i].txt);
-      }
-      await this.api.post('querys', { table: 'story', delete: { id: this.storys[idx].id },updates:[{
-        update:{idx:'idx'},where: { idx: idx, typ: this.typ, parent: this.parent }, sign: { update: "-1", where: { idx: ">" }}}]});      
+      this.ui.loading();
+      await this.mediaDel(idx);      
+      this.api.post('querys', { table: 'story', delete: { id: this.storys[idx].id }, updates: [{
+          update: {}, where: { typ: this.typ, parent: this.parent,idx:idx }, sign: { update:{idx: "-1"}, where: { idx: ">" } }
+        }]
+      }).then(res=>{
+        this.storys.splice(idx, 1);
+      }).finally(()=>{this.ui.loadend()});      
     }
   }
   storyUp(idx) {
-    let temp = this.storyUpDown(idx, idx - 1, mediaOnly);
-    this.medias[idx] = this.medias[idx - 1];
-    this.medias[idx - 1] = temp.media;
-    this.files[idx] = this.files[idx - 1];
-    this.files[idx - 1] = temp.file;
-    if (!mediaOnly) {
-      this.txts[idx] = this.txts[idx - 1];
-      this.txts[idx - 1] = temp.txt;
-      tinymce.editors[idx].setContent(this.txts[idx]);
-      tinymce.editors[idx - 1].setContent(temp.txt);
-    }
-  }
-  storyDown(idx) {
-    this.storyUpDown(idx, idx + 1).then(()=>{
-      let temp={...this.storys[idx]};
-      
-
+    this.storyUpDown(idx, idx - 1).then(() => {
+      let temp = { ...this.storys[idx] };
+      this.storys[idx] = this.storys[idx - 1];
+      this.storys[idx - 1] = temp;
     });
-    this.medias[idx] = this.medias[idx + 1];
-    this.medias[idx + 1] = temp.media;
-    this.files[idx] = this.files[idx + 1];
-    this.files[idx + 1] = temp.file;
-    if (!mediaOnly) {
-      this.txts[idx] = this.txts[idx + 1];
-      this.txts[idx + 1] = temp.txt;
-      tinymce.editors[idx].setContent(this.txts[idx]);
-      tinymce.editors[idx + 1].setContent(temp.txt);
-    }
   }
-  storyUpDown(idx, idz):Promise<void> {
-    return new Promise((resolve,reject) => {
-      this.api.post('query',{table:'story',updates:[
-        {update:{idx:idz},where:{typ:this.typ,parent:this.parent,idx:idx}},
-        {update:{idx:idx},where:{typ:this.typ,parent:this.parent,idx:idz}}
-      ]}).then(res=>{
+  storyDown(idx:number) {
+    this.storyUpDown(idx, idx + 1).then(() => {
+      let temp = { ...this.storys[idx] };
+      this.storys[idx] = this.storys[idx + 1];
+      this.storys[idx + 1] = temp;
+    });
+  }
+  storyUpDown(idx, idz): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.api.post('querys', {
+        table: 'story', updates: [
+          { update: { idx: idz }, where: { id: this.storys[idx].id } },
+          { update: { idx: idx }, where: { id: this.storys[idz].id } }
+        ]
+      }, "並べ替えています").then(res => {
         resolve();
-      }).catch(err=>{
+      }).catch(err => {
         this.ui.alert(`並べ替えに失敗しました。`);
         reject();
       });
@@ -180,7 +169,7 @@ export class StoryComponent implements OnInit {
             this.storys[idx].restdate = null;
           }
           const update = { rest: this.storys[idx].rest, restdate: this.storys[idx].restdate };
-          this.api.post('query', { table: 'story', update: update, where: { typ: this.typ, parent: this.parent, id: idx } });
+          this.api.post('query', { table: 'story', update: update, where: { id: this.storys[idx].id } });
         }
       }
       ]
@@ -192,7 +181,7 @@ export class StoryComponent implements OnInit {
       if (!this.storys[idx].file) {
         resolve();
       } else {
-        this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { typ: this.typ, parent: this.parent, id: idx } });
+        this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { id: this.storys[idx].id } });
         this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete().toPromise().catch(err => {
           this.ui.alert("ファイルの削除に失敗しました。\r\n" + err.message);
         }).finally(() => {
@@ -232,14 +221,17 @@ export class StoryComponent implements OnInit {
           } else {
             html = `<a href="${url}" download="${fileName}"><img src="${APIURL}img/download.jpg"></a>`;
           }
-          this.storys[idx].media = html;//setValue(html);
-          this.storys[idx].file = fileName;
-          let sql: any = { table: 'story', insert: { typ: this.typ, parent: this.parent, id: idx, media: html, file: fileName }, duplicate: ['media', 'file'] }
-          if (latlng) {
-            sql.insert = { ...sql.insert, latlng: latlng };
-            sql.duplicate = ['media', 'file', 'latlng'];
+          let sql: any = { table: 'story' };
+          if (this.storys[idx].id) {
+            sql.update = latlng ? { media: html, file: fileName, latlng: latlng } : { media: html, file: fileName };
+            sql.where = { id: this.storys[idx].id };
+          } else {
+            sql.insert = { typ: this.typ, parent: this.parent, idx: idx, media: html, file: fileName };
+            if (latlng) sql.insert = { ...sql.insert, latlng: latlng };
           }
-          this.api.post("query", sql);
+          this.api.post("query", sql,"保存中").then(res=>{
+            this.storys[idx]={...this.storys[idx],...res.story};
+          });
         })
       }).catch(err => {
         this.ui.alert("ファイルアップロードに失敗しました。\r\n" + err.toString());
