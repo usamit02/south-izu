@@ -142,7 +142,7 @@ export class MarkerComponent implements OnInit {
   }
   async erase() {
     if (await this.ui.confirm(`削除確認`, `このマーカーを本当に削除しますか？`)) {
-      this.ui.loading('削除中です。。。', 30000);
+      this.ui.loading('削除中');
       this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'marker', parent: this.marker.id } }).then(async res => {
         for (let story of res.storys) {
           if (story.file) this.storage.ref(`marker/${this.marker.id}/${story.file}`).delete();

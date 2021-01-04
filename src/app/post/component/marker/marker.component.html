@@ -31,15 +31,53 @@
   </ion-toolbar>
 </ion-header>
 <ion-content id="main">
-  <agm-map [latitude]='lat' [longitude]='lng' [zoom]='zoom' [fullscreenControl]='true'>
+  <agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' (boundsChange)="onBoundsChange($event)">
     <agm-marker *ngFor="let marker of markers" (markerClick)="markerClick(marker);"
       (markerRightClick)="markerRightClick(marker)" (mouseOver)="mouseOver($event,marker)" [latitude]="marker.lat"
       [longitude]="marker.lng" [label]="marker.idx"
-      [iconUrl]="{ url: marker.icon, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
+      [iconUrl]="{ url: marker.icon, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}" [agmFitBounds]="true">
       <agm-info-window #infoWindow [isOpen]="isInfoWindowOpen(marker.id)">
         <div>{{marker.txt}}</div>
         <img *ngIf="marker.img" [src]="marker.img" />
       </agm-info-window>
     </agm-marker>
   </agm-map>
+  <form [formGroup]="markerForm">
+    <ion-item>
+      <ion-label class="leftLabel">名称</ion-label>
+      <ion-input name="na" [formControl]="na" placeholder="弓ヶ浜"></ion-input>
+    </ion-item>
+    <span *ngIf="na.errors?.minlength||na.errors?.maxlength" class="errmsg">２文字以上２０文字以下で入力してください。</span>
+    <ion-item>
+      <ion-label class="leftLabel">説明文</ion-label>
+      <ion-textarea name="txt" [formControl]="txt" placeholder="南伊豆を代表する海水浴場で、長さ1kmにわたる美しい弧を描く砂浜"></ion-textarea>
+    </ion-item>
+    <span *ngIf="txt.errors?.minlength||txt.errors?.maxlength" class="errmsg">２文字以上５００文字以下で入力してください。</span>
+    <span *ngIf="txt.errors?.pattern && txt.dirty" class="errmsg">入力してください</span>    
+    <ion-segment scrollable [formControl]="icon">
+      <ion-segment-button *ngFor="let icon of icons" [value]="icon.id">         
+          <img [src]="icon.url"/>
+          <ion-label>{{icon.na}}</ion-label>         
+      </ion-segment-button>        
+    </ion-segment>    
+  </form>
+  <ion-item>    
+      <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe" />
+      <ng-template #orgimg>
+        <img *ngIf="img.value;else noimg" class="img" [src]="img.value" />
+        <ng-template #noimg>
+          <img class="img" [src]="noimgUrl"/>
+        </ng-template>
+      </ng-template>
+      <ion-buttons class="imgButtons">
+        <ion-button fill="clear" (click)="upImg.click()">
+          <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="imgBlob" slot="end" (click)="imgBlob=''" fill="clear">
+          <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+  </ion-item> 
+  <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
+  <canvas #canvas style="display: none;"></canvas>
 </ion-content>
