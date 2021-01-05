@@ -2,3 +2,30 @@ agm-map {
   height: 600px;
  img{border-radius: 5px;}  
 }
+.leftLabel{
+  width:10em;
+}
+.leftText{
+  width:10.5em;
+}
+.errmsg{
+  color:red;
+}
+.imgDiv{
+  min-height: 3em;
+}
+.img{
+   border-radius: 10px;
+   max-width: 160px;
+   position:relative;
+}
+.imgButtons{
+  z-index: 2;
+  position: absolute;
+  left: 20%;
+  top: 30%;
+  margin: auto;
+}
+ion-segment{
+  padding-top:10px;
+}

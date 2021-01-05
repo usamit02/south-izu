@@ -150,12 +150,12 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           text: 'いいえ',
           handler: () => {
             this.create({
-              user: this.user.id, created: this.dateFormat(),genre: this.genre.value,}, false);
+              user: this.user.id,genre: this.genre.value,}, false);
           }
         }, {
           text: 'はい',
           handler: () => {
-            this.create({ user: this.user.id, ...this.reportForm.value, created: this.dateFormat() }, true);
+            this.create({ user: this.user.id, ...this.reportForm.value}, true);
           }
         }
       ]
@@ -166,9 +166,9 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.report.id || this.reportForm.invalid) return;
     this.create({ user: this.user.id, na: this.na.value});
   }
-  create(insert, storyCopy?: boolean) {
+  create(insert, copy?: boolean) {
     this.api.post("query", { table: "report", insert: insert }).then(async res => {
-      if (storyCopy) {
+      if (copy) {
         let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "report", parent: this.report.id } });
         let inserts = doc.storys.filter(story => { return !story.rested || this.report.user === this.user.id || this.user.admin });
         if (inserts.length) {
@@ -179,7 +179,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           await this.api.post('querys', { table: "story", inserts: inserts });
         }
       }
-      this.undo({ ...res.report, shopimg: this.report.shopimg, shop_img: this.report.shop_img, castimg: this.report.castimg, cast_img: this.report.cast_img }, true);
+      this.undo(res.report);
     }).catch(() => {
       this.ui.alert(`新しいレポートの作成に失敗しました。`);
     });
@@ -196,7 +196,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   scroll(target) {
     this.content.nativeElement.scrollToPoint(0, target, 500);
   }
-  async undo(report, castKeep?: boolean) {
+  async undo(report) {
     this.undoing = true;
     if (this.user.id !== report.user) {
       const snapshot = await this.db.database.ref(`user/${report.user}`).once('value');
