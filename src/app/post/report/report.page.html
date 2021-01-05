@@ -90,7 +90,7 @@
           <span *ngIf="description.errors?.minlength||description.errors?.maxlength"
             class="errmsg">２文字以上３００文字以下で入力してください。</span>
           <ion-item>
-            <ion-label>イメージ画像</ion-label>
+            <ion-label position="floating">イメージ</ion-label>
             <img *ngIf="imgBase64;else orgimg" class="img" [src]="imgBase64" />
             <ng-template #orgimg>
               <img *ngIf="report.image" class="img" [src]="report.image" alt="イメージ" />
@@ -104,7 +104,7 @@
           </ion-item>  
         </ion-col>
         <ion-col #map size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-          <app-map typ="report" [id]="report.id"></app-map>
+          <app-map typ="report" [parent]="report.id"></app-map>
         </ion-col>
       </ion-row>
     </ion-grid>
