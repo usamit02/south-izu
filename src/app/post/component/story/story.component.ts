@@ -189,11 +189,9 @@ export class StoryComponent implements OnInit {
     })
   }
   async setMarker(idx) {
-    let lat=this.storys[idx].lat?this.storys[idx].lat:34.68503331;
-    let lng=this.storys[idx].lng?this.storys[idx].lng:138.85154339;
     let marker = await this.modal.create({
       component: MarkerComponent,
-      componentProps: { typ:this.typ,parent:this.parent,lat:lat,lng:lng,markers:this.markers,story:this.storys[idx] }
+      componentProps: { typ:this.typ,parent:this.parent,markers:this.markers,story:this.storys[idx] }
     });
     marker.present();
     marker.onDidDismiss().then(event => {

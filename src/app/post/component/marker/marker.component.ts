@@ -1,67 +1,59 @@
-import { Component, OnChanges, OnInit, Input, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { LatLngBounds } from '@agm/core';
-import { Marker, MARKER } from '../../../class';
 import { Story } from '../story/story.component';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
 import { APIURL } from '../../../../environments/environment';
+import { makeArray } from 'jquery';
 @Component({
   selector: 'app-marker',
   templateUrl: './marker.component.html',
   styleUrls: ['./marker.component.scss'],
 })
-export class MarkerComponent implements OnInit, OnChanges {
+export class MarkerComponent implements OnInit {
   @Input() typ: string;
   @Input() parent: number;
-  @Input() lat: number; @Input() lng: number;
   @Input() markers: Array<Marker>;
   @Input() story: Story;
   @ViewChild('upImg', { read: ElementRef, static: false }) upImg: ElementRef;//メディアファイル選択 
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
-  id = new FormControl(null, [Validators.required]);
   na = new FormControl("", [Validators.minLength(2), Validators.maxLength(20), Validators.required]);
   txt = new FormControl("", [Validators.minLength(2), Validators.maxLength(500), Validators.required]);
   img = new FormControl("");
   latlng = new FormControl("", [Validators.required]);
   icon = new FormControl(0, [Validators.required]);
-  markerForm = this.builder.group({
-    id: this.id, na: this.na, txt: this.txt, img: this.img, latlng: this.latlng, icon: this.icon,
-  });
-  center = { lat: null, lng: null };
+  markerForm = this.builder.group({ na: this.na, txt: this.txt, img: this.img, latlng: this.latlng, icon: this.icon, });
+  lat: number = 34;
+  lng: number = 138;
+  center = { lat: 34, lng: 138 };
   openedWindow: number = 1;
   marker: Marker = MARKER;
   icons = [];
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
-  saving = false;
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder, private ui: UiService,
     private storage: AngularFireStorage,) { }
   ngOnInit() {
-    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon' }).then(res => {
+    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon' }).then(async res => {
       this.icons = res.markericons;
-    });
-  }
-  async ngOnChanges(changes: SimpleChanges) {
-    if (changes.story) {
-      this.id.setValue(this.story.id);
       if (!this.markers.length) {
-        const res = await this.api.get('query', { select: ['*'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
+        const res = await this.api.get('query', { select: ['id','latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
         this.markers = res.story_markers;
       }
       let markers = this.markers.filter(marker => { return marker.id === this.story.id; });
       if (markers.length) {
         this.marker = markers[0];
       } else {
-        this.marker = { id: this.story.id, na: "", txt: this.story.txt, img: "", icon: 0, lat: this.story.lat, lng: this.story.lng };
+        let lat = this.story.lat ? this.story.lat : this.center.lat;
+        let lng = this.story.lng ? this.story.lng : this.center.lng;
+        this.marker = { id: this.story.id, na: "", txt: this.story.txt, img: "", icon: 0, lat: lat, lng: lng ,idx:0};
       }
+      this.lat = this.marker.lat; this.lng = this.marker.lng;
       this.undo();
-    }
-    if (changes.lat) {
-      this.center = { lat: this.lat, lng: this.lng };
-    }
+    });
   }
   onBoundsChange(bounds: LatLngBounds) {
     this.center.lat = bounds.getCenter().lat();
@@ -90,7 +82,7 @@ export class MarkerComponent implements OnInit, OnChanges {
       }
     }
     this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);
-    this.lat = this.marker.lat; this.lng = this.marker.lng;
+    this.center = { lat: this.marker.lat, lng: this.marker.lng };
     this.markerForm.markAsPristine();
   }
   imgChange(e) {
@@ -147,10 +139,13 @@ export class MarkerComponent implements OnInit, OnChanges {
         image.src = this.imgBlob;
       });
     }
-    if (this.imgBlob) { this.img.setValue(await imagePut(this.marker.id)); }
-    this.api.post('query', { table: "story_marker", insert: this.markerForm.value, dupulicate: ['na', 'txt', 'img', 'latlng', 'icon'] }).then(res => {
+    if (this.imgBlob) { this.img.setValue(await imagePut(this.marker.id)); };
+    this.latlng.setValue(`POINT(${this.center.lng} ${this.center.lat})`);
+    const insert = { ...this.markerForm.value, id: this.story.id, typ: this.typ, parent: this.parent };
+    this.api.post('query', { table: "story_marker", insert: insert, duplicate: ['na', 'txt', 'img', 'latlng', 'icon'] }).then(res => {
+      this.marker={...this.marker,...this.markerForm.value};
       let insert = true;
-      this.markers.map(marker => {
+      this.markers=this.markers.map(marker => {
         if (this.marker.id === marker.id) {
           marker = this.marker;
           insert = false;
@@ -164,3 +159,14 @@ export class MarkerComponent implements OnInit, OnChanges {
     }).finally(() => { this.ui.loadend(); });
   }
 }
+interface Marker {
+  id:number;
+  lat: number;
+  lng: number; 
+  na: string;
+  txt: string;
+  img: string;
+  icon:string|number;  
+  idx:number;
+}
+const MARKER={id:0,na:"",txt:"",lat:34.68503331,lng:138.85154339,img:"",icon:0,idx:0}
