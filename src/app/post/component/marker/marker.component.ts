@@ -15,6 +15,7 @@ export class MarkerComponent implements OnInit {
   @Input() typ: string;
   @Input() parent: number;
   @Input() markers: Array<Marker>;
+  @Input() icons: Array<any>;
   @Input() story: Story;
   @ViewChild('upImg', { read: ElementRef, static: false }) upImg: ElementRef;//メディアファイル選択 
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
@@ -28,56 +29,52 @@ export class MarkerComponent implements OnInit {
   lng: number = 138;
   openedWindow: number = 1;
   marker: Marker = MARKER;
-  icons = [];
   imgData;
   noimgUrl = APIURL + 'img/noimg.jpg';
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder, private ui: UiService,
     private storage: AngularFireStorage,) { }
-  ngOnInit() {
-    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon', order: { id: "ESC" } }).then(async res => {
-      this.icons = res.markericons;
-      if (!this.markers.length) {
-        const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
-        this.markers = res.story_markers
-      }
-      let markers = this.markers.filter(marker => { return marker.id === this.story.id; });
-      if (markers.length) {
-        this.marker = markers[0];
-      } else {
-        let lat = this.story.lat ? this.story.lat : this.lat;
-        let lng = this.story.lng ? this.story.lng : this.lng;
-        let dummy = document.createElement('div');
-        let txt = this.story.txt == null ? "" : this.story.txt;
-        dummy.innerHTML = txt;
-        let na = "";
-        const removeTag = new RegExp("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", "g");
-        for (let i = 6; i > 0; i--) {
-          let h = dummy.querySelector(`h${i}`);
-          if (h) {
-            na = h.innerHTML.replace(removeTag, "");
-            const removeH = new RegExp(`<h${i}(?: .+?)?>.*?<\/h${i}>`, "g");
-            txt = txt.replace(removeH, "");
-          }
+  async ngOnInit() {
+    if (!this.markers.length) {
+      const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
+      this.markers = res.story_markers
+    }
+    let markers = this.markers.filter(marker => { return marker.id === this.story.id; });
+    if (markers.length) {
+      this.marker = markers[0];
+    } else {
+      let lat = this.story.lat ? this.story.lat : this.lat;
+      let lng = this.story.lng ? this.story.lng : this.lng;
+      let dummy = document.createElement('div');
+      let txt = this.story.txt == null ? "" : this.story.txt;
+      dummy.innerHTML = txt;
+      let na = "";
+      const removeTag = new RegExp("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", "g");
+      for (let i = 6; i > 0; i--) {
+        let h = dummy.querySelector(`h${i}`);
+        if (h) {
+          na = h.innerHTML.replace(removeTag, "");
+          const removeH = new RegExp(`<h${i}(?: .+?)?>.*?<\/h${i}>`, "g");
+          txt = txt.replace(removeH, "");
         }
-        txt = `${txt.replace(removeTag, "").replace("\n", "").slice(0, 100)}${txt.length > 100 ? '...' : ""}`;
-        dummy.innerHTML = this.story.media;
-        const img = dummy.querySelector('img');
-        if (img.tagName === 'img' || img.tagName === 'IMG') {
-          let image = new Image;
-          image.crossOrigin = "Anonymous";
-          image.onload = () => {
-            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-            canvas.width = image.width;
-            canvas.height = image.height;
-            canvas.getContext('2d').drawImage(image, 0, 0);
-            this.imgData = canvas.toDataURL("image/jpeg");
-          }
-          image.src = img.src;
-        }
-        this.marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 0, lat: lat, lng: lng, idx: 0 };
       }
-      this.undo();
-    });
+      txt = `${txt.replace(removeTag, "").replace("\n", "").slice(0, 100)}${txt.length > 100 ? '...' : ""}`;
+      dummy.innerHTML = this.story.media;
+      const img = dummy.querySelector('img');
+      if (img.tagName === 'img' || img.tagName === 'IMG') {
+        let image = new Image;
+        image.crossOrigin = "Anonymous";
+        image.onload = () => {
+          let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+          canvas.width = image.width;
+          canvas.height = image.height;
+          canvas.getContext('2d').drawImage(image, 0, 0);
+          this.imgData = canvas.toDataURL("image/jpeg");
+        }
+        image.src = img.src;
+      }
+      this.marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 0, lat: lat, lng: lng, idx: 0 };
+    }
+    this.undo();
   }
   async mapRightClick(lat: number, lng: number) {
     const confirm = await this.ui.confirm('マーカー位置', '変更しますか');
@@ -120,6 +117,14 @@ export class MarkerComponent implements OnInit {
       this.imgData = window.URL.createObjectURL(e.target.files[0]);
     } else {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
+    }
+  }
+  imgDel() {
+    if (this.imgData) {
+      this.imgData = "";
+    } else if (this.img.value) {
+      this.img.setValue("");
+      this.markerForm.markAsDirty();
     }
   }
   async save() {
@@ -169,7 +174,11 @@ export class MarkerComponent implements OnInit {
         image.src = this.imgData;
       });
     }
-    if (this.imgData) { this.img.setValue(await imagePut(this.marker.id)); };
+    if (this.imgData) {
+      this.img.setValue(await imagePut(this.marker.id));
+    } else if (!this.img.value && this.marker.img) {
+      this.storage.ref(`story_marker/${this.story.id}.jpg`).delete();
+    }
     const insert = { ...this.markerForm.value, id: this.story.id, typ: this.typ, parent: this.parent };
     this.api.post('query', { table: "story_marker", insert: insert, duplicate: ['na', 'txt', 'img', 'latlng', 'icon'] }).then(res => {
       this.marker = { ...this.marker, ...this.markerForm.value };

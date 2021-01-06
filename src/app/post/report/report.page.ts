@@ -44,6 +44,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   reports = { drafts: [], requests: [], posts: [], acks: [] };  
   imgBase64: string;
   markers:Marker[]=[];
+  markericons=[];
   currentY: number; scrollH: number; contentH: number; basicY: number; mapY: number; essayY: number; scoreY: number;
   private onDestroy$ = new Subject();
   constructor(private api: ApiService, private userService: UserService, private builder: FormBuilder, private storage: AngularFireStorage,
@@ -75,6 +76,9 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
       this.genreOptions.changes.pipe(take(1)).toPromise().then(() => {
         this.genre.setValue(res.genres[0].id.toString());
       });
+    });
+    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon',order:{id:"ESC"} }).then(async res => {
+      this.markericons = res.markericons;
     });
     setTimeout(() => {
       if (!this.user.id) {
@@ -297,13 +301,21 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         for (let story of res.storys) {
           if (story.file) this.storage.ref(`report/${id}/${story.file}`).delete();
         }
-        await this.api.post('querys', { deletes: [{ id: this.report.id,usar:this.user.id,table:"report" },{typ:"report",parent:this.report.id,table:"story"}]});
+        const mres=await this.api.get('query',{table:'story_marker',select:['img'],where:{typ:'report',parent:id}});
+        for (let marker of mres.story_markers){
+          if(marker.img) this.storage.ref(`story_marker/${marker.id}.jpg`).delete();
+        }
+        await this.api.post('querys', { deletes: [
+          { id: this.report.id,usar:this.user.id,table:"report" },
+          {typ:"report",parent:this.report.id,table:"story"},
+          {typ:"report",parent:this.report.id,table:"story_marker"}          
+        ]});
         //await this.api.post('query', { table: 'report', delete: { id: id } });
         //await this.api.post('query', { table: 'story', delete: { typ: 'report', parent: id } });
         await this.db.list(`report/${id}`).remove();
         await this.db.database.ref(`post/report${id}`).remove();
         await this.store.collection('report').doc(id.toString()).delete();        
-        if(this.report.image) this.storage.ref(`column/${this.report.id}/image.jpg`).delete();
+        if(this.report.image) this.storage.ref(`report/${this.report.id}/image.jpg`).delete();
         this.reports.drafts = this.reports.drafts.filter(report => { return report.id !== id; });
         this.reports.requests = this.reports.requests.filter(report => { return report.id !== id; });
         this.reports.posts = this.reports.posts.filter(report => { return report.id !== id; });

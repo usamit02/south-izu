@@ -11,23 +11,22 @@ export class MapComponent implements OnInit, OnChanges {
   @Input() typ: string;
   @Input() parent: number;
   @Input() markers: Array<Marker>;
+  @Input() icons: Array<any>;
   //@Output() saved = new EventEmitter();
   lat: number = 34.68503331;
   lng: number = 138.85154339;
   openedWindow: number = 1;
   marker: Marker;
-  icons=[];
   constructor(private api: ApiService, private ui: UiService,) { }
-  ngOnInit() { 
-    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon',order:{id:"ESC"} }).then(async res => {
-      this.icons = res.markericons;
-    });
+  ngOnInit() {     
   }
   ngOnChanges(changes: SimpleChanges) {
     if (changes.parent) {
       this.api.get('query', { select: ['id','latlng','na','txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }).then(res => {
         this.markers = res.story_markers;
-        if(this.markers.length) this.lat=this.markers[0].lat;this.lng=this.markers[0].lng;
+        if(this.markers.length) {
+          this.lat=this.markers[0].lat;this.lng=this.markers[0].lng;
+        }
       })
     }
   }
