@@ -99,7 +99,7 @@
           <span *ngIf="description.errors?.minlength||description.errors?.maxlength"
             class="errmsg">２文字以上３００文字以下で入力してください。</span>
           <ion-item>
-            <ion-label>イメージ画像</ion-label>
+            <ion-label position="floating">イメージ画像</ion-label>
             <img *ngIf="imgBase64;else orgimg" class="img" [src]="imgBase64" />
             <ng-template #orgimg>
               <img *ngIf="column.image" class="img" [src]="column.image" alt="イメージ" />

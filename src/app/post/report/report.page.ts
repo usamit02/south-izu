@@ -15,6 +15,7 @@ import { ListComponent } from '../component/list/list.component';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { UserService } from '../../service/user.service';
+import { Marker } from '../component/marker/marker.component'
 @Component({
   selector: 'app-report',
   templateUrl: './report.page.html',
@@ -42,6 +43,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   report: any = { id: null, user: null };
   reports = { drafts: [], requests: [], posts: [], acks: [] };  
   imgBase64: string;
+  markers:Marker[]=[];
   currentY: number; scrollH: number; contentH: number; basicY: number; mapY: number; essayY: number; scoreY: number;
   private onDestroy$ = new Subject();
   constructor(private api: ApiService, private userService: UserService, private builder: FormBuilder, private storage: AngularFireStorage,
@@ -195,6 +197,9 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   }
   scroll(target) {
     this.content.nativeElement.scrollToPoint(0, target, 500);
+  }
+  resetMarkers(markers){
+    this.markers=markers;
   }
   async undo(report) {
     this.undoing = true;

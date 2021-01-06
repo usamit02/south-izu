@@ -29,12 +29,12 @@ export class MarkerComponent implements OnInit {
   openedWindow: number = 1;
   marker: Marker = MARKER;
   icons = [];
-  imgBlob;
+  imgData;
   noimgUrl = APIURL + 'img/noimg.jpg';
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder, private ui: UiService,
     private storage: AngularFireStorage,) { }
   ngOnInit() {
-    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon',order:{id:"ESC"} }).then(async res => {
+    this.api.get("query", { select: ['id', 'na', 'url'], table: 'markericon', order: { id: "ESC" } }).then(async res => {
       this.icons = res.markericons;
       if (!this.markers.length) {
         const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
@@ -46,10 +46,36 @@ export class MarkerComponent implements OnInit {
       } else {
         let lat = this.story.lat ? this.story.lat : this.lat;
         let lng = this.story.lng ? this.story.lng : this.lng;
-        const txt= this.story.txt.match(/[^ -~｡-ﾟ]/).slice(0, 100) + '...';
-        this.marker = { id: this.story.id, na: "", txt: txt, img: "", icon: 0, lat: lat, lng: lng, idx: 0 };
+        let dummy = document.createElement('div');
+        let txt = this.story.txt == null ? "" : this.story.txt;
+        dummy.innerHTML = txt;
+        let na = "";
+        const removeTag = new RegExp("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", "g");
+        for (let i = 6; i > 0; i--) {
+          let h = dummy.querySelector(`h${i}`);
+          if (h) {
+            na = h.innerHTML.replace(removeTag, "");
+            const removeH = new RegExp(`<h${i}(?: .+?)?>.*?<\/h${i}>`, "g");
+            txt = txt.replace(removeH, "");
+          }
+        }
+        txt = `${txt.replace(removeTag, "").replace("\n", "").slice(0, 100)}${txt.length > 100 ? '...' : ""}`;
+        dummy.innerHTML = this.story.media;
+        const img = dummy.querySelector('img');
+        if (img.tagName === 'img' || img.tagName === 'IMG') {
+          let image = new Image;
+          image.crossOrigin = "Anonymous";
+          image.onload = () => {
+            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+            canvas.width = image.width;
+            canvas.height = image.height;
+            canvas.getContext('2d').drawImage(image, 0, 0);
+            this.imgData = canvas.toDataURL("image/jpeg");
+          }
+          image.src = img.src;
+        }
+        this.marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 0, lat: lat, lng: lng, idx: 0 };
       }
-      this.lat = this.marker.lat; this.lng = this.marker.lng;
       this.undo();
     });
   }
@@ -57,10 +83,11 @@ export class MarkerComponent implements OnInit {
     const confirm = await this.ui.confirm('マーカー位置', '変更しますか');
     if (confirm) {
       this.latlng.setValue(`POINT(${lng} ${lat})`);
-      this.markers=this.markers.map((marker:Marker)=>{
-        if(marker.id===this.marker.id){
-          marker.lat=lat;marker.lng=lng;
-        }       
+      this.markerForm.markAsDirty();
+      this.markers = this.markers.map((marker: Marker) => {
+        if (marker.id === this.marker.id) {
+          marker.lat = lat; marker.lng = lng;
+        }
         return marker
       });
     }
@@ -85,12 +112,12 @@ export class MarkerComponent implements OnInit {
       }
     }
     this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);
-    this.lat= this.marker.lat;this.lng= this.marker.lng ;
+    this.lat = this.marker.lat; this.lng = this.marker.lng;
     this.markerForm.markAsPristine();
   }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
-      this.imgBlob = window.URL.createObjectURL(e.target.files[0]);
+      this.imgData = window.URL.createObjectURL(e.target.files[0]);
     } else {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
@@ -115,7 +142,7 @@ export class MarkerComponent implements OnInit {
     }
     const imagePut = (id: number) => {
       return new Promise<string>(resolve => {
-        if (!this.imgBlob) return resolve("");
+        if (!this.imgData) return resolve("");
         let canvas: HTMLCanvasElement = this.canvas.nativeElement;
         let ctx = canvas.getContext('2d');
         let image = new Image();
@@ -139,10 +166,10 @@ export class MarkerComponent implements OnInit {
             return resolve(url);
           }, "image/jpeg")
         }
-        image.src = this.imgBlob;
+        image.src = this.imgData;
       });
     }
-    if (this.imgBlob) { this.img.setValue(await imagePut(this.marker.id)); };    
+    if (this.imgData) { this.img.setValue(await imagePut(this.marker.id)); };
     const insert = { ...this.markerForm.value, id: this.story.id, typ: this.typ, parent: this.parent };
     this.api.post('query', { table: "story_marker", insert: insert, duplicate: ['na', 'txt', 'img', 'latlng', 'icon'] }).then(res => {
       this.marker = { ...this.marker, ...this.markerForm.value };
@@ -161,7 +188,7 @@ export class MarkerComponent implements OnInit {
     }).finally(() => { this.ui.loadend(); });
   }
 }
-interface Marker {
+export interface Marker {
   id: number;
   lat: number;
   lng: number;
@@ -171,4 +198,4 @@ interface Marker {
   icon: number;
   idx: number;
 }
-const MARKER = { id: 0, na: "", txt: "", lat: 34.68503331, lng: 138.85154339, img: "", icon: 0, idx: 0 }
+export const MARKER = { id: 0, na: "", txt: "", lat: 34.68503331, lng: 138.85154339, img: "", icon: 0, idx: 0 }

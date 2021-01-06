@@ -25,7 +25,7 @@
       </ion-button>
     </ion-buttons>
     <ion-title>マーカー設定</ion-title>
-    <ion-button slot="end" [disabled]="" (click)="save()" fill="clear">
+    <ion-button slot="end" [disabled]="!markerForm.dirty || !markerForm.valid" (click)="save()" fill="clear">
       　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
     </ion-button>
   </ion-toolbar>
@@ -71,7 +71,7 @@
   </ion-item>
   <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
   <canvas #canvas style="display: none;"></canvas>
-  <agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
+  <agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' [fitBounds]="true" (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
     <agm-marker *ngFor="let marker of markers" (markerClick)="markerClick(marker);"
       (markerRightClick)="markerRightClick(marker)" [latitude]="marker.lat" [longitude]="marker.lng"
       [label]="marker.idx"
@@ -84,3 +84,8 @@
     </agm-marker>
   </agm-map>
 </ion-content>
+<!--
+
+ 
+
+-->

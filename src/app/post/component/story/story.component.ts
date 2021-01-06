@@ -1,8 +1,9 @@
-import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input,Output,EventEmitter,ViewChild, ElementRef } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { AlertController,ModalController } from '@ionic/angular';
 import * as EXIF from 'exif-js'
-import { User,Marker } from '../../../class';
+import { User } from '../../../class';
+import { Marker } from '../marker/marker.component'
 import { APIURL } from '../../../../environments/environment';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
@@ -30,6 +31,7 @@ export class StoryComponent implements OnInit {
   get parent() {
     return this._parent;
   }
+  @Output() resetMarkers=new EventEmitter;
   @ViewChild('upmedia', { read: ElementRef, static: false }) upmedia: ElementRef;//メディアファイル選択
   storys: Story[] = [];
   markers:Marker[]=[];
@@ -94,11 +96,19 @@ export class StoryComponent implements OnInit {
     }
     if (confirm) {
       this.ui.loading();
-      await this.mediaDel(idx);      
-      this.api.post('querys', { table: 'story', delete: { id: this.storys[idx].id }, updates: [{
+      await this.mediaDel(idx);
+      const id=this.storys[idx].id;      
+      this.api.post('querys', { table: 'story', delete: { id:id }, updates: [{
           update: {}, where: { typ: this.typ, parent: this.parent,idx:idx }, sign: { update:{idx: "-1"}, where: { idx: ">" } }
         }]
-      }).then(res=>{
+      }).then(async res=>{
+        if(this.typ==='report'||this.typ==='plan'){
+          const marker=await this.api.get('query',{table:'story_marker',select:['img'],where:{id:id}});
+          if(marker.story_markers.length){
+            if(marker.story_markers[0].img) this.storage.ref(`story_marker/${id}.jpg`).delete();
+          }
+          this.api.post('query',{table:'story_marker',delete:{id:id}});
+        }        
         this.storys.splice(idx, 1);
       }).finally(()=>{this.ui.loadend()});      
     }
@@ -197,6 +207,7 @@ export class StoryComponent implements OnInit {
     marker.onDidDismiss().then(event => {
       if (event.data) {
         this.markers=event.data.markers;
+        this.resetMarkers.emit(this.markers);
       }
     });
   }
@@ -218,13 +229,13 @@ export class StoryComponent implements OnInit {
         ref.getDownloadURL().toPromise().then(url => {
           let html: string;
           if (file.type.match(/image.*/)) {
-            html = `<img src="${url}">`;
+            html = `<img src="${url}"/>`;
           } else if (file.type.match(/audio.*/)) {
-            html = `<audio src="${url}" controls>`;
+            html = `<audio src="${url}" controls />`;
           } else if (file.type.match(/video.*/)) {
-            html = `<video src="${url}" controls>`;
+            html = `<video src="${url}" controls />`;
           } else {
-            html = `<a href="${url}" download="${fileName}"><img src="${APIURL}img/download.jpg"></a>`;
+            html = `<a href="${url}" download="${fileName}"><img src="${APIURL}img/download.jpg"/></a>`;
           }
           let sql: any = { table: 'story' };
           if (this.storys[idx].id) {

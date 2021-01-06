@@ -104,12 +104,12 @@
           </ion-item>  
         </ion-col>
         <ion-col #map size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-          <app-map typ="report" [parent]="report.id"></app-map>
+          <app-map typ="report" [parent]="report.id" [markers]="markers"></app-map>
         </ion-col>
       </ion-row>
     </ion-grid>
     <ion-title #essay class="caption">Essay</ion-title>
-    <app-story typ="report" [document]="report" [user]="user"></app-story>   
+    <app-story typ="report" [document]="report" [user]="user" (resetMarkers)="resetMarkers($event)"></app-story>   
   </form>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
