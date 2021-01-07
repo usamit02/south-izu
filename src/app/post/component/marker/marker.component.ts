@@ -34,6 +34,7 @@ export class MarkerComponent implements OnInit {
   icons = [];
   imgData;
   noimgUrl = APIURL + 'img/noimg.jpg';
+  isReordered=false;
   constructor(private api: ApiService, public modal: ModalController, public menu: MenuController, private builder: FormBuilder, private ui: UiService,
     private storage: AngularFireStorage,) { }
   async ngOnInit() {
@@ -42,7 +43,7 @@ export class MarkerComponent implements OnInit {
       this.icons.push({ ...this.markericon[key], id: key });
     });
     if (!this.markers.length) {
-      const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
+      const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } });
       this.markers = res.story_markers
     }
     let markers = this.markers.filter(marker => { return marker.id === this.story.id; });
@@ -175,10 +176,23 @@ export class MarkerComponent implements OnInit {
     }
   }
   reorder(e){
-    let a=e;
+    let temp = this.markers[e.detail.from];
+    this.markers[e.detail.from] = this.markers[e.detail.to];
+    this.markers[e.detail.to] = temp;
+    let idx=this.markers[e.detail.from].idx;
+    this.markers[e.detail.from].idx=this.markers[e.detail.to].idx;
+    this.markers[e.detail.to].idx=idx;
+    e.detail.complete(true);
+    this.isReordered=true;
   }
   orderSave(){
-    
+    let updates=[];
+    for(let marker of this.markers){
+      updates.push({update:{idx:marker.idx},where:{id:marker.id}});
+    }
+    this.api.post('querys',{table:"story_marker",updates:updates}).then(res=>{
+      this.menu.close();
+    });
   }
   async save() {
     this.ui.loading('保存中');

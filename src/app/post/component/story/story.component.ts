@@ -276,10 +276,9 @@ export class StoryComponent implements OnInit {
         let gpsLat = EXIF.getTag(files[0], "GPSLatitude");
         let gpsLng = EXIF.getTag(files[0], "GPSLongitude");
         if (gpsLat && gpsLng) {
-          const lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
-          const lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
-          console.log(`lat:${lat} lng:${lng}`);
-          latlng = `POINT(${lng} ${lat})`;
+          this.storys[idx].lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
+          this.storys[idx].lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
+          latlng = `POINT(${this.storys[idx].lng} ${this.storys[idx].lat})`;
         }
       })
       var canvas = document.querySelector('canvas');

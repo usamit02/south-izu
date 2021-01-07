@@ -3,9 +3,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-button (click)="menu.close()" fill="clear">
-          　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+          　 <ion-icon name="close-circle" slot="icon-only"></ion-icon>
         </ion-button>
-        <ion-button slot="end" [disabled]="" (click)="orderSave()" fill="clear">
+        <ion-button slot="end" [disabled]="!isReordered" (click)="orderSave()" fill="clear">
           　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
         </ion-button>
       </ion-toolbar>
@@ -15,7 +15,7 @@
         <ion-item *ngFor="let marker of markers">
           <ion-reorder slot="start"></ion-reorder>
           <ion-item button="true" (click)="undo(marker);menu.close()">
-            {{marker.idx}}. {{marker.na}}
+            {{marker.idx}}.<img [src]="markericon[marker.icon].url"/>{{marker.na}}
           </ion-item>
         </ion-item>
       </ion-reorder-group>
@@ -25,11 +25,9 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button menu="start">
-        <ion-icon name="location"></ion-icon>
-      </ion-menu-button>
+      <ion-menu-button menu="start"></ion-menu-button>
       <ion-button (click)="modal.dismiss()" fill="clear">
-        　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+        　 <ion-icon name="close-circle" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="undo(marker)" fill="clear" [disabled]="!marker.id">
         　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>

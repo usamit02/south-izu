@@ -209,9 +209,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
       report.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
     }
     this.report = report;
-    const genreOptions = this.genreOptions.changes.pipe(take(1)).toPromise();
     this.genres = this.selects.genres;//.filter(genre => { return genre.id === report.genre; });
-    await Promise.all([genreOptions]);//各select optionsが描画されてからselectに値を入れないと選択されない
     const controls = this.reportForm.controls
     for (let key of Object.keys(controls)) {
       if (report[key] == null) {
@@ -302,16 +300,16 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           if(marker.img) this.storage.ref(`story_marker/${marker.id}.jpg`).delete();
         }
         await this.api.post('querys', { deletes: [
-          { id: this.report.id,usar:this.user.id,table:"report" },
-          {typ:"report",parent:this.report.id,table:"story"},
-          {typ:"report",parent:this.report.id,table:"story_marker"}          
+          { id: id,user:this.user.id,table:"report" },
+          {typ:"report",parent:id,table:"story"},
+          {typ:"report",parent:id,table:"story_marker"}          
         ]});
         //await this.api.post('query', { table: 'report', delete: { id: id } });
         //await this.api.post('query', { table: 'story', delete: { typ: 'report', parent: id } });
         await this.db.list(`report/${id}`).remove();
         await this.db.database.ref(`post/report${id}`).remove();
         await this.store.collection('report').doc(id.toString()).delete();        
-        if(this.report.image) this.storage.ref(`report/${this.report.id}/image.jpg`).delete();
+        if(this.report.image) this.storage.ref(`report/${id}/image.jpg`).delete();
         this.reports.drafts = this.reports.drafts.filter(report => { return report.id !== id; });
         this.reports.requests = this.reports.requests.filter(report => { return report.id !== id; });
         this.reports.posts = this.reports.posts.filter(report => { return report.id !== id; });
