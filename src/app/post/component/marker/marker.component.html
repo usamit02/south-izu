@@ -1,16 +1,24 @@
 <ion-menu side="start" menuId="first" contentId="main">
-  <ion-header>
-    <ion-toolbar color="primary">
-      <ion-title>Start Menu</ion-title>
-    </ion-toolbar>
-  </ion-header>
   <ion-content>
+    <ion-header>
+      <ion-toolbar>
+        <ion-button (click)="menu.close()" fill="clear">
+          　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+        </ion-button>
+        <ion-button slot="end" [disabled]="" (click)="orderSave()" fill="clear">
+          　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
     <ion-list>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
-      <ion-item>Menu Item</ion-item>
+      <ion-reorder-group (ionItemReorder)="reorder($event)" disabled="false">
+        <ion-item *ngFor="let marker of markers">
+          <ion-reorder slot="start"></ion-reorder>
+          <ion-item button="true" (click)="undo(marker);menu.close()">
+            {{marker.idx}}. {{marker.na}}
+          </ion-item>
+        </ion-item>
+      </ion-reorder-group>
     </ion-list>
   </ion-content>
 </ion-menu>
@@ -23,15 +31,14 @@
       <ion-button (click)="modal.dismiss()" fill="clear">
         　 <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
       </ion-button>
-      <ion-button (click)="undo()" fill="clear" [disabled]="!marker.id">
+      <ion-button (click)="undo(marker)" fill="clear" [disabled]="!marker.id">
         　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>マーカー設定</ion-title>
-    <ion-button *ngIf="marker.id" (click)="eraseClick()" color="danger" slot="end"
-          fill="clear">
-          <ion-icon name="trash" slot="icon-only"></ion-icon>
-        </ion-button>
+    <ion-button *ngIf="marker.id" (click)="eraseClick()" color="danger" slot="end" fill="clear">
+      <ion-icon name="trash" slot="icon-only"></ion-icon>
+    </ion-button>
     <ion-button slot="end" [disabled]="!markerForm.dirty || !markerForm.valid" (click)="save()" fill="clear">
       　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
     </ion-button>
@@ -78,10 +85,13 @@
   </ion-item>
   <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
   <canvas #canvas style="display: none;"></canvas>
-  <agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' [fitBounds]="true" (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
+  <agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' [fitBounds]="true"
+    (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
     <agm-marker *ngFor="let marker of markers" (markerClick)="markerClick(marker);"
-      (markerRightClick)="markerRightClick(marker)" [latitude]="marker.lat" [longitude]="marker.lng" [agmFitBounds]="true" [iconUrl]="{ url: markericon[marker.icon].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
-      <agm-info-window #infoWindow [isOpen]="isInfoWindowOpen(marker.id)">
+      (markerRightClick)="markerRightClick(marker)" [latitude]="marker.lat" [longitude]="marker.lng"
+      [agmFitBounds]="true" [label]="marker.idx.toString()"
+      [iconUrl]="{ url: markericon[marker.icon].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
+      <agm-info-window #infoWindow [isOpen]=" isInfoWindowOpen(marker.id)">
         <div>{{marker.txt}}</div>
         <img *ngIf="marker.img" [src]="marker.img" />
       </agm-info-window>
@@ -90,7 +100,7 @@
 </ion-content>
 <!--
 
- [label]="marker.idx"
+ 
       [iconUrl]="{ url: icons[marker.icon-1].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}"
 
 -->

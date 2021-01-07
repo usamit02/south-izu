@@ -1,7 +1,8 @@
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, MenuController } from '@ionic/angular';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { AngularFireStorage } from '@angular/fire/storage';
+import * as EXIF from 'exif-js'
 import { Story } from '../story/story.component';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
@@ -33,11 +34,12 @@ export class MarkerComponent implements OnInit {
   icons = [];
   imgData;
   noimgUrl = APIURL + 'img/noimg.jpg';
-  constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder, private ui: UiService,
+  constructor(private api: ApiService, public modal: ModalController, public menu: MenuController, private builder: FormBuilder, private ui: UiService,
     private storage: AngularFireStorage,) { }
   async ngOnInit() {
+    let marker: Marker;
     Object.keys(this.markericon).forEach(key => {
-      this.icons.push({...this.markericon[key], id: key});
+      this.icons.push({ ...this.markericon[key], id: key });
     });
     if (!this.markers.length) {
       const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
@@ -45,7 +47,7 @@ export class MarkerComponent implements OnInit {
     }
     let markers = this.markers.filter(marker => { return marker.id === this.story.id; });
     if (markers.length) {
-      this.marker = markers[0];
+      marker = markers[0];
     } else {
       let lat = this.story.lat ? this.story.lat : this.lat;
       let lng = this.story.lng ? this.story.lng : this.lng;
@@ -77,10 +79,10 @@ export class MarkerComponent implements OnInit {
         }
         image.src = img.src;
       }
-      this.marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 1, lat: lat, lng: lng, idx: 0 };
-      this.markers.push(this.marker);
+      marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 1, lat: lat, lng: lng, idx: this.story.idx };
+      this.markers.push(marker);
     }
-    this.undo();
+    this.undo(marker);
   }
   async mapRightClick(lat: number, lng: number) {
     const confirm = await this.ui.confirm('マーカー位置', '変更しますか');
@@ -107,20 +109,59 @@ export class MarkerComponent implements OnInit {
   isInfoWindowOpen(id) {
     return this.openedWindow == id;
   }
-  undo() {
+  undo(marker: Marker) {
     const controls = this.markerForm.controls
     for (let key of Object.keys(controls)) {
       if (key !== "lat" && key !== "lng") {
-        controls[key].setValue(this.marker[key]);
+        controls[key].setValue(marker[key]);
       }
     }
-    this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);
-    setTimeout(()=>{this.lat = this.marker.lat; this.lng = this.marker.lng;},3000);
+    if (marker.img) {
+      if (this.marker.img !== marker.img) {
+        let image = new Image;
+        image.crossOrigin = "Anonymous";
+        image.onload = () => {
+          let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+          canvas.width = image.width;
+          canvas.height = image.height;
+          canvas.getContext('2d').drawImage(image, 0, 0);
+          this.imgData = canvas.toDataURL("image/jpeg");
+        }
+        image.src = marker.img;
+      }
+    } else {
+      this.imgData = "";
+    }
+    this.latlng.setValue(`POINT(${marker.lng} ${marker.lat})`);
+    setTimeout(() => { this.lat = marker.lat; this.lng = marker.lng; }, 3000);
     this.markerForm.markAsPristine();
+    this.marker = marker;
   }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
       this.imgData = window.URL.createObjectURL(e.target.files[0]);
+      this.markerForm.markAsDirty();
+      EXIF.getData(e.target.files[0], async () => {
+        let gpsLat = EXIF.getTag(e.target.files[0], "GPSLatitude");
+        let gpsLng = EXIF.getTag(e.target.files[0], "GPSLongitude");
+        if (gpsLat && gpsLng) {
+          const lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
+          const lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
+          console.log(`lat:${lat} lng:${lng}`);
+          if (!(this.marker.lat === lat && this.marker.lng === lng)) {
+            if (await this.ui.confirm('マーカー位置', '写真に記録されたGPSデータに変更しますか。')) {
+              this.latlng.setValue(`POINT(${lng} ${lat})`);
+              this.marker.lat = lat; this.marker.lng = lng;
+              this.markers = this.markers.map(marker => {
+                if (marker.id === this.marker.id) {
+                  marker.lat = lat; marker.lng = lng;
+                }
+                return marker;
+              })
+            }
+          }
+        }
+      })
     } else {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
@@ -132,6 +173,12 @@ export class MarkerComponent implements OnInit {
       this.img.setValue("");
       this.markerForm.markAsDirty();
     }
+  }
+  reorder(e){
+    let a=e;
+  }
+  orderSave(){
+    
   }
   async save() {
     this.ui.loading('保存中');
@@ -183,10 +230,10 @@ export class MarkerComponent implements OnInit {
     if (this.imgData) {
       this.img.setValue(await imagePut(this.marker.id));
     } else if (!this.img.value && this.marker.img) {
-      this.storage.ref(`story_marker/${this.story.id}.jpg`).delete();
+      this.storage.ref(`story_marker/${this.marker.id}.jpg`).delete();
     }
-    const insert = { ...this.markerForm.value, id: this.story.id, typ: this.typ, parent: this.parent };
-    this.api.post('query', { table: "story_marker", insert: insert, duplicate: ['na', 'txt', 'img', 'latlng', 'icon'] }).then(res => {
+    const insert = { ...this.markerForm.value, id: this.marker.id, typ: this.typ, parent: this.parent, idx: this.marker.idx };
+    this.api.post('query', { table: "story_marker", insert: insert, duplicate: ['na', 'txt', 'img', 'latlng', 'icon', 'idx'] }).then(res => {
       this.marker = { ...this.marker, ...this.markerForm.value };
       let insert = true;
       this.markers = this.markers.map(marker => {

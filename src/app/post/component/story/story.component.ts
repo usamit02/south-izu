@@ -201,7 +201,7 @@ export class StoryComponent implements OnInit {
   async setMarker(idx) {
     let marker = await this.modal.create({
       component: MarkerComponent,
-      componentProps: { typ:this.typ,parent:this.parent,markers:this.markers,story:this.storys[idx]}
+      componentProps: { typ:this.typ,parent:this.parent,markers:this.markers,story:{...this.storys[idx],idx:idx}}
     });
     marker.present();
     marker.onDidDismiss().then(event => {
@@ -319,5 +319,6 @@ export interface Story {
   rest: number;
   restdate: number;
   button: boolean;
+  idx?:number
 }
 const STORY = { id: null, txt: "", media: "", file: "", lat: null, lng: null, rest: null, restdate: null, button: false };
