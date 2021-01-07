@@ -31,7 +31,6 @@ export class StoryComponent implements OnInit {
   get parent() {
     return this._parent;
   }
-  @Input() markericons: Array<any>;
   @Output() resetMarkers=new EventEmitter;
   @ViewChild('upmedia', { read: ElementRef, static: false }) upmedia: ElementRef;//メディアファイル選択
   storys: Story[] = [];
@@ -202,7 +201,7 @@ export class StoryComponent implements OnInit {
   async setMarker(idx) {
     let marker = await this.modal.create({
       component: MarkerComponent,
-      componentProps: { typ:this.typ,parent:this.parent,markers:this.markers,story:this.storys[idx] ,icons:this.markericons}
+      componentProps: { typ:this.typ,parent:this.parent,markers:this.markers,story:this.storys[idx]}
     });
     marker.present();
     marker.onDidDismiss().then(event => {

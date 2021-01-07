@@ -80,10 +80,7 @@
   <canvas #canvas style="display: none;"></canvas>
   <agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' [fitBounds]="true" (mapRightClick)="mapRightClick($event.coords.lat,$event.coords.lng)">
     <agm-marker *ngFor="let marker of markers" (markerClick)="markerClick(marker);"
-      (markerRightClick)="markerRightClick(marker)" [latitude]="marker.lat" [longitude]="marker.lng"
-      [label]="marker.idx"
-      [iconUrl]="{ url: icons[marker.icon-1].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}"
-      [agmFitBounds]="true">
+      (markerRightClick)="markerRightClick(marker)" [latitude]="marker.lat" [longitude]="marker.lng" [agmFitBounds]="true" [iconUrl]="{ url: markericon[marker.icon].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}">
       <agm-info-window #infoWindow [isOpen]="isInfoWindowOpen(marker.id)">
         <div>{{marker.txt}}</div>
         <img *ngIf="marker.img" [src]="marker.img" />
@@ -93,6 +90,7 @@
 </ion-content>
 <!--
 
- 
+ [label]="marker.idx"
+      [iconUrl]="{ url: icons[marker.icon-1].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}"
 
 -->

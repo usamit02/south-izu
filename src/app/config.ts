@@ -25,3 +25,20 @@ export const HOME={
 }
 export const HOLIDAYS =['2021-1-1','2021-1-11','2021-2-11','2021-2-23','2021-3-20','2021-4-29','2021-5-3','2021-5-4','2021-5-5',
 '2021-7-22','2021-7-23','2021-8-9','2021-9-20','2021-9-23','2021-11-3','2021-11-23']
+
+export const MARKERICON={
+  1:{na:'地点',url:"http://maps.google.co.jp/mapfiles/ms/icons/red-dot.png"},
+  2:{na:'スーパー',url:"http://maps.google.co.jp/mapfiles/ms/icons/convienancestore.png"},
+  3:{na:'日帰入浴',url:"http://maps.google.co.jp/mapfiles/ms/icons/hotsprings.png"},
+  4:{na:'キャンプ場',url:"http://maps.google.co.jp/mapfiles/ms/icons/campground.png"},
+  5:{na:'喫茶店',url:"http://maps.google.co.jp/mapfiles/ms/icons/coffeehouse.png"},
+  6:{na:'レストラン',url:"http://maps.google.co.jp/mapfiles/ms/icons/restaurant.png"},
+  7:{na:'ファストフード',url:"http://maps.google.co.jp/mapfiles/ms/icons/snack_bar.png"},
+  8:{na:'コンビニ',url:"http://maps.google.co.jp/mapfiles/ms/icons/homegardenbusiness.png"},
+  9:{na:'トイレ',url:"http://maps.google.co.jp/mapfiles/ms/icons/toilets.png"},
+  10:{na:'駐車場',url:"http://maps.google.co.jp/mapfiles/ms/icons/parkinglot.png"},
+  11:{na:'港',url:"http://maps.google.co.jp/mapfiles/ms/icons/marina.png"},
+  12:{na:'海水浴場',url:"http://maps.google.co.jp/mapfiles/ms/icons/swimming.png"},
+  13:{na:'展望',url:"http://maps.google.co.jp/mapfiles/ms/icons/movies.png"},
+  99:{na:'ホーム',url:"http://maps.google.co.jp/mapfiles/ms/icons/rangerstation.png"},
+}

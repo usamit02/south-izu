@@ -104,7 +104,7 @@
           </ion-item>  
         </ion-col>
         <ion-col #map size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-          <app-map *ngIf="markericons.length" typ="report" [parent]="report.id" [markers]="markers" [icons]="markericons"></app-map>
+          <app-map typ="report" [parent]="report.id" [markers]="markers"></app-map>
         </ion-col>
       </ion-row>
     </ion-grid>

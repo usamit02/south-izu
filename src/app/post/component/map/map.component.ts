@@ -1,7 +1,8 @@
 import { Component, OnChanges, OnInit, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
-import { Marker } from '../marker/marker.component'
+import { Marker } from '../marker/marker.component';
+import { MARKERICON } from '../../../config';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -11,12 +12,12 @@ export class MapComponent implements OnInit, OnChanges {
   @Input() typ: string;
   @Input() parent: number;
   @Input() markers: Array<Marker>;
-  @Input() icons: Array<any>;
   //@Output() saved = new EventEmitter();
   lat: number = 34.68503331;
   lng: number = 138.85154339;
   openedWindow: number = 1;
   marker: Marker;
+  icon=MARKERICON;
   constructor(private api: ApiService, private ui: UiService,) { }
   ngOnInit() {     
   }

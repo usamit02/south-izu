@@ -6,6 +6,7 @@ import { Story } from '../story/story.component';
 import { ApiService } from '../../../service/api.service';
 import { UiService } from '../../../service/ui.service';
 import { APIURL } from '../../../../environments/environment';
+import { MARKERICON } from '../../../config';
 @Component({
   selector: 'app-marker',
   templateUrl: './marker.component.html',
@@ -15,7 +16,6 @@ export class MarkerComponent implements OnInit {
   @Input() typ: string;
   @Input() parent: number;
   @Input() markers: Array<Marker>;
-  @Input() icons: Array<any>;
   @Input() story: Story;
   @ViewChild('upImg', { read: ElementRef, static: false }) upImg: ElementRef;//メディアファイル選択 
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
@@ -29,11 +29,16 @@ export class MarkerComponent implements OnInit {
   lng: number = 138;
   openedWindow: number = 1;
   marker: Marker = MARKER;
+  markericon = MARKERICON;
+  icons = [];
   imgData;
   noimgUrl = APIURL + 'img/noimg.jpg';
   constructor(private api: ApiService, public modal: ModalController, private builder: FormBuilder, private ui: UiService,
     private storage: AngularFireStorage,) { }
   async ngOnInit() {
+    Object.keys(this.markericon).forEach(key => {
+      this.icons.push({...this.markericon[key], id: key});
+    });
     if (!this.markers.length) {
       const res = await this.api.get('query', { select: ['id', 'latlng', 'na', 'txt', 'img', 'icon', 'idx'], table: 'story_marker', where: { typ: this.typ, parent: this.parent } }, "マーカー取得中");
       this.markers = res.story_markers
@@ -72,7 +77,8 @@ export class MarkerComponent implements OnInit {
         }
         image.src = img.src;
       }
-      this.marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 0, lat: lat, lng: lng, idx: 0 };
+      this.marker = { id: this.story.id, na: na, txt: txt, img: "", icon: 1, lat: lat, lng: lng, idx: 0 };
+      this.markers.push(this.marker);
     }
     this.undo();
   }
@@ -109,7 +115,7 @@ export class MarkerComponent implements OnInit {
       }
     }
     this.latlng.setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);
-    this.lat = this.marker.lat; this.lng = this.marker.lng;
+    setTimeout(()=>{this.lat = this.marker.lat; this.lng = this.marker.lng;},3000);
     this.markerForm.markAsPristine();
   }
   imgChange(e) {
