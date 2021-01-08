@@ -21,6 +21,10 @@ export class MapComponent implements OnInit, OnChanges {
   icon = MARKERICON;
   //origin" [destination]="destination" [waypoints]="waypoints"
   origin: any; destination: any; waypoints: any[];
+  markerOptions;
+  renderOptions = {
+    suppressMarkers: true
+  };
   constructor(private api: ApiService, private ui: UiService,) { }
   ngOnInit() {
   }
@@ -40,10 +44,22 @@ export class MapComponent implements OnInit, OnChanges {
       if (markers.length > 1) {
         this.origin = { lat: markers[0].lat, lng: markers[0].lng };
         this.destination = { lat: markers[markers.length - 1].lat, lng: markers[markers.length - 1].lng };
-        let ways = markers.slice(1, markers.length);
-        this.waypoints = ways.map(way => {
-          return { location:{lat: way.lat, lng: way.lng }};
-        });
+        let waypoints: any = markers.slice(1, markers.length);
+        this.waypoints = waypoints.map(waypoint => {
+          return { location: { lat: waypoint.lat, lng: waypoint.lng },stopover:false };
+        });/*
+        waypoints = waypoints.map(waypoint => {
+          return { infoWindow: `<p>${waypoint.na}<p><div>${waypoint.txt}</div><img src="${waypoint.img}"/>`,label:{text:'start'} ,icon: this.icon[waypoint.icon] };
+        })
+         */
+        for (let i=0;i<waypoints.length;i++){
+          waypoints[i]= { infoWindow: `<p>${waypoints[i].na}<p><div>${waypoints[i].txt}</div><img src="${waypoints[i].img}"/>`,label:{text:(i+1).toString(),color:'white'}}; 
+        }
+        this.markerOptions = {
+          origin: { infoWindow: `<p>${markers[0].na}<p><div>${markers[0].txt}</div><img src="${markers[0].img}"/>`, label:{text:'発',color:'white'}/*icon: this.icon[markers[0].icon] */},
+          waypoints: waypoints,
+          destination: { infoWindow: `<p>${markers[markers.length - 1].na}<p><div>${markers[markers.length - 1].txt}</div><img src="${markers[markers.length - 1].img}"/>`,label:{text:'着',color:"white"} /*icon: this.icon[markers[markers.length - 1].icon]*/}
+        }
       }
     }
   }
