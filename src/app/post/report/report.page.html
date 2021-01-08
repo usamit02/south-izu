@@ -35,7 +35,7 @@
           <ion-button [disabled]="!reportForm.valid || !reportForm.dirty" (click)="save(-1)" slot="end" fill="clear">
             <ion-icon name="checkmark" slot="icon-only"></ion-icon>
           </ion-button>
-          <ion-button [disabled]="!reportForm.valid || !reportForm.dirty" (click)="save(0)" slot="end" fill="clear">
+          <ion-button [disabled]="!reportForm.valid" (click)="save(0)" slot="end" fill="clear">
             <ion-icon name="send" slot="icon-only" color="secondary"></ion-icon>
           </ion-button>
         </ng-container>
@@ -72,7 +72,7 @@
           <ion-item>
             <ion-label class="leftLabel" slot="start">種類<ion-text color="danger">*</ion-text>
             </ion-label>
-            <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre">
+            <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre" (ionChange)="genreChange()">
               <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
                 <span #genreOptions>{{genre.na}}</span>
               </ion-select-option>
@@ -104,7 +104,7 @@
           </ion-item>  
         </ion-col>
         <ion-col #map size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-          <app-map typ="report" [parent]="report.id" [markers]="markers"></app-map>
+          <app-map typ="report" [parent]="report.id" [markers]="markers" [travelMode]="travelMode"></app-map>
         </ion-col>
       </ion-row>
     </ion-grid>

@@ -27,29 +27,30 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('map', { read: ElementRef, static: false }) map: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChildren('genreOptions', { read: ElementRef }) genreOptions: QueryList<ElementRef>;
-  genres = [];//[{ id: 0, na: "" }];
+  genres = [];
   selects = { regions: [], areas: [], genres: [] };
   undoing: boolean = false;
   genre = new FormControl("", [Validators.required]);
   na = new FormControl("", [Validators.minLength(2), Validators.maxLength(30), Validators.required]);
-  description = new FormControl("", [Validators.minLength(2), Validators.maxLength(300)]);  
+  description = new FormControl("", [Validators.minLength(2), Validators.maxLength(300)]);
   rest = new FormControl(0);
   chat = new FormControl(1);
   reportForm = this.builder.group({
-    genre: this.genre,na:this.na,description:this.description,rest: this.rest, chat: this.chat
-  });  
+    genre: this.genre, na: this.na, description: this.description, rest: this.rest, chat: this.chat
+  });
   user: User;
   id: number;
   report: any = { id: null, user: null };
-  reports = { drafts: [], requests: [], posts: [], acks: [] };  
+  reports = { drafts: [], requests: [], posts: [], acks: [] };
   imgBase64: string;
-  markers:Marker[]=[];
+  markers: Marker[] = [];
+  travelMode = "";
   currentY: number; scrollH: number; contentH: number; basicY: number; mapY: number; essayY: number; scoreY: number;
   private onDestroy$ = new Subject();
   constructor(private api: ApiService, private userService: UserService, private builder: FormBuilder, private storage: AngularFireStorage,
     private pop: PopoverController, private modal: ModalController, private alert: AlertController, private ui: UiService,
     private db: AngularFireDatabase, private route: ActivatedRoute, private router: Router, private store: AngularFirestore,
-    private title: Title, ) {
+    private title: Title,) {
   }
   ngOnInit() {
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
@@ -69,11 +70,12 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           this.undo(res.reports[0]);
         }
       }
-    });    
-    this.api.get('query', { table: 'genre' }).then(res => {
+    });
+    this.api.get('query', { table: 'genre', select: ['id', 'na', 'travelmode'] }).then(res => {
       this.genres = res.genres; this.selects.genres = res.genres;
       this.genreOptions.changes.pipe(take(1)).toPromise().then(() => {
         this.genre.setValue(res.genres[0].id.toString());
+        this.travelMode = this.genres[0].travelmode;
       });
     });
     setTimeout(() => {
@@ -152,12 +154,13 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           text: 'いいえ',
           handler: () => {
             this.create({
-              user: this.user.id,genre: this.genre.value,}, false);
+              user: this.user.id, genre: this.genre.value,
+            }, false);
           }
         }, {
           text: 'はい',
           handler: () => {
-            this.create({ user: this.user.id, ...this.reportForm.value}, true);
+            this.create({ user: this.user.id, ...this.reportForm.value }, true);
           }
         }
       ]
@@ -166,7 +169,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   }
   naBlur() {
     if (this.report.id || this.reportForm.invalid) return;
-    this.create({ user: this.user.id, na: this.na.value});
+    this.create({ user: this.user.id, na: this.na.value });
   }
   create(insert, copy?: boolean) {
     this.api.post("query", { table: "report", insert: insert }).then(async res => {
@@ -198,8 +201,12 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   scroll(target) {
     this.content.nativeElement.scrollToPoint(0, target, 500);
   }
-  resetMarkers(markers){
-    this.markers=markers;
+  resetMarkers(markers) {
+    this.markers = markers;
+  }
+  genreChange() {
+    const genres = this.genres.filter(genre => { return genre.id == this.genre.value; });
+    if (genres.length) this.travelMode = genres[0].travelmode;
   }
   async undo(report) {
     this.undoing = true;
@@ -295,21 +302,23 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         for (let story of res.storys) {
           if (story.file) this.storage.ref(`report/${id}/${story.file}`).delete();
         }
-        const mres=await this.api.get('query',{table:'story_marker',select:['img'],where:{typ:'report',parent:id}});
-        for (let marker of mres.story_markers){
-          if(marker.img) this.storage.ref(`story_marker/${marker.id}.jpg`).delete();
+        const mres = await this.api.get('query', { table: 'story_marker', select: ['img'], where: { typ: 'report', parent: id } });
+        for (let marker of mres.story_markers) {
+          if (marker.img) this.storage.ref(`story_marker/${marker.id}.jpg`).delete();
         }
-        await this.api.post('querys', { deletes: [
-          { id: id,user:this.user.id,table:"report" },
-          {typ:"report",parent:id,table:"story"},
-          {typ:"report",parent:id,table:"story_marker"}          
-        ]});
+        await this.api.post('querys', {
+          deletes: [
+            { id: id, user: this.user.id, table: "report" },
+            { typ: "report", parent: id, table: "story" },
+            { typ: "report", parent: id, table: "story_marker" }
+          ]
+        });
         //await this.api.post('query', { table: 'report', delete: { id: id } });
         //await this.api.post('query', { table: 'story', delete: { typ: 'report', parent: id } });
         await this.db.list(`report/${id}`).remove();
         await this.db.database.ref(`post/report${id}`).remove();
-        await this.store.collection('report').doc(id.toString()).delete();        
-        if(this.report.image) this.storage.ref(`report/${id}/image.jpg`).delete();
+        await this.store.collection('report').doc(id.toString()).delete();
+        if (this.report.image) this.storage.ref(`report/${id}/image.jpg`).delete();
         this.reports.drafts = this.reports.drafts.filter(report => { return report.id !== id; });
         this.reports.requests = this.reports.requests.filter(report => { return report.id !== id; });
         this.reports.posts = this.reports.posts.filter(report => { return report.id !== id; });
