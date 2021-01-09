@@ -15,10 +15,11 @@ import { UserComponent } from '../../component/user/user.component';
 })
 export class ResultPage implements OnInit, OnDestroy {
   @ViewChild('infinite', { static: false }) infinite: IonInfiniteScroll;
-  reports = [];
-  allReports = [];
+  results = [];
+  allResults = [];
   self;
-  order: string;
+  table:string;
+  order: string;  
   where = {};
   score = {};
   private onDestroy$ = new Subject();
@@ -27,26 +28,27 @@ export class ResultPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.route.queryParams.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
+      this.table = params.table;
       this.order = params.order;
       this.where = JSON.parse(params.where);
-      this.reports = [];
+      this.results = [];
       if (this.infinite) this.infinite.disabled = false;
       if (this.order !== "acked") {
-        this.api.get('query', { table: 'reported', select: ['*'], where: this.where }).then(async res => {
-          this.allReports = await Promise.all(res.reporteds.map(async report => {
-            const doc = await this.db.database.ref(`report/${report.id}`).once('value');
+        this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: this.where }).then(async res => {
+          this.allResults = await Promise.all(res[`${this.table}ed`].map(async result => {
+            const doc = await this.db.database.ref(`${this.table}/${result.id}`).once('value');
             const detail = doc.val();
             if (detail) {
               const view = detail.view ? detail.view : 0;
               const chat = detail.chat ? detail.chat : 0;
               const good = detail.good ? detail.good : 0;
               const bad = detail.bad ? detail.bad : 0;
-              return { ...report, detail: { view: view, chat: chat, good: good, bad: bad } };
+              return { ...result, detail: { view: view, chat: chat, good: good, bad: bad } };
             } else {
-              return { ...report, detail: { view: 0, chat: 0, good: 0, bad: 0 } };
+              return { ...result, detail: { view: 0, chat: 0, good: 0, bad: 0 } };
             }
           }));
-          this.allReports.sort((a, b) => {
+          this.allResults.sort((a, b) => {
             if (a.detail[this.order] < b.detail[this.order]) {
               return 1;
             } else {
@@ -67,29 +69,29 @@ export class ResultPage implements OnInit, OnDestroy {
     const LIMIT = 15;
     if (this.order === 'acked') {
       const where = cursor ? { [this.order]: { up: cursor }, ...this.where } : this.where;
-      this.api.get('query', { table: 'reported', select: ['*'], where: where, order: { [this.order]: "DESC" }, limit: LIMIT }).then(res => {
-        this.reports.push(...res.reporteds);
-        this.reports.map(report => {
-          report.detail$ = this.db.object(`report/${report.id}`).valueChanges();
+      this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: where, order: { [this.order]: "DESC" }, limit: LIMIT }).then(res => {
+        this.results.push(...res[`${this.table}ed`]);
+        this.results.map(result => {
+          result.detail$ = this.db.object(`${this.table}/${result.id}`).valueChanges();
         });
-        this.reports.map(async report => {
-          const snapshot = await this.db.database.ref(`user/${report.user}`).once('value');
-          report.userDetail = snapshot.val();
+        this.results.map(async result => {
+          const snapshot = await this.db.database.ref(`user/${result.user}`).once('value');
+          result.userDetail = snapshot.val();
         });
-        if (res.reporteds.length < LIMIT) {
+        if (res[`${this.table}ed`].length < LIMIT) {
           this.infinite.disabled = true;
         }
       }).finally(() => {
         this.infinite.complete();
       });
     } else {
-      let adds = this.allReports.slice(this.reports.length, this.reports.length + LIMIT);
-      adds = await Promise.all(adds.map(async report => {
-        const snapshot = await this.db.database.ref(`user/${report.user}`).once('value');
-        report.userDetail = snapshot.val();
-        return report;
+      let adds = this.allResults.slice(this.results.length, this.results.length + LIMIT);
+      adds = await Promise.all(adds.map(async result => {
+        const snapshot = await this.db.database.ref(`user/${result.user}`).once('value');
+        result.userDetail = snapshot.val();
+        return result;
       }));
-      this.reports.push(...adds);
+      this.results.push(...adds);
       this.infinite.complete();
       if (adds.length < LIMIT) this.infinite.disabled = true;
     }

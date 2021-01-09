@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TopPage } from './top.page';
 import { MenuComponent } from './component/menu/menu.component';
+import { FindComponent } from './component/menu/find/find.component';
 import { UserComponent } from './component/user/user.component';
 import { TalksComponent } from './component/talks/talks.component';
 import { MarkersComponent } from './component/markers/markers.component';
@@ -34,7 +35,7 @@ const routes: Routes = [
   }
 ];
 @NgModule({
-  declarations: [TopPage, MenuComponent,UserComponent,TalksComponent,MarkersComponent,BooksComponent,],
+  declarations: [TopPage, MenuComponent,FindComponent,UserComponent,TalksComponent,MarkersComponent,BooksComponent,],
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), FormsModule, ReactiveFormsModule, PipeSharedModule,
   ],

@@ -105,6 +105,9 @@ export class MenuComponent implements OnInit, OnChanges, OnDestroy {
     this.router.navigate([`/${url}`]);
     this.close.emit();
   }
+  menuClose(){
+    this.close.emit();
+  }
   direct(unread: number) {
     if (unread) {
       this.mode = this.mode === 'direct' ? '' : 'direct'

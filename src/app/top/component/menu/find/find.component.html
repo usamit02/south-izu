@@ -1,0 +1,49 @@
+<ion-list>
+  <ion-item button="true" (click)="findMode('report')">
+    <ion-icon name="document"></ion-icon><span>ツーリングレポート</span>
+  </ion-item>
+  <form [formGroup]="reportForm" *ngIf="mode==='report'">
+    <ion-item>
+      <ion-label position="floating">ジャンル</ion-label>
+      <ion-select multiple="true" [formControl]="genre">
+        <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
+          <span #genreOptions>{{genre.na}}</span>
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </form>
+  <form [formGroup]="searchForm" *ngIf="mode==='report'||mode==='plan'">
+    <ion-item>
+      <ion-label position="floating">並べ替え</ion-label>
+      <ion-select placeholder="選択してください" [formControl]="order">
+        <ion-select-option value="acked" checked>投稿日</ion-select-option>
+        <ion-select-option value="view">ビュー</ion-select-option>
+        <ion-select-option value="chat">コメント</ion-select-option>
+        <ion-select-option value="good">いいね！</ion-select-option>
+        <ion-select-option value="bad">ダメ出し</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-range min="0" max="7" step="1" [formControl]="term" dualKnobs="true" snaps="true">
+        <ion-label slot="start">{{termVals[term.value.lower].na}}</ion-label>
+        <ion-label slot="end">{{termVals[term.value.upper].na}}</ion-label>
+      </ion-range>
+    </ion-item>
+    <ion-label *ngIf="count!=null&&count>0">該当　{{count}}件</ion-label>
+    <span *ngIf="count<1" class="errmsg">該当なし</span>
+    <div style="text-align: center;">
+      <ion-button (click)="load()" fill="clear">
+        　 <ion-icon name="download" slot="icon-only" color="dark"></ion-icon>
+      </ion-button>
+      <ion-button (click)="save()" fill="clear" [disabled]="!(reportForm.valid&&searchForm.valid)">
+        　 <ion-icon name="save" slot="icon-only" color="dark"></ion-icon>
+      </ion-button>
+      <ion-button (click)="undo()" fill="clear">
+        　 <ion-icon name="undo" slot="icon-only" color="medium"></ion-icon>
+      </ion-button>
+      <ion-button [disabled]="!count || count<1 || count>100" (click)="search()" fill="clear">
+        　 <ion-icon name="search" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>
+    </div>
+  </form>
+</ion-list>

@@ -5,6 +5,7 @@
     </ion-title>
   </ion-toolbar>
 </ion-header>
+<app-find [user]="user" (close)="menuClose()"></app-find>
 <ion-list>
   <ion-item *ngIf="column.up">
     <ion-item (click)="loadColumns(column.grand)" class="column" button="true">
@@ -14,7 +15,7 @@
       　 <ion-icon name="create" slot="icon-only"></ion-icon>
     </ion-button>
   </ion-item>
-  <ion-list> 
+  <ion-list>
     <ion-reorder-group (ionItemReorder)="reorderColumns($event)" [disabled]="!user.admin">
       <ion-item *ngFor="let col of columns">
         <ion-reorder slot="start"></ion-reorder>
@@ -138,15 +139,15 @@
   <ion-item button="true" (click)="contact()">
     <ion-icon name="help-circle"></ion-icon><span>お問い合わせ</span>
   </ion-item>
-<ion-item button="true" (click)="link('reports/view')">
-  <ion-icon name="document"></ion-icon><span>レポート一覧</span>
-</ion-item>
-<ion-item button="true" (click)="link('users/view')">
-  <ion-icon name="people"></ion-icon><span>ユーザー一覧</span>
-</ion-item>
-<ion-item button="true" (click)="postReport()">
-  <ion-icon name="create"></ion-icon><span>レポート投稿</span>
-</ion-item>
+  <ion-item button="true" (click)="link('reports/view')">
+    <ion-icon name="document"></ion-icon><span>レポート一覧</span>
+  </ion-item>
+  <ion-item button="true" (click)="link('users/view')">
+    <ion-icon name="people"></ion-icon><span>ユーザー一覧</span>
+  </ion-item>
+  <ion-item button="true" (click)="postReport()">
+    <ion-icon name="create"></ion-icon><span>レポート投稿</span>
+  </ion-item>
   <ion-item button="true" (click)="logout.emit(true);close.emit()">
     <ion-icon name="log-out"></ion-icon><span>ログアウト</span>
   </ion-item>

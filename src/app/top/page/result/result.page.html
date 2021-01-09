@@ -10,15 +10,15 @@
 <ion-content>
   <ion-grid>
     <ion-row>
-      <ion-col *ngFor="let report of reports;let i=index" size-xs="6" size-sm="6" size-md="4" size-lg="4" size-xl="4">
+      <ion-col *ngFor="let result of results;let i=index" size-xs="6" size-sm="6" size-md="4" size-lg="4" size-xl="4">
         <ion-card>
           <ion-card-header>
-            <ion-card-title [routerLink]="'/chat/report/'+report.id">{{report.cast_na}}</ion-card-title>
+            <ion-card-title [routerLink]="'/' + table + '/'+result.id">{{result.na}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div class="cardDiv">
-              <img [routerLink]="'/chat/report/'+report.id" [src]="report.castimg" class="castImg" />
-              <div *ngIf="(report.detail$|async)||report.detail as detail">
+              <img [routerLink]="'/' + table + '/' + result.id" [src]="result.img" class="img" />
+              <div *ngIf="(result.detail$|async)||result.detail as detail">
                 <div>
                   <ion-icon name="eye" color="secondary"></ion-icon>{{detail.view}}
                 </div>
@@ -33,29 +33,29 @@
                 </div>
               </div>
             </div>
-            <a [href]="report.shopurl" target="_blank">{{report.shop_na}}</a>
+            <a [href]="result.shopurl" target="_blank">{{result.shop_na}}</a>
             <ion-item lines="none" class="wrapItem">
               <div>
-                <ion-item (click)="popUser($event,report.user)" class="avatarItem" lines="none" button="true">
+                <ion-item (click)="popUser($event,result.user)" class="avatarItem" lines="none" button="true">
                   <ion-avatar>
-                    <img [src]="report.userDetail.avatar" />
+                    <img [src]="result.userDetail.avatar" />
                   </ion-avatar>
                 </ion-item>
               </div>
               <div>
-                <ion-item [routerLink]="'/user/'+report.user" class="userItem" lines="none" button="true">
-                  <ion-label>{{report.userDetail.na}}</ion-label>
+                <ion-item [routerLink]="'/user/'+result.user" class="userItem" lines="none" button="true">
+                  <ion-label>{{result.userDetail.na}}</ion-label>
                 </ion-item>
               </div>
             </ion-item>
-            <div style="text-align: right;">{{report.created|date}}</div>
+            <div style="text-align: right;">{{result.created|date}}</div>
           </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
   <ion-infinite-scroll #infinite position="bottom" threshold="10px"
-    (ionInfinite)="load(reports[reports.length-1][order])">
+    (ionInfinite)="load(results[results.length-1][order])">
     <ion-infinite-scroll-content loadingSpinner="bubbles">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
