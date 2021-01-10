@@ -4,6 +4,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ReportPage } from './report.page';
 import { EvalSharedModule } from '../../component/eval/shared.module';
+import { MapModule } from '../../../component/map/map.module';
 import { StorySharedModule } from '../../component/story/shared.module';
 import { ChatSharedModule } from '../../component/chat/shared.module';
 import { PipeSharedModule } from '../../../pipe/shared.module';
@@ -16,7 +17,8 @@ const routes: Routes = [
 ];
 @NgModule({
   imports: [
-    CommonModule, IonicModule, RouterModule.forChild(routes),EvalSharedModule,StorySharedModule, ChatSharedModule, PipeSharedModule,
+    CommonModule, IonicModule, RouterModule.forChild(routes),EvalSharedModule,MapModule,
+    StorySharedModule, ChatSharedModule, PipeSharedModule,
   ],
   declarations: [ReportPage,],
   entryComponents: [],

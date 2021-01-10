@@ -8,7 +8,7 @@ import { ImageCropperModule } from 'ngx-image-cropper';
 import { ReportPage } from './report.page';
 import { PipeSharedModule } from '../../pipe/shared.module';
 import { SharedModule } from '../component/shared.module';
-import { MapModule } from '../component/map/map.module';
+import { MapModule } from '../../component/map/map.module';
 import { MarkerModule } from '../component/marker/marker.module';
 const routes: Routes = [
   { path: '', component: ReportPage },

@@ -93,7 +93,7 @@
             <ion-label position="floating">イメージ</ion-label>
             <img *ngIf="imgBase64;else orgimg" class="img" [src]="imgBase64" />
             <ng-template #orgimg>
-              <img *ngIf="report.image" class="img" [src]="report.image" alt="イメージ" />
+              <img *ngIf="report.img" class="img" [src]="report.img" alt="イメージ" />
             </ng-template>
             <ion-button slot="end" (click)="popCrop()" fill="clear">
               　 <ion-icon name="image" slot="icon-only" color="success"></ion-icon>

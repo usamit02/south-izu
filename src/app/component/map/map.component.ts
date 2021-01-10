@@ -1,8 +1,8 @@
 import { Component, OnChanges, OnInit, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
-import { ApiService } from '../../../service/api.service';
-import { UiService } from '../../../service/ui.service';
-import { Marker } from '../marker/marker.component';
-import { MARKERICON } from '../../../config';
+import { ApiService } from '../../service/api.service';
+import { UiService } from '../../service/ui.service';
+import { Marker } from '../../post/component/marker/marker.component';
+import { MARKERICON } from '../../config';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',

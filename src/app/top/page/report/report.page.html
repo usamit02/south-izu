@@ -13,12 +13,14 @@
   </ion-toolbar>
 </ion-header>
 <ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()">
-  <div #map></div>
-  <app-story #essay page="report" [param]="report" [user]="user" (isStory)="isStory=$event"></app-story>
-  <app-chat #chat page="report" [param]="params" [user]="user" [content]="content"></app-chat>
+  <ng-container *ngIf="report.id">
+    <app-map #map typ="report" [parent]="report.id" [travelMode]="report.travelmode"></app-map>
+    <app-story #essay page="report" [param]="report" [user]="user" (isStory)="isStory=$event"></app-story>
+    <app-chat #chat page="report" [param]="params" [user]="user" [content]="content"></app-chat>
+  </ng-container>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">
-      <ion-icon name="arrow-dropup"></ion-icon>
+      <ion-icon name="caret-up"></ion-icon>
     </ion-fab-button>
     <ion-fab-button *ngIf="currentY>mapY+50" (click)="scroll(mapY)" color="light" size="small">
       Map
@@ -41,7 +43,7 @@
       Chat
     </ion-fab-button>
     <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
-      <ion-icon name="arrow-dropdown"></ion-icon>
+      <ion-icon name="caret-down"></ion-icon>
     </ion-fab-button>
     <app-eval *ngIf="currentY+contentH===scrollH && user.id && report.user && isStory" typ="report" [id]="report.id"
       [user]="user.id" [author]="report.user" [na]="report.na"></app-eval>

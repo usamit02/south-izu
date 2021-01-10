@@ -28,7 +28,7 @@ export class ReportPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.params = params;
-      this.api.get('query', { table: 'report', select: ['*'], where: { id: params.id } }).then(res => {
+      this.api.get('query', { table: 'reported', select: ['*'], where: { id: params.id } }).then(res => {
         let report: any = res.reports[0];
         report.user$ = this.db.object(`user/${report.user}`).valueChanges();
         this.report = report;

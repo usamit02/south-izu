@@ -281,7 +281,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
           const description = res.storys.length ? res.storys[0].txt.match(/[^ -~｡-ﾟ]/).slice(0, 50) : "";
           this.db.list(`report/`).update(this.report.id.toString(),
             {
-              na: this.na.value, uid: this.report.user, description: this.description.value, image: this.report.cast_img, upd: new Date().getTime(),
+              na: this.na.value, uid: this.report.user, description: this.description.value, image: this.report.img, upd: new Date().getTime(),
             });
         });
       }
@@ -318,7 +318,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         await this.db.list(`report/${id}`).remove();
         await this.db.database.ref(`post/report${id}`).remove();
         await this.store.collection('report').doc(id.toString()).delete();
-        if (this.report.image) this.storage.ref(`report/${id}/image.jpg`).delete();
+        if (this.report.img) this.storage.ref(`report/${id}/image.jpg`).delete();
         this.reports.drafts = this.reports.drafts.filter(report => { return report.id !== id; });
         this.reports.requests = this.reports.requests.filter(report => { return report.id !== id; });
         this.reports.posts = this.reports.posts.filter(report => { return report.id !== id; });
