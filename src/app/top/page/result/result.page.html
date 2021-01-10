@@ -33,8 +33,7 @@
                 </div>
               </div>
             </div>
-            <a [href]="result.shopurl" target="_blank">{{result.shop_na}}</a>
-            <ion-item lines="none" class="wrapItem">
+            <ion-item *ngIf="result.userDetail" lines="none" class="wrapItem">
               <div>
                 <ion-item (click)="popUser($event,result.user)" class="avatarItem" lines="none" button="true">
                   <ion-avatar>

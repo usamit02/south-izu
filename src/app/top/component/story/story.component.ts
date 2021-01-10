@@ -13,7 +13,7 @@ export class StoryComponent implements OnInit, OnChanges {
   @Input() user;
   @Input() page;
   @Input() param;//column,markerなど親ページの基本データ
-  @Input() datas;
+  @Input() datas;//columnのみ、storyのデータを引き継ぐ
   @Output() isStory= new EventEmitter();
   storys = [];
   user$;
@@ -30,7 +30,9 @@ export class StoryComponent implements OnInit, OnChanges {
         this.res.storys=this.datas;
         if(!this.datas.length) {this.param.user=null;}
       }else{
-        this.res = await this.api.get('query', { table: 'story', select: ['*'], where: { typ: this.page, parent: this.param.id } });
+        this.res = await this.api.get('query', { table: 'story', 
+        select: ['id','txt','media','file','rest','restdate','rested'],
+        where: { typ: this.page, parent: this.param.id } });
       }
       this.user$ = this.param.user ? this.db.object(`user/${this.param.user}`).valueChanges() : null;
       if(this.res.storys.length){

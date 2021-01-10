@@ -5,7 +5,7 @@
   <form [formGroup]="reportForm" *ngIf="mode==='report'">
     <ion-item>
       <ion-label position="floating">ジャンル</ion-label>
-      <ion-select multiple="true" [formControl]="genre">
+      <ion-select multiple="true" [formControl]="genre" (ionChange)="getCount()" >
         <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
           <span #genreOptions>{{genre.na}}</span>
         </ion-select-option>

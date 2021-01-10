@@ -73,7 +73,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
   getCount() {
-    this.api.get('query', { count: 'report', where: this.search(true) }).then(res => {
+    this.api.get('query', { count: this.mode, where: this.search(true) }).then(res => {
       this.count = res.count;
     });
   }
@@ -109,7 +109,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
     if (count) {
       return params;
     } else {
-      this.router.navigate(['/result'], { queryParams: { where: JSON.stringify(params), order: this.order.value } });
+      this.router.navigate(['/result'], { queryParams: { table:this.mode,where: JSON.stringify(params), order: this.order.value } });
       this.close.emit();
     }
   }

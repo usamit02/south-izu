@@ -35,7 +35,7 @@ export class ResultPage implements OnInit, OnDestroy {
       if (this.infinite) this.infinite.disabled = false;
       if (this.order !== "acked") {
         this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: this.where }).then(async res => {
-          this.allResults = await Promise.all(res[`${this.table}ed`].map(async result => {
+          this.allResults = await Promise.all(res[`${this.table}s`].map(async result => {
             const doc = await this.db.database.ref(`${this.table}/${result.id}`).once('value');
             const detail = doc.val();
             if (detail) {
@@ -70,7 +70,7 @@ export class ResultPage implements OnInit, OnDestroy {
     if (this.order === 'acked') {
       const where = cursor ? { [this.order]: { up: cursor }, ...this.where } : this.where;
       this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: where, order: { [this.order]: "DESC" }, limit: LIMIT }).then(res => {
-        this.results.push(...res[`${this.table}ed`]);
+        this.results.push(...res[`${this.table}s`]);
         this.results.map(result => {
           result.detail$ = this.db.object(`${this.table}/${result.id}`).valueChanges();
         });
@@ -78,7 +78,7 @@ export class ResultPage implements OnInit, OnDestroy {
           const snapshot = await this.db.database.ref(`user/${result.user}`).once('value');
           result.userDetail = snapshot.val();
         });
-        if (res[`${this.table}ed`].length < LIMIT) {
+        if (res[`${this.table}s`].length < LIMIT) {
           this.infinite.disabled = true;
         }
       }).finally(() => {
