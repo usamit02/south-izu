@@ -5,8 +5,16 @@
 export const environment = {
   production: false
 };
-
-
+export const firebaseConfig = {
+  apiKey: "AIzaSyCNxXgNRKVrdozTnWTenb0MjxvTnXILoYo",
+  authDomain: "touringstay.firebaseapp.com",
+  projectId: "touringstay",
+  storageBucket: "touringstay.appspot.com",
+  messagingSenderId: "857084057094",
+  appId: "1:857084057094:web:1b08bb42b64b64d68fd587",
+  measurementId: "G-BZNWTBK0CE"
+};
+/*
 export const firebaseConfig = {
   apiKey: "AIzaSyDHDvX_Jr3wv4DF5lKrOXCI4RYzEPAzimk",
     authDomain: "south-izu.firebaseapp.com",
@@ -16,6 +24,6 @@ export const firebaseConfig = {
     messagingSenderId: "884251880047",
     appId: "1:884251880047:web:198ac0310b21f8bffa7b9a"
 };
-
-export const APIURL = "http://localhost/public_html/southizu/";
-//export const APIURL = "https://bloggersguild.cf/southizu/";
+*/
+//export const APIURL = "http://localhost/public_html/southizu/";
+export const APIURL = "https://bloggersguild.cf/southizu/";

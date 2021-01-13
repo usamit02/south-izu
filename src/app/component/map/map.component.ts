@@ -25,6 +25,7 @@ export class MapComponent implements OnInit, OnChanges {
   renderOptions = {
     suppressMarkers: true
   };
+  visible=true;
   constructor(private api: ApiService, private ui: UiService,) { }
   ngOnInit() {
   }
@@ -41,8 +42,8 @@ export class MapComponent implements OnInit, OnChanges {
     this.markers = markers;
     if (markers.length) {
       this.lat = markers[0].lat; this.lng = markers[0].lng;
-      if (markers.length > 1) {
-        this.origin = { lat: markers[0].lat, lng: markers[0].lng };
+      this.origin = { lat: markers[0].lat, lng: markers[0].lng };
+      if (markers.length > 1) {       
         this.destination = { lat: markers[markers.length - 1].lat, lng: markers[markers.length - 1].lng };
         let waypoints: any = markers.slice(1, markers.length);
         this.waypoints = waypoints.map(waypoint => {
@@ -60,7 +61,17 @@ export class MapComponent implements OnInit, OnChanges {
           waypoints: waypoints,
           destination: { infoWindow: `<p>${markers[markers.length - 1].na}<p><div>${markers[markers.length - 1].txt}</div><img src="${markers[markers.length - 1].img}"/>`,label:{text:'着',color:"white"} /*icon: this.icon[markers[markers.length - 1].icon]*/}
         }
+      }else{
+        this.destination = { lat: markers[0].lat, lng: markers[0].lng };
+        this.waypoints=[];
+        this.markerOptions = {
+          origin: { infoWindow: `<p>${markers[0].na}<p><div>${markers[0].txt}</div><img src="${markers[0].img}"/>`, label:{}/*icon: this.icon[markers[0].icon] */},
+          destination: { infoWindow: `<p>${markers[0].na}<p><div>${markers[0].txt}</div><img src="${markers[0].img}"/>`,label:{} /*icon: this.icon[markers[markers.length - 1].icon]*/}
+        }
       }
+      this.visible=true;
+    }else{
+      this.visible=false;
     }
   }
   markerClick(marker) {

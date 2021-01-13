@@ -34,7 +34,7 @@
       </ion-button>
     </ion-buttons>
     <ion-title>マーカー設定</ion-title>
-    <ion-button *ngIf="marker.id" (click)="eraseClick()" color="danger" slot="end" fill="clear">
+    <ion-button *ngIf="marker.id" (click)="erase()" color="danger" slot="end" fill="clear">
       <ion-icon name="trash" slot="icon-only"></ion-icon>
     </ion-button>
     <ion-button slot="end" [disabled]="!markerForm.dirty || !markerForm.valid" (click)="save()" fill="clear">
@@ -57,12 +57,13 @@
     </ion-item>
     <span *ngIf="txt.errors?.minlength||txt.errors?.maxlength" class="errmsg">２文字以上５００文字以下で入力してください。</span>
     <span *ngIf="txt.errors?.pattern && txt.dirty" class="errmsg">入力してください</span>
+    <!--
     <ion-segment scrollable [formControl]="icon">
       <ion-segment-button *ngFor="let icon of icons" [value]="icon.id">
         <img [src]="icon.url" />
         <ion-label>{{icon.na}}</ion-label>
       </ion-segment-button>
-    </ion-segment>
+    </ion-segment>-->
   </form>
   <ion-item>
     <img *ngIf="imgData;else orgimg" class="img" [src]="imgData|safe" />

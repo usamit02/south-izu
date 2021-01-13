@@ -175,6 +175,9 @@ export class MarkerComponent implements OnInit {
       this.markerForm.markAsDirty();
     }
   }
+  erase(){
+    
+  }
   reorder(e){
     let temp = this.markers[e.detail.from];
     this.markers[e.detail.from] = this.markers[e.detail.to];

@@ -17,8 +17,8 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit, OnDestroy {
-  email = new FormControl("usamit@gmail.com", [Validators.email, Validators.required]);
-  password = new FormControl("kx125l1", [Validators.required]);
+  email = new FormControl("", [Validators.email, Validators.required]);
+  password = new FormControl("", [Validators.required]);
   phone = new FormControl("", [Validators.pattern(/^(([0-9]{2,4}-[0-9]{2,4}-[0-9]{3,4})|([0-9]{9,11}))$/), Validators.required]);
   mailForm = this.builder.group({
     email: this.email,password:this.password

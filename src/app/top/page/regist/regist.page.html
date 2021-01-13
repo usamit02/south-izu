@@ -19,6 +19,7 @@
 </ion-header>
 <ion-content padding>
   <form [formGroup]="userForm">
+    <p></p>
     <ion-title>
       <ion-icon name="person" color="primary"></ion-icon>基本情報
     </ion-title>
@@ -53,19 +54,19 @@
       <ion-segment scrollable [formControl]="direct">
         <ion-segment-button value="everyone">
           <ion-item lines="none">
-            <ion-icon name="contacts" color="success"></ion-icon>
+            <ion-icon name="people" color="success"></ion-icon>
             <ion-label>誰でも</ion-label>
           </ion-item>
         </ion-segment-button>
         <ion-segment-button value="support">
           <ion-item lines="none">
-            <ion-icon name="heart-empty" color="danger"></ion-icon>
+            <ion-icon name="heart-outline" color="danger"></ion-icon>
             <ion-label>サポーター</ion-label>
           </ion-item>
         </ion-segment-button>
         <ion-segment-button value="block">
           <ion-item lines="none">
-            <ion-icon name="lock" color="dark"></ion-icon>
+            <ion-icon name="lock-closed" color="dark"></ion-icon>
             <ion-label>閉鎖</ion-label>
           </ion-item>
         </ion-segment-button>

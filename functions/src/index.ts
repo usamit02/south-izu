@@ -497,7 +497,7 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
   if (push && (push[typ] || typ === "admin")) {
     const payload = {
       notification: {
-        title: 'セクシャルレポート', // Pushメッセージのタイトル
+        title: 'ツーリングスティ', // Pushメッセージのタイトル
         body: message, // Pushメッセージ本文
         clickAction: `${URL}${url}`, // Push通知をタップした時に、飛ばすURLを指定
         icon: avatar, // Push通知で使うロゴ
@@ -514,7 +514,7 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
   const mail = (await admin.database().ref(`notify/mail/${id}`).once('value')).val();
   if (mail && (mail[typ] || typ === "admin")) {
     const OAuth2 = google.google.auth.OAuth2;
-    const APP_NAME = "sexualreport";
+    const APP_NAME = "touringstay";
     //const clientID = "610920766258-4tiulk960o1u77llb2duenf02e9nedao.apps.googleusercontent.com";
     //const clientSecret = "V5NgFXtzPgKvVw5b0ByI3tkC";
     //const refreshToken = "1//04x7kmHAMQrFbCgYIARAAGAQSNwF-L9Irb__i4j8PycKvYt_l8LxrG8addHzQlzOteIL99lar0_0A4A5Nsf0FVuwCbKvSglTRjO8"
@@ -535,7 +535,7 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
         service: "gmail",
         auth: {
           type: "OAuth2",
-          user: "sexualreport@gmail.com",
+          user: "touringstay@gmail.com",
           clientId: clientID,
           clientSecret: clientSecret,
           refreshToken: refreshToken,
@@ -544,9 +544,9 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
       });
 
       let mailOptions: any = {
-        from: `${APP_NAME} <sexualreport@gmail.com>`,
+        from: `${APP_NAME} <touringstay@gmail.com>`,
         to: mail.email, //sending to email IDs in app request, please check README.md
-        subject: `セクシャルレポート`,
+        subject: `ツーリングスティ`,
         text: message
       };
       if (url) {

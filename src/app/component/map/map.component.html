@@ -1,7 +1,6 @@
-<agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' [fitBounds]="true">
-   
+<agm-map [latitude]='lat' [longitude]='lng' [fullscreenControl]='true' [fitBounds]="true">   
   <agm-direction [origin]="origin" [destination]="destination" [waypoints]="waypoints" [travelMode]="travelMode" 
-  [markerOptions]="markerOptions" [renderOptions]="renderOptions" ></agm-direction>
+  [markerOptions]="markerOptions" [renderOptions]="renderOptions" [visible]="visible" ></agm-direction>
 </agm-map>
 <!--
 

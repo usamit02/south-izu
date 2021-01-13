@@ -184,17 +184,16 @@ export class StoryComponent implements OnInit {
   }
   mediaDel(idx): Promise<void> {
     return new Promise((resolve) => {
+      this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { id: this.storys[idx].id } });
+      this.storys[idx].media = "";this.storys[idx].file = "";
       if (!this.storys[idx].file) {
         resolve();
-      } else {
-        this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { id: this.storys[idx].id } });
+      } else {        
         this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete().toPromise().catch(err => {
           this.ui.alert("ファイルの削除に失敗しました。\r\n" + err.message);
         }).finally(() => {
           resolve();
-        });
-        this.storys[idx].media = "";
-        this.storys[idx].file = "";
+        });        
       }
     })
   }
@@ -210,6 +209,79 @@ export class StoryComponent implements OnInit {
         this.resetMarkers.emit(this.markers);
       }
     });
+  }
+  async mediaUrl(idx){
+    let alart = await this.alert.create({
+      header:'youtubeやiframeのurlを入力',
+      inputs:[{name:'txt',type:'url',placeholder:`https://www.youtube.com/watch?v=Q9lN1MPHaPs` }],
+      buttons:[{text:'取消',role:'cancel'},{text:'決定',handler:(res)=>{
+        let txt=res.txt;let html;
+        if (txt.indexOf("<iframe") > -1) {
+          let urls = txt.match("<iframe[-_.!~*\'\"()a-zA-Z0-9;/?:@&=+$,%#> ]+</iframe>")
+          if (urls && urls.length) {
+            let widths: Array<string> = urls[0].match('width="[0-9]+"');
+            let heights: Array<string> = urls[0].match('height="[0-9]+"');
+            if (widths && heights && widths.length && heights.length) {
+              let w = Number(widths[0].replace(/[^0-9]/g, ''));
+              let h = Number(heights[0].replace(/[^0-9]/g, ''));
+              const aspect = h / w;
+              w = w < 640 ? w : 640;
+              h = Math.floor(w * aspect);
+              const padding=Math.floor((h/w)*100);
+              const iframe = urls[0].replace(widths[0], 'style="position:absolute;left:0;top:0;width:100%;height:100%;"').replace(heights[0], '');
+              html=`<div style="position:relative;width:100%;height:0;padding-top:${padding}%;">${iframe}</div>`;
+              for (let i = 0; i < urls.length; i++) {
+                let res: string = txt.replace(urls[i], "");
+                while (res !== txt) {
+                  txt = txt.replace(urls[i], "");
+                  res = txt.replace(urls[i], "");
+                }
+              }
+            } else {
+              this.ui.alert("iframeのサイズを解析できませんでした。");
+            }
+          } else {
+            this.ui.alert("iframeを解析できませんでした。"); return;
+          }
+        } else if (txt.indexOf("youtu.be") > 0 || txt.indexOf("youtube.com") > 0) {
+          let id = txt.match('[\/?=]([a-zA-Z0-9\-_]{11})');
+          if (id && id.length) {
+            html = "<div style='position: relative;width:320px;'><a href='https://youtube.com/watch?v=" + id[1] +
+              "' target='_blank'><img style='position:absolute;top:40px;left:100px;opacity:0.5;' src='" + APIURL + "img/play.png'/><img style='border-radius: 5px;' src='http://i.ytimg.com/vi/" + id[1] +
+              "/mqdefault.jpg'/></a></div>";//sddefault.jpg
+          } else {
+            this.ui.alert("youtubeのurlを解析できませんでした。"); return;
+          }
+        } else {
+          let urls = txt.match("https?://[-_.!~*\'()a-zA-Z0-9;/?:@&=+$,%#]+");
+          if (urls && urls.length) {
+            let url = urls[0];
+            html = '<a href="' + url + '" target="_blank">' + url + '</a>';
+            /*　課題　promise化が必要　linkcard.phpが不明なエラーを返す　981.jpなどで発生
+            this.api.get('linkcard', { url: url }).then(res => {
+              if (res.title || res.image) {
+                this.media.html = '<div style="border-style:groove; border-radius: 10px;"><div><a href="' + url + '" target="_blank"><img style="max-height:200px;"src="'
+                  + res.image + '"></a></div><div><a href="' + url + '" target="_blank">' + res.title + '</a><p>' + res.description + '</p></div></div>';
+              } else {
+                this.media.html = '<a href="' + url + '" target="_blank">' + url + '</a>';
+              }
+            });
+            */
+          }
+        }
+        if(html){
+          this.api.post('query', { table: 'story', update: { media: html, file: "" }, where: { id: this.storys[idx].id } }).then(res=>{
+            if(this.storys[idx].file){
+              this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete();
+            }
+            this.storys[idx].media=html;this.storys[idx].file="";
+          });
+        }else{
+          this.ui.alert(`html文字列を解析できませんでした。`);
+        }
+      }}]
+    });
+    await alart.present();
   }
   upload(e, idx) {
     const files = e.target.files;
@@ -304,7 +376,11 @@ export class StoryComponent implements OnInit {
       }
       reader.readAsDataURL(files[0]);
     } else {
-      send(files[0]);
+      if(files[0].size>10000000){
+        this.ui.alert(`ファイルサイズは10MBまでにしてください。`);
+      }else{
+        send(files[0]);
+      }
     }
   }
 }

@@ -118,7 +118,10 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     });
     return await popover.present().then(() => {
       popover.onDidDismiss().then(event => {
-        if (event.data) this.imgBase64 = event.data;
+        if (event.data) {
+          this.imgBase64 = event.data;
+          this.reportForm.markAsDirty();
+        }
       });
     });;
   }
@@ -255,7 +258,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
       }
       const ref = this.storage.ref(`report/${this.report.id}/image.jpg`);
       await ref.put(blob);
-      update.image = await ref.getDownloadURL().toPromise();
+      update.img = await ref.getDownloadURL().toPromise();
     }
     this.api.post('query', { table: 'report', update: update, where: { id: this.report.id } }).then(() => {
       if (ack === 0) {

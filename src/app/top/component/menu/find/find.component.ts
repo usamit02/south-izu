@@ -117,6 +117,12 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
     this.reportForm.reset(this.condition.reportForm, { emitEvent: true });
     this.searchForm.reset(this.condition.searchForm);
   }
+  load(){
+
+  }
+  save(){
+    
+  }
   ngOnDestroy() {
     this.onDestroy$.next();
   }

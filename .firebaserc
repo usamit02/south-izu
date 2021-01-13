@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "south-izu"
+    "default": "south-izu",
+    "touringstay": "touringstay"
   }
 }
