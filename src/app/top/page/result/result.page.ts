@@ -33,7 +33,7 @@ export class ResultPage implements OnInit, OnDestroy {
       this.where = JSON.parse(params.where);
       this.results = [];
       if (this.infinite) this.infinite.disabled = false;
-      if (this.order !== "acked") {
+      if (this.order !== "acked") {//acked以外はmysqlではなくfirebase realtimedbに保存されているので、mysqlとdbを合体させて並び替え
         this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: this.where }).then(async res => {
           this.allResults = await Promise.all(res[`${this.table}s`].map(async result => {
             const doc = await this.db.database.ref(`${this.table}/${result.id}`).once('value');

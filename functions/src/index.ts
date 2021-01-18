@@ -515,16 +515,11 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
   if (mail && (mail[typ] || typ === "admin")) {
     const OAuth2 = google.google.auth.OAuth2;
     const APP_NAME = "touringstay";
-    //const clientID = "610920766258-4tiulk960o1u77llb2duenf02e9nedao.apps.googleusercontent.com";
-    //const clientSecret = "V5NgFXtzPgKvVw5b0ByI3tkC";
-    //const refreshToken = "1//04x7kmHAMQrFbCgYIARAAGAQSNwF-L9Irb__i4j8PycKvYt_l8LxrG8addHzQlzOteIL99lar0_0A4A5Nsf0FVuwCbKvSglTRjO8"
-    const clientID = "737317187470-li4coaassjl9moaflgmtrq2j2784s2j9.apps.googleusercontent.com";
-    const clientSecret = "vyeQMBsoPsHU1eg307o-p5XW";
-    const refreshToken = "1//04XnYDIUHTPdOCgYIARAAGAQSNwF-L9Ir5MlbVynADFMYqwoikXrFmum9Nhfv7B-_RuVmWRUo492RxDLkb3ODrmxF_KhKnewpNJw";
+    const clientID = "440896250861-n28clt4aviv07rlm04rldf1a6bmchefh.apps.googleusercontent.com";
+    const clientSecret = "L7VB0DfzYowNTbexvlDhWGKB";
+    const refreshToken = "1//04ngcnvQ17C7yCgYIARAAGAQSNwF-L9IrWF7It-zXAgpQHGmTv9Ab1FQWD2qkmFFTsF_OC_dA_sjN_lZGxJenAucSZ_qx3RXOV_M";
     const oauth2Client = new OAuth2(
-      clientID, //client Id
-      clientSecret, // Client Secret
-      "https://developers.google.com/oauthplayground" // Redirect URL
+      clientID, clientSecret,"https://developers.google.com/oauthplayground" // Redirect URL
     );
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -555,14 +550,14 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
       }
       smtpTransport.sendMail(mailOptions, (error: any, info: any) => {
         if (error) {
-          console.error(`${id}へgmailの送信に失敗しました。\r\n${error.message}`);
+          console.error(`touringstayから${id}へgmailの送信に失敗しました。\r\n${error.message}`);
           smtpTransport.close();
         } else {
           console.log(`${id}へgmailを送信しました。`);
         }
       });
     }).catch(err => {
-      console.error("gmail oauthアクセストークンの取得に失敗しました。\r\n" + err.message);
+      console.error("touringstay gmail oauthアクセストークンの取得に失敗しました。\r\n" + err.message);
     });
   } else {
     console.log(`${id}はメール通知対象でありません。push:${mail}`);
@@ -604,7 +599,7 @@ export const scoreing = functions.region('asia-northeast1').https.onRequest(asyn
           });
         });
       });
-      resolve();
+      resolve(true);
     }).catch(err => {
       reject(err);
     });
@@ -623,7 +618,7 @@ export const scoreing = functions.region('asia-northeast1').https.onRequest(asyn
           });
         });
       });
-      resolve();
+      resolve(true);
     }).catch(err => {
       reject(err);
     });
@@ -720,7 +715,7 @@ export const sitemap = functions.https.onRequest((req, res) => {
           urls.push({ loc: `${URL}/${page}/${doc.key}`, mod: new Date(data.upd), upd: data.upd });
         });
       }
-      resolve();
+      resolve(true);
     }).catch(err => reject(err));
   });
   Promise.all([promise('report'), promise('column')]).then(() => {
@@ -754,7 +749,7 @@ export const rss = functions.https.onRequest((req, res) => {
           items.push({ link: `${URL}/${page}/${doc.key}`, date: new Date(data.upd), upd: data.upd, title: data.na, description: data.description });
         });
       }
-      resolve();
+      resolve(true);
     }).catch(err => reject(err));
   });
   Promise.all([promise('report'), promise('column')]).then(() => {

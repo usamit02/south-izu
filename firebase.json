@@ -7,9 +7,49 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
+        {        
+          "source": "report/*",
+          "function": "render"
+        },
+        {
+          "source": "column/*",
+          "function": "render"
+        },
+        {
+          "source": "sitemap.xml",
+          "function": "sitemap"
+        },
+        {
+          "source": "rss.xml",
+          "function": "rss"
+        },
+        {
+          "source": "feed",
+          "function": "rss"
+        },
+        {
         "source": "**",
         "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/build/app/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=36000"
+          }
+        ]
+      },
+      {
+        "source": "ngsw-worker.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   },

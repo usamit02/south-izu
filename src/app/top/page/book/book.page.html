@@ -21,8 +21,8 @@
       　 <ion-icon name="calendar" slot="icon-only" color="primary"></ion-icon>
     </ion-button>
   </ion-item>
-  <p></p>
-  <app-pay1 #reserve *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
+  <p #reserve></p>
+  <app-pay1 *ngIf="user.id else login;" [user]="user" [amount]="book.amount" (pay)="pay($event)"></app-pay1>
   <ng-template #login>
     <div style="text-align: center">
       <ion-button routerLink="/login">

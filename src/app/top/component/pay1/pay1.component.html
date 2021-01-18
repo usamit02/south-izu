@@ -17,27 +17,27 @@
     </ion-list-header>
     <ion-item>
       <ion-label class="leftLabel">カード番号</ion-label>
-      <ion-input [formControl]="cardNumber" name="cardNumber" placeholder="4242565642425656"></ion-input>
+      <ion-input [formControl]="cardNumber" name="cardNumber" placeholder="4242565642425656" slot="end"></ion-input>
     </ion-item>
     <span *ngIf="cardNumber.errors?.pattern && cardNumber.dirty"
       class="errmsg">半角数字16桁または0000-0000-0000-0000形式で入力してください</span>
     <ion-item>
       <ion-label class="leftLabel">セキュリティコード</ion-label>
-      <ion-input [formControl]="cardCvc" name="cardCvc" placeholder="123"></ion-input>
-      <img *ngIf="whatCvc" [src]="cvcimg" />
-      <ion-button slot="end" icon-only (click)="whatCvc=!whatCvc">
+      <ion-button icon-only (click)="whatCvc=!whatCvc">
         <ion-icon name="help-circle"></ion-icon>
       </ion-button>
+      <ion-input [formControl]="cardCvc" name="cardCvc" placeholder="123"  slot="end"></ion-input>
+      <img *ngIf="whatCvc" [src]="cvcimg" />      
     </ion-item>
     <span *ngIf="cardCvc.errors?.pattern && cardCvc.dirty" class="errmsg">半角数字3桁で入力してください</span>
     <ion-item>
       <ion-text class="leftText">有効期限</ion-text>
       <ion-datetime display-format="YYYY年M月" picker-format="YYYY年M月" [formControl]="cardRimit" name="cardRimit"
-        placeholder="2022年6月" doneText="決定" cancelText="取消" min="2021" max="2030">
+        placeholder="2025年6月" doneText="決定" cancelText="取消" min="2021" max="2030" slot="end">
       </ion-datetime>
     </ion-item>
-    <div text-center>
-      <ion-button color="tertiary" (click)="newpay()" [disabled]="cardForm.invalid">同意して申し込む</ion-button>
+    <div style="text-align: center;">
+      <ion-button color="tertiary" (click)="newpay()" [disabled]="cardForm.invalid">同意して予約する</ion-button>
     </div>
   </ion-list>
 </form>
@@ -47,7 +47,7 @@
   　 <p>カード番号　　{{card.brand}} ****-****-****-{{card.last4}}</p>
   <p>有効期間　　　{{card.exp_year}}年{{card.exp_month}}月</p>
   <ion-item class="payButton" lines="none">
-    <ion-button color="tertiary" (click)="payClick('')">同意して支払う</ion-button>
+    <ion-button color="tertiary" (click)="payClick('')">同意して予約する</ion-button>
     <ion-button *ngIf="!card.change" color="light" (click)="card.change=true" slot="end">クレジットカードを変更する</ion-button>
   </ion-item>
 </div>

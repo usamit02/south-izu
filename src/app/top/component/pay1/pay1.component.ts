@@ -18,7 +18,7 @@ export class Pay1Component implements OnInit, OnChanges {
   card = { last4: "", brand: "", exp_year: null, exp_month: null, change: false };
   cardNumber = new FormControl("", [Validators.pattern(/^(([0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4})|([0-9]{16}))$/), Validators.required]);
   cardCvc = new FormControl("", [Validators.pattern(/^([0-9]{3})$/), Validators.required]);
-  cardRimit = new FormControl("2020-6", Validators.required);
+  cardRimit = new FormControl("", Validators.required);
   cardForm = this.builder.group({
     cardNumber: this.cardNumber, cardCVC: this.cardCvc, cardRimit: this.cardRimit,
   });
@@ -31,7 +31,7 @@ export class Pay1Component implements OnInit, OnChanges {
     Payjp.setPublicKey('pk_test_a77ab4464e1cecb66c3d1b21');//"pk_live_087f0146e09e1f1eceaf0750");
   }
   ngOnChanges() {
-    this.api.get('card', { uid: this.user.id }).then(res => {      
+    this.api.get('card', { uid: this.user.id ,na:this.user.na}).then(res => {      
       this.card = res.card;
     }).catch(() => {
       this.ui.alert(`カード読込に失敗しました。`);

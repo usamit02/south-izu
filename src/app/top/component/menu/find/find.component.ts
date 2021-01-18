@@ -18,8 +18,8 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
   @Input() user: User;
   @Output() close = new EventEmitter();
   mode: string;
-  reportIni={genre:[]};  
-  genres = [];  
+  reportIni = { genre: [] };
+  genres = [];
   genre = new FormControl([]);
   reportForm = this.builder.group({
     genre: this.genre,
@@ -32,14 +32,14 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
   searchForm = this.builder.group({
     order: this.order, term: this.term,
   });
-  condition: Condition = {
+  condition: Condition = {//検索条件
     na: "init", reportForm: this.reportIni, searchForm: this.searchIni,
   };
   count: number;
   testCount: number = 0;
   private onDestroy$ = new Subject();
-  constructor(private router:Router,private builder: FormBuilder, private storedb: AngularFirestore, private store: Store, private db: AngularFireDatabase,
-    private ui: UiService, private api: ApiService, ) { }
+  constructor(private router: Router, private builder: FormBuilder, private storedb: AngularFirestore, private store: Store, private db: AngularFireDatabase,
+    private ui: UiService, private api: ApiService,) { }
   ngOnInit() {
     this.term.valueChanges.pipe(debounceTime(500), takeUntil(this.onDestroy$)).subscribe(() => { this.getCount(); });
   }
@@ -51,24 +51,27 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
   }
   async findMode(typ: string) {
     this.mode = this.mode === typ ? "" : typ;
-    if (this.mode && this.condition.na === "init") {
-      const res = await this.api.get('query', { table: 'genre' });
-      this.genres = res.genres;
-      if (this.user.id) {
-        this.db.database.ref(`condition/${this.user.id}/default`).once('value').then(snap => {
-          const condition = snap.val();
-          if (condition) {
-            this.condition = condition;
-          } else {
-            this.condition.na = "readed";
-          }
+    if (this.mode) {
+      this.router.navigate(['/result'], { queryParams: { table: this.mode, where: '{ "ack": 1 }', order: this.order.value } });
+      if (this.condition.na === "init") {
+        const res = await this.api.get('query', { table: 'genre' });
+        this.genres = res.genres;
+        if (this.user.id) {
+          this.db.database.ref(`condition/${this.user.id}/default`).once('value').then(snap => {
+            const condition = snap.val();
+            if (condition) {
+              this.condition = condition;
+            } else {
+              this.condition.na = "readed";
+            }
+            this.undo();
+          }).catch(err => {
+            this.ui.alert(`検索条件の読込に失敗しました。\r\n${err.message}`);
+          });
+        } else {
+          this.condition.na = "guest";
           this.undo();
-        }).catch(err => {
-          this.ui.alert(`検索条件の読込に失敗しました。\r\n${err.message}`);
-        });
-      } else {
-        this.condition.na = "guest";
-        this.undo();
+        }
       }
     }
   }
@@ -97,7 +100,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
     if (this.termVals[this.term.value.upper].val) {
       acked.lower = getTerm(this.term.value.upper);
     }
-    if (acked.lower || acked.upper) params.acked = acked;    
+    if (acked.lower || acked.upper) params.acked = acked;
     const controls = this.reportForm.controls;
     for (let key of Object.keys(controls)) {
       let a = controls[key].value;
@@ -109,7 +112,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
     if (count) {
       return params;
     } else {
-      this.router.navigate(['/result'], { queryParams: { table:this.mode,where: JSON.stringify(params), order: this.order.value } });
+      this.router.navigate(['/result'], { queryParams: { table: this.mode, where: JSON.stringify(params), order: this.order.value } });
       this.close.emit();
     }
   }
@@ -117,11 +120,11 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
     this.reportForm.reset(this.condition.reportForm, { emitEvent: true });
     this.searchForm.reset(this.condition.searchForm);
   }
-  load(){
+  load() {
 
   }
-  save(){
-    
+  save() {
+
   }
   ngOnDestroy() {
     this.onDestroy$.next();
