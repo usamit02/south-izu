@@ -37,7 +37,7 @@
       </ion-datetime>
     </ion-item>
     <div style="text-align: center;">
-      <ion-button color="tertiary" (click)="newpay()" [disabled]="cardForm.invalid">同意して予約する</ion-button>
+      <ion-button color="tertiary" (click)="newpay()" [disabled]="cardForm.invalid ||!amonut">同意して予約する</ion-button>
     </div>
   </ion-list>
 </form>
@@ -47,7 +47,7 @@
   　 <p>カード番号　　{{card.brand}} ****-****-****-{{card.last4}}</p>
   <p>有効期間　　　{{card.exp_year}}年{{card.exp_month}}月</p>
   <ion-item class="payButton" lines="none">
-    <ion-button color="tertiary" (click)="payClick('')">同意して予約する</ion-button>
-    <ion-button *ngIf="!card.change" color="light" (click)="card.change=true" slot="end">クレジットカードを変更する</ion-button>
+    <ion-button [disabled]="!amonut" color="tertiary" (click)="payClick('')">同意して予約する</ion-button>
+    <ion-button *ngIf="!card.change" [disabled]="!amonut" color="light" (click)="card.change=true" slot="end">クレジットカードを変更する</ion-button>
   </ion-item>
 </div>

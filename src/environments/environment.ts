@@ -25,5 +25,5 @@ export const firebaseConfig = {
     appId: "1:884251880047:web:198ac0310b21f8bffa7b9a"
 };
 */
-//export const APIURL = "http://localhost/public_html/southizu/";
-export const APIURL = "https://bloggersguild.cf/southizu/";
+export const APIURL = "http://localhost/public_html/southizu/";
+//export const APIURL = "https://bloggersguild.cf/southizu/";

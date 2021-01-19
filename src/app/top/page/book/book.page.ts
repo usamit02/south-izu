@@ -129,7 +129,7 @@ export class BookPage implements OnInit, OnDestroy {
       from: new Date(), to: d.setFullYear(d.getFullYear() + 1),
       weekdays: ['日', '月', '火', '水', '木', '金', '土'],
       closeIcon: true, doneIcon: true, cssClass: 'calendar',
-      monthFormat: 'YYYY年M月', defaultScrollTo: new Date(), weekStart: 1, daysConfig: this.days,
+      monthFormat: 'YYYY年M月', defaultScrollTo: new Date(), daysConfig: this.days,
     };
     let myCalendar = await this.modal.create({
       component: CalendarModal,

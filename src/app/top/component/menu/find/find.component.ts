@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnDestroy, OnChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnDestroy, OnChanges,SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
@@ -16,8 +16,9 @@ import { Store } from './../../../../service/store.service';
 })
 export class FindComponent implements OnInit, OnChanges, OnDestroy {
   @Input() user: User;
-  @Output() close = new EventEmitter();
-  mode: string;
+  @Input() mode: string;
+  @Output() modeChange = new EventEmitter();
+  @Output() menuClose = new EventEmitter();
   reportIni = { genre: [] };
   genres = [];
   genre = new FormControl([]);
@@ -43,7 +44,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     this.term.valueChanges.pipe(debounceTime(500), takeUntil(this.onDestroy$)).subscribe(() => { this.getCount(); });
   }
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {    
     if (this.user.id) {
 
     } else {
@@ -51,6 +52,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
   }
   async findMode(typ: string) {
     this.mode = this.mode === typ ? "" : typ;
+    this.modeChange.emit(this.mode);
     if (this.mode) {
       this.router.navigate(['/result'], { queryParams: { table: this.mode, where: '{ "ack": 1 }', order: this.order.value } });
       if (this.condition.na === "init") {
@@ -113,7 +115,7 @@ export class FindComponent implements OnInit, OnChanges, OnDestroy {
       return params;
     } else {
       this.router.navigate(['/result'], { queryParams: { table: this.mode, where: JSON.stringify(params), order: this.order.value } });
-      this.close.emit();
+      this.menuClose.emit();
     }
   }
   undo() {

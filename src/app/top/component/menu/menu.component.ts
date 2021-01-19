@@ -101,8 +101,9 @@ export class MenuComponent implements OnInit, OnChanges, OnDestroy {
   deletePost(id) {
     this.db.database.ref(`post/${id}`).remove();
   }
-  link(url){
+  link(url,modeKeep?:boolean){
     this.router.navigate([`/${url}`]);
+    if(!modeKeep)this.mode="";
     this.close.emit();
   }
   menuClose(){

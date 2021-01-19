@@ -5,7 +5,7 @@
     </ion-title>
   </ion-toolbar>
 </ion-header>
-<app-find [user]="user" (close)="menuClose()"></app-find>
+<app-find [user]="user" [mode]="mode" (modeChange)="mode=$event" (menuClose)="menuClose()"></app-find>
 <ion-list>
   <ion-item *ngIf="column.up">
     <ion-item (click)="loadColumns(column.grand)" class="column" button="true">
@@ -132,9 +132,9 @@
     <ion-icon name="settings"></ion-icon><span>設定</span>
   </ion-item>
   <ion-list *ngIf="mode==='config'" class="config">
-    <ion-item button="true" (click)="link('regist')">個人情報</ion-item>
-    <ion-item button="true" (click)="link('notify')">通知</ion-item>
-    <ion-item button="true" (click)="link('design')">デザイン</ion-item>
+    <ion-item button="true" (click)="link('regist',true)">個人情報</ion-item>
+    <ion-item button="true" (click)="link('notify',true)">通知</ion-item>
+    <ion-item button="true" (click)="link('design',true)">デザイン</ion-item>
   </ion-list>
   <ion-item button="true" (click)="contact()">
     <ion-icon name="help-circle"></ion-icon><span>お問い合わせ</span>

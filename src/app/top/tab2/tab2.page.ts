@@ -39,26 +39,27 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.stayTyps = stayTyps.map(typ => {
         return { na: STAYTYP[typ].na, stays: stay.stays.filter(stay => { return stay.typ === typ; }) };
       });
-      let d = new Date();
-      const upper=new Date(d.setMonth(d.getMonth() + 1)); 
-      const where = { dated: { lower: this.dateFormat(), upper:upper }, home: this.home };
+      const now = new Date();
+      const upper = new Date();
+      upper.setMonth(upper.getMonth() + 1);
+      const where = { dated: { lower: this.dateFormat(now), upper:upper }, home: this.home };
       const home = await this.api.get('query', { select: ['*'], table: 'calendar', where: where });
       this.homes = home.calendars;
       for (let calendar of home.calendars) {
         if (calendar.close) this.days.push({ date: new Date(calendar.dated), disable: true,subTitle:"お休み" });
       }
-      for (let d = new Date(); d <= upper; d.setDate(d.getDate() + 1)) {
+      for (let d = new Date(now); d < upper; d.setDate(d.getDate() + 1)) {
         let w = d.getDay();
         if (w === 0) {
-          this.days.push({date:d,cssClass:"sunday"});
+          this.days.push({date:new Date(d),cssClass:"sunday"});
         } else if (w === 6) {
-          this.days.push({date:d,cssClass:"satday"});
+          this.days.push({date:new Date(d),cssClass:"satday"});
         }
       }
       for (let holiday of HOLIDAYS) {
         let d = new Date(holiday);
-        if (new Date().getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
-          this.days.push({date:d,cssClass:"sunday"});
+        if (now.getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
+          this.days.push({date:new Date(d),cssClass:"sunday"});
         }
       }
       this.loading1.dismiss(); //this.ui.loadend();
@@ -146,7 +147,7 @@ export class Tab2Page implements OnInit, OnDestroy {
       from: new Date(), to: d.setMonth(d.getMonth() + 1),
       weekdays: ['日', '月', '火', '水', '木', '金', '土'],
       closeIcon: true, doneIcon: true, cssClass: 'calendar',
-      monthFormat: 'YYYY年M月', defaultScrollTo: new Date(), weekStart: 1, daysConfig: this.days,
+      monthFormat: 'YYYY年M月', defaultScrollTo: new Date(), daysConfig: this.days,
     };
     let myCalendar = await this.modal.create({
       component: CalendarModal,
