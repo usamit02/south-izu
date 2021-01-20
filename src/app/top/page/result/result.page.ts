@@ -18,10 +18,11 @@ export class ResultPage implements OnInit, OnDestroy {
   results = [];
   allResults = [];
   self;
-  table:string;
+  table:string="null";
   order: string;  
   where = {};
   score = {};
+  title={report:"レポート",plan:"プラン",null:""};
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private api: ApiService, private db: AngularFireDatabase,
     private ui: UiService, private userService: UserService, private pop: PopoverController, ) { }

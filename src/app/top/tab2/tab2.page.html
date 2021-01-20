@@ -16,7 +16,13 @@
     </ion-menu-button>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true"> 
+<ion-content [fullscreen]="true">
+  <ion-item *ngFor="let book of books">
+    {{book.from|date}}～{{book.to|date}} {{book.home}} {{book.stay}}　{{book.amount}}円
+    <ion-button (click)="cancel(book)" color="danger" slot="end" fill="clear">
+    <ion-icon name="trash" slot="icon-only"></ion-icon>
+  </ion-button>
+  </ion-item>
   <p style="text-align: center;"><ion-text >２０２１年４月　プレオープン予定です。</ion-text></p>  
   <ion-grid *ngFor="let stayTyp of stayTyps">
     <div *ngIf="stayTyp.na" class="title"><h2>{{stayTyp.na}}</h2></div>

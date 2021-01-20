@@ -3,7 +3,9 @@ import { Router } from '@angular/router';
 import { ModalController,LoadingController} from '@ionic/angular';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
+import { UserService } from '../../service/user.service';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
@@ -21,9 +23,10 @@ export class Tab2Page implements OnInit, OnDestroy {
   days: DayConfig[] = [];
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;
+  books=[];
   loading1;loading2;
   private onDestroy$ = new Subject();
-  constructor(public modal: ModalController, private db: AngularFireDatabase, private api: ApiService, private ui: UiService, 
+  constructor(public modal: ModalController, private db: AngularFireDatabase,private userService:UserService, private api: ApiService, private ui: UiService, 
     private router: Router,private location:Location,private loader:LoadingController,) { }
   async ngOnInit() {    
     this.loading1= await this.loader.create({ message: '計算中です...', duration: 30000 });//this.ui.loading();    
@@ -69,6 +72,16 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.ui.alert(`施設情報の読み込みに失敗しました。\r\n${err.message}`);
     }).finally(() => {
       this.loading1.dismiss();//this.ui.loadend();
+    });
+    this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
+      if(user.id){
+        this.api.get('query',{select:['*'],table:'booked',where:{user:user.id},order:{from:"DESC"}}).then(res=>{
+          this.books=res.books.map(book=>{
+            book.home=HOME[book.home].na;
+            return book;
+          });
+        });
+      }
     });
   }
   async load() {
@@ -168,6 +181,9 @@ export class Tab2Page implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['book', stay.id, this.dateFormat(this.from), this.dateFormat(this.to)]);
     }
+  }
+  cancel(book){
+    let a=book;
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();
