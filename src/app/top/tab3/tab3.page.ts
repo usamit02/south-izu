@@ -59,7 +59,7 @@ export class Tab3Page implements OnInit, OnDestroy {
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       if (params.id) {
-        this.api.get('query', { select: ['*'], table: 'markered', where: { id: params.id } }).then(res => {
+        this.api.get('query', { select: ['*'], table: 'markering', where: { id: params.id } }).then(res => {
           if (res.markers.length) {
             this.marker = res.markers[0];
             this.markerClick(this.marker);

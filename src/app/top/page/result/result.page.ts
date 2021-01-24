@@ -35,7 +35,7 @@ export class ResultPage implements OnInit, OnDestroy {
       this.results = [];
       if (this.infinite) this.infinite.disabled = false;
       if (this.order !== "acked") {//acked以外はmysqlではなくfirebase realtimedbに保存されているので、mysqlとdbを合体させて並び替え
-        this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: this.where }).then(async res => {
+        this.api.get('query', { table: `${this.table}ing`, select: ['*'], where: this.where }).then(async res => {
           this.allResults = await Promise.all(res[`${this.table}s`].map(async result => {
             const doc = await this.db.database.ref(`${this.table}/${result.id}`).once('value');
             const detail = doc.val();
@@ -70,7 +70,7 @@ export class ResultPage implements OnInit, OnDestroy {
     const LIMIT = 15;
     if (this.order === 'acked') {
       const where = cursor ? { [this.order]: { up: cursor }, ...this.where } : this.where;
-      this.api.get('query', { table: `${this.table}ed`, select: ['*'], where: where, order: { [this.order]: "DESC" }, limit: LIMIT }).then(res => {
+      this.api.get('query', { table: `${this.table}ing`, select: ['*'], where: where, order: { [this.order]: "DESC" }, limit: LIMIT }).then(res => {
         this.results.push(...res[`${this.table}s`]);
         this.results.map(result => {
           result.detail$ = this.db.object(`${this.table}/${result.id}`).valueChanges();

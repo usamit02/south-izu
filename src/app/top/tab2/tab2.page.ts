@@ -160,7 +160,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
   loadBook(){
-    this.api.get('query',{select:['*'],table:'booked',where:{user:this.user.id},order:{from:"DESC"}}).then(res=>{
+    this.api.get('query',{select:['*'],table:'booking',where:{user:this.user.id},order:{from:"DESC"}}).then(res=>{
       this.books=res.books.map(book=>{
         book.home=HOME[book.home].na;
         return book;

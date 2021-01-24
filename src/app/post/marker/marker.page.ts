@@ -38,7 +38,7 @@ export class MarkerPage implements OnInit, OnDestroy {
   rest = new FormControl(0);
   chat = new FormControl(1);
   markerForm = this.builder.group({
-    id: this.id, latlng: this.latlng, na: this.na, kana:this.kana,txt: this.txt, phone: this.phone, url: this.url,
+    id: this.id, latlng: this.latlng, na: this.na, kana: this.kana, txt: this.txt, phone: this.phone, url: this.url,
     img: this.img, simg: this.simg, icon: this.icon,
   });
   user: User;
@@ -57,15 +57,33 @@ export class MarkerPage implements OnInit, OnDestroy {
     private modal: ModalController, private ui: UiService, private router: Router, private route: ActivatedRoute,
     private db: AngularFireDatabase, private storedb: AngularFirestore, private title: Title,) { }
   async ngOnInit() {
-    const res = await this.api.get('query', { table: 'markered', select: ['*'], order: { ack: "DESC", idx: "", id: "" } });
-    this.allMarkers = res.markers;
+    const res = await this.api.get('query', { table: 'markering', select: ['*'], order: { ack: "DESC", idx: "", id: "" } });
+    this.allMarkers = res.markers.map(marker => {
+      marker.id = Number(marker.id);
+      marker.lat = Number(marker.lat);
+      marker.lng = Number(marker.lng);
+      marker.icon = Number(marker.icon);
+      marker.ack = Number(marker.ack);
+      marker.rest = Number(marker.rest);
+      marker.chat = Number(marker.chat);
+      return marker;
+    });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
       this.user = user;
       if (user.id) {
         this.loadMarkers();
         if (user.admin) {
-          this.api.get('query', { table: 'markered', select: ['*'], where: { ack: 0 }, order: { created: "DESC", } }).then(res => {
-            this.markers.posts = res.markers;
+          this.api.get('query', { table: 'markering', select: ['*'], where: { ack: 0 }, order: { created: "DESC", } }).then(res => {
+            this.markers.posts = res.markers.map(marker => {
+              marker.id = Number(marker.id);
+              marker.lat = Number(marker.lat);
+              marker.lng = Number(marker.lng);
+              marker.icon = Number(marker.icon);
+              marker.ack = Number(marker.ack);
+              marker.rest = Number(marker.rest);
+              marker.chat = Number(marker.chat);
+              return marker;
+            });
           });
         }
       } else {
@@ -74,8 +92,15 @@ export class MarkerPage implements OnInit, OnDestroy {
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(async params => {
       if (params.id) {
-        const res = await this.api.get('query', { table: 'markered', select: ['*'], where: { id: params.id } });
+        const res = await this.api.get('query', { table: 'markering', select: ['*'], where: { id: params.id } });
         if (res.markers.length === 1) {
+          res.markers[0].id = Number(res.markers[0].id);
+          res.markers[0].lat = Number(res.markers[0].lat);
+          res.markers[0].lng = Number(res.markers[0].lng);
+          res.markers[0].icon = Number(res.markers[0].icon);
+          res.markers[0].ack = Number(res.markers[0].ack);
+          res.markers[0].rest = Number(res.markers[0].rest);
+          res.markers[0].chat = Number(res.markers[0].chat);
           this.undo(res.markers[0]);
         }
       }
@@ -112,12 +137,12 @@ export class MarkerPage implements OnInit, OnDestroy {
       });
     });;
   }
-  refresh(){
-    
+  refresh() {
+
   }
-  async undo(marker) {
+  async undo(marker: Marker) {
     this.undoing = true;
-    if (this.user.id !== marker.user||!marker.author) {
+    if (this.user.id !== marker.user || !marker.author) {
       const snapshot = await this.db.database.ref(`user/${marker.user}`).once('value');
       const user = snapshot.val();
       marker.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
@@ -125,15 +150,15 @@ export class MarkerPage implements OnInit, OnDestroy {
     this.marker = marker;
     const controls = this.markerForm.controls
     for (let key of Object.keys(controls)) {
-      if (key!=='lat'&&key!=='lng'){
+      if (key !== 'lat' && key !== 'lng') {
         if (marker[key] == null) {
           controls[key].reset();
         } else {
-           controls[key].reset(marker[key]);
+          controls[key].reset(marker[key]);
         }
       }
     }
-    controls['latlng'].setValue(`POINT(${this.marker.lng} ${this.marker.lat})`); 
+    controls['latlng'].setValue(`POINT(${this.marker.lng} ${this.marker.lat})`);
     this.markerForm.markAsPristine();
     setTimeout(() => { this.undoing = false; }, 1000);
   }
@@ -204,8 +229,8 @@ export class MarkerPage implements OnInit, OnDestroy {
           image.src = this.imgBlob;
         });
       }
-      update.img=await imagePut(this.marker.id,"medium");
-      update.simg=await imagePut(this.marker.id,"small");
+      update.img = await imagePut(this.marker.id, "medium");
+      update.simg = await imagePut(this.marker.id, "small");
     }
     this.api.post('query', { table: 'marker', update: update, where: { id: this.marker.id } }).then(() => {
       if (ack === 0) {
@@ -244,7 +269,7 @@ export class MarkerPage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`marker/${this.marker.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ id: this.marker.id,usar:this.user.id,table:"marker" },{typ:"marker",parent:this.marker.id,table:"story"}]});
+      await this.api.post('querys', { deletes: [{ id: this.marker.id, usar: this.user.id, table: "marker" }, { typ: "marker", parent: this.marker.id, table: "story" }] });
       //await this.api.post('query', { table: 'marker', delete: { id: this.marker.id, user: this.user.id } });
       //await this.api.post('query', { table: 'story', delete: { typ: 'marker', parent: this.marker.id } });
       await this.db.list(`marker/${this.marker.id}`).remove();
@@ -263,7 +288,7 @@ export class MarkerPage implements OnInit, OnDestroy {
       this.undo(MARKER);
     }).catch(err => {
       this.ui.alert(`マーカーを削除できませんでした。\r\n${err.message}`);
-    }).finally(()=>{
+    }).finally(() => {
       this.ui.loadend();
     });
   }
