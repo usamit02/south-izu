@@ -6,13 +6,16 @@ export class DatePipe implements PipeTransform {
   constructor() { }
   transform(date: Date | number, type: string = "remain"): string {
     date = new Date(date);
-    let todate = new Date();
-    let nextdate = new Date();
-    todate.setHours(0, 0, 24, 0);//今日の24時  
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    let d = new Date();
+    let todate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    let nextdate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     nextdate.setDate(todate.getDate() + 1);
     if (date < nextdate) {
-      if (date < todate) {
+      if (date.getTime() === todate.getTime()) {
         return "今日";
+      } else if(date<todate){
+        return "-";
       } else {
         return "明日";
       }

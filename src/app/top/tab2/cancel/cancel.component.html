@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="start"></ion-menu-button>
+      <ion-button (click)="modal.dismiss()" fill="clear">
+        　 <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>予約のキャンセル</ion-title>
+    <ion-button slot="end" [disabled]="" (click)="save()" fill="clear">
+      　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-item>
+    <ng-container *ngIf="book.from===book.to ; else fromto">
+      <ion-note slot="start">　{{book.from|date}}</ion-note>{{book.home}}　{{book.stay}}<ion-note slot="end">{{book.amount}}円</ion-note>　
+    </ng-container>
+    <ng-template #fromto>
+     <ion-note slot="start">{{book.from|date}}～<br>　{{book.to|date}}</ion-note>{{book.home}} {{book.stay}}<ion-note slot="end">{{book.amount}}円</ion-note>
+    </ng-template>
+  </ion-item>
+  <ion-note>　内訳</ion-note>
+  <ion-item *ngFor="let b of books">
+    <ion-checkbox slot="start" [(ngModel)]="b.isChecked" (ionChange)="sumFee()"></ion-checkbox>
+    {{b.dated|date}} <ion-text slot="end">{{b.amount}}円　×　{{b.cancel}}％　＝　{{b.fee}}円</ion-text>
+  </ion-item>
+  <p></p>
+  <ion-title style="text-align:center;">キャンセル料：{{fee}}円</ion-title>
+  <div style="text-align: center;">
+    <ion-button color="tertiary" (click)="save()" [disabled]="fee==null">キャンセルする</ion-button>
+  </div>
+  <p></p>
+  <ion-title>キャンセル規定</ion-title>
+  <table><tr><th>予約日までの日数</th><th>　キャンセル料率</th></tr>
+    <tr *ngFor="let rate of rates">
+      <td>{{rate.day|date:'cancel'}}</td><td>{{rate.percent}}％</td>
+    </tr>
+  </table>
+</ion-content>
+<!--
+
+ 
+      [iconUrl]="{ url: icons[marker.icon-1].url, scaledSize: { width: 30, height: 30, anchor : {x:10, y:10} }}"
+
+-->

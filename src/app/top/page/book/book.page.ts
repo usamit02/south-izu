@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { Router,ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -31,7 +31,7 @@ export class BookPage implements OnInit, OnDestroy {
   editable = false;
   currentY: number; scrollH: number; contentH: number; reserveY: number; essayY: number; chatY: number;
   private onDestroy$ = new Subject();
-  constructor(private route: ActivatedRoute, private location: Location, private modal: ModalController, private ui: UiService,
+  constructor(private route: ActivatedRoute,private router:Router, private location: Location, private modal: ModalController, private ui: UiService,
     private userService: UserService, private api: ApiService, private db: AngularFireDatabase,) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
@@ -168,7 +168,8 @@ export class BookPage implements OnInit, OnDestroy {
       const book = { uid: this.user.id, na: this.user.na, avatar: this.user.avatar, url: this.location.path(), upd: res.booked, txt: txt };
       this.db.database.ref(`book/${this.book.home}`).push(book);
       this.ui.alert(`予約しました。`);
-      this.location.back();
+      //this.location.back();
+      this.router.navigate([`${HOME[this.book.home].path}/reserve`]);
     }).catch(() => {
       this.ui.alert(`決済手続きに失敗しました。`);
     });

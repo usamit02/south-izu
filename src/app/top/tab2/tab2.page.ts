@@ -1,15 +1,17 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router,NavigationEnd } from '@angular/router';
 import { ModalController,LoadingController} from '@ionic/angular';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil,filter } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { UserService } from '../../service/user.service';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
+import { CancelComponent } from './cancel/cancel.component';
 import { STAYTYP,HOME,HOLIDAYS } from '../../config';
+import { User } from '../../class';
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
@@ -24,6 +26,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;
   books=[];
+  user:User;
   loading1;loading2;
   private onDestroy$ = new Subject();
   constructor(public modal: ModalController, private db: AngularFireDatabase,private userService:UserService, private api: ApiService, private ui: UiService, 
@@ -74,13 +77,17 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.loading1.dismiss();//this.ui.loadend();
     });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
+      this.user=user;
       if(user.id){
-        this.api.get('query',{select:['*'],table:'booked',where:{user:user.id},order:{from:"DESC"}}).then(res=>{
-          this.books=res.books.map(book=>{
-            book.home=HOME[book.home].na;
-            return book;
-          });
-        });
+        this.loadBook()
+      }else{
+        this.books=[];
+      }
+    });
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)  
+    ).pipe(takeUntil(this.onDestroy$)).subscribe((event: NavigationEnd) => {
+      if(this.user.id && event.url===`/${HOME[this.home].path}/reserve`){
+        this.loadBook();
       }
     });
   }
@@ -152,6 +159,14 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.ui.alert(`施設カレンダーの読み込みに失敗しました。\r\n${err.message}`);
     }
   }
+  loadBook(){
+    this.api.get('query',{select:['*'],table:'booked',where:{user:this.user.id},order:{from:"DESC"}}).then(res=>{
+      this.books=res.books.map(book=>{
+        book.home=HOME[book.home].na;
+        return book;
+      });
+    });
+  }
   async openCalendar(stay?: Stay) {
     let d = new Date();
     const options: CalendarModalOptions = {
@@ -182,8 +197,18 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.router.navigate(['book', stay.id, this.dateFormat(this.from), this.dateFormat(this.to)]);
     }
   }
-  cancel(book){
-    let a=book;
+  async cancel(book){
+    let cancel = await this.modal.create({
+      component: CancelComponent,
+      componentProps: { user: this.user,book:book,cancels:HOME[this.home].cancels}
+    });
+    cancel.present();
+    cancel.onDidDismiss().then(event => {
+      if (event.data) {
+        this.loadBook();
+      }
+    });
+    
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();

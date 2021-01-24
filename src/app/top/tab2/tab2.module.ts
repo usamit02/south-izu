@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tab2Page } from './tab2.page';
 import { CalendarModule } from "ion2-calendar";
+import { CancelModule } from './cancel/cancel.module'
 import { DatePipe } from './date.pipe';
 @NgModule({
   imports: [
@@ -12,7 +13,7 @@ import { DatePipe } from './date.pipe';
     CommonModule,
     FormsModule, ReactiveFormsModule,
     RouterModule.forChild([{ path: '', component: Tab2Page }]),
-    CalendarModule, 
+    CalendarModule,CancelModule, 
   ],
   declarations: [Tab2Page,DatePipe]
 })

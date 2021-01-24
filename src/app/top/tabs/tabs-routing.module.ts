@@ -10,7 +10,7 @@ const routes: Routes = [
       { path: 'home',
         children: [{ path: '',loadChildren: () => import('../tab1/tab1.module').then(m => m.Tab1PageModule)}]
       },
-      { path: 'book',
+      { path: 'reserve',
         children: [{path: '',loadChildren: () =>import('../tab2/tab2.module').then(m => m.Tab2PageModule)}]
       },
       { path: 'marker',
@@ -28,7 +28,7 @@ const routes: Routes = [
       { path: 'home',
         children: [{ path: '',loadChildren: () => import('../tab1/tab1.module').then(m => m.Tab1PageModule)}]
       },
-      { path: 'book',
+      { path: 'reserve',
         children: [{path: '',loadChildren: () =>import('../tab2/tab2.module').then(m => m.Tab2PageModule)}]
       },
       { path: 'marker',
