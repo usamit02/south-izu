@@ -1,16 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router,NavigationEnd } from '@angular/router';
-import { ModalController,LoadingController} from '@ionic/angular';
+import { Router, NavigationEnd } from '@angular/router';
+import { ModalController, LoadingController } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
-import { takeUntil,filter } from 'rxjs/operators';
+import { takeUntil, filter } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { UserService } from '../../service/user.service';
 import { ApiService } from '../../service/api.service';
 import { UiService } from '../../service/ui.service';
 import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
 import { CancelComponent } from './cancel/cancel.component';
-import { STAYTYP,HOME,HOLIDAYS } from '../../config';
+import { STAYTYP, HOME, HOLIDAYS } from '../../config';
 import { User } from '../../class';
 @Component({
   selector: 'app-tab2',
@@ -25,22 +25,23 @@ export class Tab2Page implements OnInit, OnDestroy {
   days: DayConfig[] = [];
   state = { close: "休止中", full: "満員御礼" };
   stayTyps: Array<StayTyp>;
-  books=[];
-  user:User;
-  loading1;loading2;
+  books = [];
+  user: User;
+  loading1; loading2;
+  editable = false;
   private onDestroy$ = new Subject();
-  constructor(public modal: ModalController, private db: AngularFireDatabase,private userService:UserService, private api: ApiService, private ui: UiService, 
-    private router: Router,private location:Location,private loader:LoadingController,) { }
-  async ngOnInit() {    
-    this.loading1= await this.loader.create({ message: '計算中です...', duration: 30000 });//this.ui.loading();    
-    await this.loading1.present();        
-    let paths=this.location.path().split('/');
-    Object.keys(HOME).forEach(key=>{
-      if(HOME[key].path===paths[1]){ 
-        this.home=Number(key);
+  constructor(public modal: ModalController, private db: AngularFireDatabase, private userService: UserService, private api: ApiService, private ui: UiService,
+    private router: Router, private location: Location, private loader: LoadingController,) { }
+  async ngOnInit() {
+    this.loading1 = await this.loader.create({ message: '計算中です...', duration: 30000 });//this.ui.loading();    
+    await this.loading1.present();
+    let paths = this.location.path().split('/');
+    Object.keys(HOME).forEach(key => {
+      if (HOME[key].path === paths[1]) {
+        this.home = Number(key);
       }
     })
-    const stayTyps=HOME[this.home].stayTyps;
+    const stayTyps = HOME[this.home].stayTyps;
     this.api.get('query', { select: ['*'], table: 'stay', where: { home: this.home } }).then(async stay => {
       this.stayTyps = stayTyps.map(typ => {
         return { na: STAYTYP[typ].na, stays: stay.stays.filter(stay => { return stay.typ === typ; }) };
@@ -48,24 +49,24 @@ export class Tab2Page implements OnInit, OnDestroy {
       const now = new Date();
       const upper = new Date();
       upper.setMonth(upper.getMonth() + 1);
-      const where = { dated: { lower: this.dateFormat(now), upper:upper }, home: this.home };
+      const where = { dated: { lower: this.dateFormat(now), upper: upper }, home: this.home };
       const home = await this.api.get('query', { select: ['*'], table: 'calendar', where: where });
       this.homes = home.calendars;
       for (let calendar of home.calendars) {
-        if (calendar.close) this.days.push({ date: new Date(calendar.dated), disable: true,subTitle:"お休み" });
+        if (calendar.close) this.days.push({ date: new Date(calendar.dated), disable: true, subTitle: "お休み" });
       }
       for (let d = new Date(now); d < upper; d.setDate(d.getDate() + 1)) {
         let w = d.getDay();
         if (w === 0) {
-          this.days.push({date:new Date(d),cssClass:"sunday"});
+          this.days.push({ date: new Date(d), cssClass: "sunday" });
         } else if (w === 6) {
-          this.days.push({date:new Date(d),cssClass:"satday"});
+          this.days.push({ date: new Date(d), cssClass: "satday" });
         }
       }
       for (let holiday of HOLIDAYS) {
         let d = new Date(holiday);
         if (now.getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
-          this.days.push({date:new Date(d),cssClass:"sunday"});
+          this.days.push({ date: new Date(d), cssClass: "sunday" });
         }
       }
       this.loading1.dismiss(); //this.ui.loadend();
@@ -77,16 +78,17 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.loading1.dismiss();//this.ui.loadend();
     });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
-      this.user=user;
-      if(user.id){
-        this.loadBook()
-      }else{
-        this.books=[];
+      this.user = user;
+      if (user.id) {
+        this.loadBook();
+        this.editable = (HOME[this.home].users.filter(uid => { return uid === user.id; }).length) ? true : false;//||user.admin
+      } else {
+        this.books = []; this.editable = false;
       }
     });
-    this.router.events.pipe(filter(event => event instanceof NavigationEnd)  
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)
     ).pipe(takeUntil(this.onDestroy$)).subscribe((event: NavigationEnd) => {
-      if(this.user.id && event.url===`/${HOME[this.home].path}/reserve`){
+      if (this.user.id && event.url === `/${HOME[this.home].path}/reserve`) {
         this.loadBook();
       }
     });
@@ -94,7 +96,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   async load() {
     try {
       const homes = this.homes.filter(home => {
-        const d = new Date(home.dated).getTime();        
+        const d = new Date(home.dated).getTime();
         return this.from.getTime() <= d && d <= this.to.getTime();
       });
       if (homes.filter(home => { return home.close === 1; }).length) {
@@ -103,8 +105,8 @@ export class Tab2Page implements OnInit, OnDestroy {
         });
       } else {
         //this.ui.loading("計算中です...");
-        this.loading2= await this.loader.create({ message: '計算中です...', duration: 30000 });
-        await this.loading2.present();        
+        this.loading2 = await this.loader.create({ message: '計算中です...', duration: 30000 });
+        await this.loading2.present();
         const where = { dated: { lower: this.dateFormat(this.from), upper: this.dateFormat(this.to) }, home: this.home };
         const stayCalendar = await this.api.get('query', { select: ['*'], table: 'stay_calendar', where: where });
         const book = await this.api.get('query', { select: ['*'], table: 'book', where: where });
@@ -114,7 +116,7 @@ export class Tab2Page implements OnInit, OnDestroy {
           typ.stays.map(stay => {
             stay.calendars = stayCalendar.stay_calendars.filter(calendar => { return calendar.stay === stay.id; });
             stay.books = book.books.filter(book => { return book.stay === stay.id; });
-            stay.state="";
+            stay.state = "";
             dated = {};
             for (let home of homes) {
               if (home.rate) {
@@ -159,10 +161,11 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.ui.alert(`施設カレンダーの読み込みに失敗しました。\r\n${err.message}`);
     }
   }
-  loadBook(){
-    this.api.get('query',{select:['*'],table:'booking',where:{user:this.user.id},order:{from:"DESC"}}).then(res=>{
-      this.books=res.books.map(book=>{
-        book.home=HOME[book.home].na;
+  loadBook() {
+    this.api.get('query', { select: ['*'], table: 'booking', where: { user: this.user.id }, order: { from: "DESC" } }).then(res => {
+      this.books = res.books.map(book => {
+        book.home = HOME[book.home].na;
+        book.amount = Number(book.amount);
         return book;
       });
     });
@@ -197,10 +200,10 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.router.navigate(['book', stay.id, this.dateFormat(this.from), this.dateFormat(this.to)]);
     }
   }
-  async cancel(book){
+  async cancel(book) {
     let cancel = await this.modal.create({
       component: CancelComponent,
-      componentProps: { user: this.user,book:book,cancels:HOME[this.home].cancels}
+      componentProps: { user: this.user, book: book, cancels: HOME[this.home].cancels }
     });
     cancel.present();
     cancel.onDidDismiss().then(event => {
@@ -208,7 +211,7 @@ export class Tab2Page implements OnInit, OnDestroy {
         this.loadBook();
       }
     });
-    
+
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();

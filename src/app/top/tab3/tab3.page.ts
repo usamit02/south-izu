@@ -61,6 +61,13 @@ export class Tab3Page implements OnInit, OnDestroy {
       if (params.id) {
         this.api.get('query', { select: ['*'], table: 'markering', where: { id: params.id } }).then(res => {
           if (res.markers.length) {
+            res.markers[0].id = Number(res.markers[0].id);
+            res.markers[0].lat = Number(res.markers[0].lat);
+            res.markers[0].lng = Number(res.markers[0].lng);
+            res.markers[0].icon = Number(res.markers[0].icon);
+            res.markers[0].ack = Number(res.markers[0].ack);
+            res.markers[0].rest = Number(res.markers[0].rest);
+            res.markers[0].chat = Number(res.markers[0].chat);
             this.marker = res.markers[0];
             this.markerClick(this.marker);
           }
@@ -90,7 +97,7 @@ export class Tab3Page implements OnInit, OnDestroy {
       this.center.lng = bounds.getCenter().lng();
       const lat = this.marker.lat ? this.marker.lat : this.center.lat;
       const lng = this.marker.lng ? this.marker.lng : this.center.lng;
-      this.api.get('map', { nlat: nlat, nlng: nlng, slat: slat, slng: slng, lat: lat, lng: lng ,user:this.user.id}).then(res => {
+      this.api.get('map', { nlat: nlat, nlng: nlng, slat: slat, slng: slng, lat: lat, lng: lng, user: this.user.id }).then(res => {
         this.markers = [];
         for (let i = 0; i < res.markers.length; i++) {
           res.markers[i].len = res.markers[i].len * 111.3194;

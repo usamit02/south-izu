@@ -6,6 +6,7 @@ const routes: Routes = [
   { path: 'post/column', loadChildren: () => import('./post/column/column.module').then(m => m.ColumnModule) },
   { path: 'post/marker', loadChildren: () => import('./post/marker/marker.module').then(m => m.MarkerModule) },
   { path: 'post/stay', loadChildren: () => import('./post/stay/stay.module').then(m => m.StayModule) },
+  { path: 'manage/book', loadChildren: () => import('./manage/book/book.module').then(m => m.BookModule) },
   { path: '',loadChildren: () => import('./top/top.module').then(m => m.TopPageModule)}
 ];
 @NgModule({

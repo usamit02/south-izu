@@ -168,7 +168,6 @@ export class BookPage implements OnInit, OnDestroy {
       const book = { uid: this.user.id, na: this.user.na, avatar: this.user.avatar, url: this.location.path(), upd: res.booked, txt: txt };
       this.db.database.ref(`book/${this.book.home}`).push(book);
       this.ui.alert(`予約しました。`);
-      //this.location.back();
       this.router.navigate([`${HOME[this.book.home].path}/reserve`]);
     }).catch(() => {
       this.ui.alert(`決済手続きに失敗しました。`);

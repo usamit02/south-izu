@@ -13,7 +13,7 @@ export const STAYTYP={
 export const HOME={
  1:{na:'南伊豆ライダーハウス',path:'southizu-riderhouse',stayTyps:[1,2,3,4],lat:34.68503331,lng:138.85154339,zoom:12,marker:1,
   icon:"http://maps.google.co.jp/mapfiles/ms/icons/rangerstation.png",
-  users:['rbcAU6MV38dArpipevYFLoV4YvK2'],
+  users:['rbcAU6MV38dArpipevYFLoV4YvK2','kZoun4t8D7YKhG8ifr7luuSJ4cw1'],
   txts:['山と川に囲まれた農村の片隅','管理棟','炊事場（予定地）','１０ほどのサイト','敷地面積2000㎡'],
   cancels:[{0:90},{1:70},{3:50},{7:20},{14:10}]
  
