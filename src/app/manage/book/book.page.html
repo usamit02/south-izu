@@ -14,17 +14,29 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-list>
-    <!--
-    <ion-item *ngFor="let book of books">
-      <ion-item>
-      <ion-checkbox slot="start" [(ngModel)]="book.isChecked" (ionChange)="check()"></ion-checkbox></ion-item>
-      <span [innerHTML]="book.dated|date"></span>
-      {{book.typ}} {{book.stay}} 
-      <ion-item button="true"><ion-avatar><img [src]="book.avatar"/></ion-avatar>{{book.na}}</ion-item>
-      
-      <input type="number" [(ngModel)]="book.amount"/>
-      <ion-text slot="end">{{book.amount}}円</ion-text>
-    </ion-item>-->
-  </ion-list>
+  <ng-container *ngFor="let daily of dailys">
+    <ion-item>
+      <ion-checkbox slot="start" [(ngModel)]="daily.isChecked" (ionChange)="checkDaily(daily)"></ion-checkbox>
+      <span [innerHTML]="daily.dated|date"></span>
+      <label style="margin-left: 3em;">キャンセル料率</label><input type="number" [(ngModel)]="daily.rate"/>％
+      <ion-text slot="end">{{daily.amount}}円</ion-text>
+    </ion-item>
+    <ion-list>
+      <ion-item *ngFor="let book of daily.books">
+        <ion-item>
+          <ion-checkbox slot="start" [(ngModel)]="book.isChecked" (ionChange)="check()"></ion-checkbox>
+        </ion-item>
+        {{book.typ}} {{book.stay}}
+        <ion-item button="true">
+          <ion-avatar><img [src]="book.avatar" /></ion-avatar>{{book.na}}
+        </ion-item>
+        <input type="number" [(ngModel)]="book.rate" />％
+        <input type="number" [(ngModel)]="book.fee" />円
+        <ion-text slot="end">{{book.amount}}円</ion-text>
+      </ion-item>
+    </ion-list>    
+  </ng-container>
+  <ion-item *ngIf="dailys.length"><span [innerHTML]="dailys[0].dated|date"></span>～<span [innerHTML]="dailys[dailys.length-1].dated|date"></span>
+    <ion-text slot="end">{{sum}}円</ion-text>
+  </ion-item>
 </ion-content>
