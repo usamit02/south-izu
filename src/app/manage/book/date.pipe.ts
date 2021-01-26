@@ -1,10 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer,SafeHtml } from '@angular/platform-browser'
 @Pipe({
   name: 'date'
 })
 export class DatePipe implements PipeTransform {
-  constructor() { }
-  transform(date: Date | number, type: string = "remain"): string {
+  constructor(private sanitized: DomSanitizer) { }
+  transform(date: Date | number, type: string = "remain"): string|SafeHtml {
     const days=['日','月','火','水','木','金','土'];
     date = new Date(date);
     date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -16,7 +17,8 @@ export class DatePipe implements PipeTransform {
       if (date.getTime() === todate.getTime()) {
         return "今日";
       } else if(date<todate){
-        return "-";
+        let html=`<span style='color:gray'>${(date.getMonth() + 1)}月${date.getDate()}日（${days[date.getDay()]}）</span>`;
+        return this.sanitized.bypassSecurityTrustHtml(html);
       } else {
         return "明日";
       }

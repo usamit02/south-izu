@@ -6,8 +6,8 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { BookPage } from './book.page';
 import { DatePipe } from './date.pipe';
 const routes: Routes = [  
-  { path: ':id/:from/:to', component: BookPage },
-  { path: ':id', component: BookPage },
+  { path: ':home/:from/:to', component: BookPage },
+  { path: ':home', component: BookPage },
   { path: '', component: BookPage },
 ];
 
