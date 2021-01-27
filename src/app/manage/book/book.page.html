@@ -7,8 +7,14 @@
     <ion-button (click)="undo()" slot="start" fill="clear">
       　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
     </ion-button>
-    <ion-title>予約管理</ion-title>    
-    <ion-button (click)="save()" slot="end" fill="clear">
+    <ion-title>予約管理
+      <span *ngIf="from===to;else fromto">{{from|date}}</span>
+      <ng-template #fromto>{{from|date}}～{{to|date}}</ng-template>
+      <ion-button (click)="openCalendar()" fill="clear">
+        <ion-icon name="calendar" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>
+    </ion-title>
+    <ion-button (click)="save()" [disabled]="disabled" slot="end" fill="clear">
       <ion-icon name="trash" slot="icon-only" color="danger"></ion-icon>
     </ion-button>
     <ion-menu-button menu="end" slot="end">
@@ -17,18 +23,21 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
+  <ion-item *ngIf="!dailys.length" lines="none">予約はありません。</ion-item>
   <ng-container *ngFor="let daily of dailys">
     <ion-item>
       <ion-item>
-      <ion-checkbox slot="start" [(ngModel)]="daily.isChecked" (ionChange)="checkDaily(daily)"></ion-checkbox></ion-item>
+        <ion-checkbox slot="start" [(ngModel)]="daily.isChecked" (ionChange)="checkDaily(daily)"></ion-checkbox>
+      </ion-item>
       <span [innerHTML]="daily.dated|date"></span>
-      <label style="margin-left: 3em;">キャンセル料率</label><input type="number" class="rate" min="0" max="100" [(ngModel)]="daily.rate" (change)="dailyRateChange(daily)"/>％
+      <label style="margin-left: 3em;">キャンセル料率</label><input type="number" class="rate" min="0" max="100"
+        [(ngModel)]="daily.rate" (change)="dailyRateChange(daily)" />％
       <ion-text slot="end" class="sum">{{daily.amount}}円</ion-text>
     </ion-item>
     <ion-list>
       <ion-item *ngFor="let book of daily.books">
         <ion-item>
-          <ion-checkbox slot="start" [(ngModel)]="book.isChecked" (ionChange)="check()"></ion-checkbox>
+          <ion-checkbox slot="start" [(ngModel)]="book.isChecked" (ionChange)="check(book)"></ion-checkbox>
         </ion-item>
         {{book.typ}} {{book.stay}}
         <ion-item button="true">
@@ -38,9 +47,10 @@
         <input type="number" class="fee" [(ngModel)]="book.fee" (change)="feeChange(book)" />円
         <ion-text slot="end">{{book.amount}}円</ion-text>
       </ion-item>
-    </ion-list>    
+    </ion-list>
   </ng-container>
-  <ion-item *ngIf="dailys.length"><span [innerHTML]="dailys[0].dated|date"></span>～<span [innerHTML]="dailys[dailys.length-1].dated|date"></span>
+  <ion-item *ngIf="dailys.length"><span [innerHTML]="dailys[0].dated|date"></span>～<span
+      [innerHTML]="dailys[dailys.length-1].dated|date"></span>　計
     <ion-text slot="end" class="sum">{{sum}}円</ion-text>
   </ion-item>
 </ion-content>

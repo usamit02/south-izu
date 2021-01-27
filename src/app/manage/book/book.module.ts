@@ -2,7 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { FormsModule,ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { CalendarModule } from "ion2-calendar";
 import { BookPage } from './book.page';
 import { DatePipe } from './date.pipe';
 const routes: Routes = [  
@@ -13,7 +14,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    CommonModule, IonicModule, FormsModule,ReactiveFormsModule,
+    CommonModule, IonicModule, FormsModule,CalendarModule,
     RouterModule.forChild(routes)
   ],
   declarations: [BookPage,DatePipe]

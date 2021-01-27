@@ -19,7 +19,7 @@
     <ng-template #notime>
       <ion-title>日時を選択してください。</ion-title>
     </ng-template>
-    <ion-button [disabled]="!editable" [routerLink]="'/manage/book/' + home + '/' + from + '/' + to" slot="end" fill="clear">
+    <ion-button [disabled]="!editable" [routerLink]="'/manage/book/' + home + '/' + dateFormat(from) + '/' + dateFormat(to)" slot="end" fill="clear">
       <ion-icon name="create" slot="icon-only" color="secondary"></ion-icon>
     </ion-button>
     <ion-button (click)="openCalendar()" slot="end" fill="clear">
