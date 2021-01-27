@@ -1,10 +1,13 @@
 <ion-header>
   <ion-toolbar>
     <ion-menu-button slot="start"></ion-menu-button>
-    <ion-title>予約管理</ion-title>
-    <ion-button (click)="save()" slot="end" fill="clear">
+    <ion-button (click)="checkAll()" slot="start" fill="clear">
       <ion-icon name="checkmark" slot="icon-only"></ion-icon>
     </ion-button>
+    <ion-button (click)="undo()" slot="start" fill="clear">
+      　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+    </ion-button>
+    <ion-title>予約管理</ion-title>    
     <ion-button (click)="save()" slot="end" fill="clear">
       <ion-icon name="trash" slot="icon-only" color="danger"></ion-icon>
     </ion-button>
@@ -16,10 +19,11 @@
 <ion-content>
   <ng-container *ngFor="let daily of dailys">
     <ion-item>
-      <ion-checkbox slot="start" [(ngModel)]="daily.isChecked" (ionChange)="checkDaily(daily)"></ion-checkbox>
+      <ion-item>
+      <ion-checkbox slot="start" [(ngModel)]="daily.isChecked" (ionChange)="checkDaily(daily)"></ion-checkbox></ion-item>
       <span [innerHTML]="daily.dated|date"></span>
-      <label style="margin-left: 3em;">キャンセル料率</label><input type="number" [(ngModel)]="daily.rate"/>％
-      <ion-text slot="end">{{daily.amount}}円</ion-text>
+      <label style="margin-left: 3em;">キャンセル料率</label><input type="number" class="rate" min="0" max="100" [(ngModel)]="daily.rate" (change)="dailyRateChange(daily)"/>％
+      <ion-text slot="end" class="sum">{{daily.amount}}円</ion-text>
     </ion-item>
     <ion-list>
       <ion-item *ngFor="let book of daily.books">
@@ -30,13 +34,13 @@
         <ion-item button="true">
           <ion-avatar><img [src]="book.avatar" /></ion-avatar>{{book.na}}
         </ion-item>
-        <input type="number" [(ngModel)]="book.rate" />％
-        <input type="number" [(ngModel)]="book.fee" />円
+        <input type="number" class="rate" min="0" max="100" [(ngModel)]="book.rate" (change)="rateChange(book)" />％
+        <input type="number" class="fee" [(ngModel)]="book.fee" (change)="feeChange(book)" />円
         <ion-text slot="end">{{book.amount}}円</ion-text>
       </ion-item>
     </ion-list>    
   </ng-container>
   <ion-item *ngIf="dailys.length"><span [innerHTML]="dailys[0].dated|date"></span>～<span [innerHTML]="dailys[dailys.length-1].dated|date"></span>
-    <ion-text slot="end">{{sum}}円</ion-text>
+    <ion-text slot="end" class="sum">{{sum}}円</ion-text>
   </ion-item>
 </ion-content>

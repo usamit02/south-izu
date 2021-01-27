@@ -23,7 +23,7 @@ export class CancelComponent implements OnInit {
     }
     let now = new Date();
     let where = { payjp: this.book.payjp, dated: { lower: `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}` } };
-    this.api.get('query', { select: ['id', 'dated', 'num', 'amount', 'payjp'], table: 'book', where: where }).then(res => {
+    this.api.get('query', { select: ['id', 'dated', 'num', 'amount', 'payjp','user'], table: 'book', where: where }).then(res => {
       let fee = 0;
       this.books = res.books.map(book => {
         const diff = Math.ceil((new Date(book.dated).getTime() - now.getTime()) / 86400000);
