@@ -34,6 +34,5 @@ export class MarkersComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.onDestroy$.next();
-  }
-
+    }
 }

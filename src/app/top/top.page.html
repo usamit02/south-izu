@@ -8,12 +8,13 @@
     <ion-content>
       <app-markers *ngIf="page==='marker'; else books"></app-markers>
       <ng-template #books>
-      <app-books *ngIf="page==='book'; else talks" [user]="user" [home]="home"></app-books>
-
-      
-          <ng-template #talks>
+      <app-books *ngIf="page==='book'; else meets" [user]="user" [home]="home"></app-books>
+      <ng-template #meets>  
+      <app-meets *ngIf="page==='meet'; else talks" [user]="user" [users]="users"></app-meets>  
+        <ng-template #talks>
             <app-talks [user]="user"></app-talks>
           </ng-template>
+        </ng-template> 
       </ng-template>
     </ion-content>
   </ion-menu>

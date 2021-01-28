@@ -26,6 +26,8 @@ export class TopPage implements OnInit, OnDestroy {
           this.page = 'book';
         } else if (event.url.indexOf('marker') != -1) {
           this.page = 'marker';
+        } else if (event.url.indexOf('meet') != -1) {
+          this.page = 'meet';
         } else {
           this.page = "";
         }/*

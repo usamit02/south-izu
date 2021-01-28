@@ -1,0 +1,17 @@
+<ion-list>
+  <ion-item *ngFor="let user of users" (click)="popUser($event,user.id) " class="wrapItem" button="true">
+    <div>
+      <ion-avatar>
+        <img [src]="user.avatar"/>
+      </ion-avatar>
+    </div>
+    <div style="width:100%;">
+      <div>
+        <div>
+          <span class="na">{{user.na}}</span>
+        </div>
+        <div class="txt">{{user.stay}}</div>
+      </div>
+    </div>
+  </ion-item>
+</ion-list>
