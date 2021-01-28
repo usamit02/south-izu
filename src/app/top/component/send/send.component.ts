@@ -257,7 +257,7 @@ export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestro
       const description = txt.substring(0, 50) + extention;
       const pushMention = (i) => {
         return new Promise((resolve, reject) => {
-          this.db.collection('user').doc(this.mentions[i].id).collection('unmention').add(mention).catch(() => { resolve(); });
+          this.db.collection('user').doc(this.mentions[i].id).collection('unmention').add(mention).catch(() => { resolve(true); });
         });
       }
       const thread = this.thread ? `/${this.thread}` : "";

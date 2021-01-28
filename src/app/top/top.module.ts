@@ -30,6 +30,7 @@ const routes: Routes = [
       { path: 'thread', loadChildren: () => import('./page/thread/thread.module').then(m => m.ThreadPageModule) },
       { path: 'marker', loadChildren: () => import('./tab3/tab3.module').then(m => m.Tab3PageModule) },      
       { path: 'book', loadChildren: () => import('./page/book/book.module').then(m => m.BookPageModule) },
+      { path: 'meet', loadChildren: () => import('./page/meet/meet.module').then(m => m.MeetPageModule) },
       { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
     ],    
   }
