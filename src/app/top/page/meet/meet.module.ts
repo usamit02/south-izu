@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { CalendarModule } from "ion2-calendar";
 import { MeetPage } from './meet.page';
 import { ChatSharedModule } from '../../component/chat/shared.module';
 import { DatePipe } from './date.pipe';
@@ -13,7 +14,7 @@ const routes: Routes = [
 ];
 @NgModule({
   imports: [
-    CommonModule, IonicModule, RouterModule.forChild(routes),ChatSharedModule, 
+    CommonModule, IonicModule, RouterModule.forChild(routes),CalendarModule,ChatSharedModule, 
   ],
   declarations: [MeetPage,DatePipe],
 })

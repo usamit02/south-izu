@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ModalController } from '@ionic/angular';
 import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CalendarModal, CalendarModalOptions, DayConfig } from 'ion2-calendar';
 import { ApiService } from '../../../service/api.service';
 import { UserService } from '../../../service/user.service';
 import { Store } from '../../../service/store.service';
-import { HOME } from '../../../config';
+import { HOME, HOLIDAYS } from '../../../config';
 import { User } from '../../../class';
 @Component({
   selector: 'app-meet',
@@ -20,10 +22,11 @@ export class MeetPage implements OnInit, OnDestroy {
   date: string = "2020-1-1";
   user: User;
   users = [];
-  param: any = { id: null };//chat component の初期値
+  param: any = { id: null };//chat component の初期値  
+  days: Array<DayConfig> = [];
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private api: ApiService, private userService: UserService, private title: Title,
-    private store: Store) { }
+    private store: Store, private modal: ModalController) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.params = params;
@@ -40,18 +43,18 @@ export class MeetPage implements OnInit, OnDestroy {
       }
     });
   }
-  async undo(date?:number) {
+  async undo(date?: number) {
     if (date) {
       let d = new Date(this.date);
       d.setDate(d.getDate() + date);
-      this.date = `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + (d.getDate())).slice(-2)}`
+      this.date = this.dateFormat(d);
     }
     const res = await this.api.get('query', { table: "bookmanaging", select: ['user', 'na', 'avatar', 'stay'], where: { home: this.params.home, dated: this.date } });
     if (res.bookmanags.filter(book => { return book.user === this.user.id; }).length ||
       HOME[this.params.home].users.filter(user => { return user === this.user.id; }).length || this.user.admin) {
       this.users = res.bookmanags.map(user => {
         return { ...user, id: user.user };
-      });      
+      });
       this.param = { id: `${this.params.home}_${this.date}`, topInfinite: true };
       if (this.params.cursor) this.param.cursor = this.params.cursor;
       if (this.params.thread) this.param.thread = this.params.thread;
@@ -60,6 +63,63 @@ export class MeetPage implements OnInit, OnDestroy {
       this.param = { id: null };
       this.store.update(state => ({ ...state, users: [] }));
     }
+  }
+  async openCalendar() {
+    const now = new Date();
+    const upper = new Date();
+    upper.setMonth(upper.getMonth() + 1);    
+    if (!this.days.length) {      
+      let day:any={};
+      for (let d = new Date(now); d < upper; d.setDate(d.getDate() + 1)) {
+        let w = d.getDay();
+        if (w === 0) {
+          
+        } else if (w === 6) {
+          day[this.dateFormat(d)]={ cssClass: "satday" };
+        }
+      }
+      for (let holiday of HOLIDAYS) {
+        let d = new Date(holiday);
+        if (now.getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
+          day[this.dateFormat(d)]={ cssClass: "sunday" };
+        }
+      }
+      const where={home:this.params.home,user:this.user.id,dated:{lower:this.dateFormat(now),upper:this.dateFormat(upper)}};
+      const res=await this.api.get('query',{table:'book',select:['dated'],where:where});
+      for (let book of res.books){
+        day[this.dateFormat(new Date(book.dated))].able=true;
+      }
+      Object.keys(day).forEach(d=>{
+        let daysConfig:any={date:new Date(d)};
+        if(day[d].cssClass) daysConfig.cssClass=day[d].cssClass;
+        if(!day[d].able) daysConfig.disable=true;
+        this.days.push(daysConfig);
+      })
+    }
+    const options: CalendarModalOptions = {
+      pickMode: 'single',
+      title: `予約日を選択`,
+      from: now, to: upper,
+      weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+      closeIcon: true, doneIcon: true, cssClass: 'calendar',
+      monthFormat: 'YYYY年M月', defaultScrollTo: new Date(), daysConfig: this.days,
+    };
+    let myCalendar = await this.modal.create({
+      component: CalendarModal,
+      componentProps: { options }
+    });
+    myCalendar.present();
+    myCalendar.onDidDismiss().then(event => {
+      if (event.data) {
+        const from = new Date(event.data.from.string);
+      }
+    });
+  }
+  dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
+    var y = date.getFullYear();
+    var m = ("0" + (date.getMonth() + 1)).slice(-2);
+    var d = ("0" + date.getDate()).slice(-2);
+    return y + "-" + m + "-" + d;//+ " " + h + ":" + min + ":" + sec;
   }
   ngOnDestroy() {
     this.onDestroy$.next();
