@@ -1,6 +1,6 @@
-import { Component, OnInit, Input,Output,EventEmitter,ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/storage';
-import { AlertController,ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import * as EXIF from 'exif-js'
 import { User } from '../../../class';
 import { Marker } from '../marker/marker.component'
@@ -31,10 +31,10 @@ export class StoryComponent implements OnInit {
   get parent() {
     return this._parent;
   }
-  @Output() resetMarkers=new EventEmitter;
+  @Output() resetMarkers = new EventEmitter;
   @ViewChild('upmedia', { read: ElementRef, static: false }) upmedia: ElementRef;//メディアファイル選択
   storys: Story[] = [];
-  markers:Marker[]=[];
+  markers: Marker[] = [];
   progress;//メディアファイルのアップロード経過
   uploading: number;//アップロード中の段落番号(idx)  
   tinyinit = {
@@ -74,8 +74,8 @@ export class StoryComponent implements OnInit {
             } else {
               sql.insert = { typ: this.typ, parent: this.parent, idx: idx, txt: html };
             }
-            this.api.post("query", sql).then(res=>{
-              this.storys[idx]={...this.storys[idx],...res.story};
+            this.api.post("query", sql).then(res => {
+              this.storys[idx] = { ...this.storys[idx], ...res.story };
             });
           }
         }
@@ -83,7 +83,7 @@ export class StoryComponent implements OnInit {
     }
   }
   constructor(private storage: AngularFireStorage, private ui: UiService, private api: ApiService, private alert: AlertController,
-    private modal:ModalController,) { }
+    private modal: ModalController,) { }
   ngOnInit() {
   }
   storyAdd() {
@@ -97,20 +97,21 @@ export class StoryComponent implements OnInit {
     if (confirm) {
       this.ui.loading();
       await this.mediaDel(idx);
-      const id=this.storys[idx].id;      
-      this.api.post('querys', { table: 'story', delete: { id:id }, updates: [{
-          update: {}, where: { typ: this.typ, parent: this.parent,idx:idx }, sign: { update:{idx: "-1"}, where: { idx: ">" } }
+      const id = this.storys[idx].id;
+      this.api.post('querys', {
+        table: 'story', delete: { id: id }, updates: [{
+          update: {}, where: { typ: this.typ, parent: this.parent, idx: idx }, sign: { update: { idx: "-1" }, where: { idx: ">" } }
         }]
-      }).then(async res=>{
-        if(this.typ==='report'||this.typ==='plan'){
-          const marker=await this.api.get('query',{table:'story_marker',select:['img'],where:{id:id}});
-          if(marker.story_markers.length){
-            if(marker.story_markers[0].img) this.storage.ref(`story_marker/${id}.jpg`).delete();
+      }).then(async res => {
+        if (this.typ === 'report' || this.typ === 'plan') {
+          const marker = await this.api.get('query', { table: 'story_marker', select: ['img'], where: { id: id } });
+          if (marker.story_markers.length) {
+            if (marker.story_markers[0].img) this.storage.ref(`story_marker/${id}.jpg`).delete();
           }
-          this.api.post('query',{table:'story_marker',delete:{id:id}});
-        }        
+          this.api.post('query', { table: 'story_marker', delete: { id: id } });
+        }
         this.storys.splice(idx, 1);
-      }).finally(()=>{this.ui.loadend()});      
+      }).finally(() => { this.ui.loadend() });
     }
   }
   storyUp(idx) {
@@ -120,7 +121,7 @@ export class StoryComponent implements OnInit {
       this.storys[idx - 1] = temp;
     });
   }
-  storyDown(idx:number) {
+  storyDown(idx: number) {
     this.storyUpDown(idx, idx + 1).then(() => {
       let temp = { ...this.storys[idx] };
       this.storys[idx] = this.storys[idx + 1];
@@ -184,102 +185,104 @@ export class StoryComponent implements OnInit {
   }
   mediaDel(idx): Promise<void> {
     return new Promise((resolve) => {
-      this.api.post('query', { table: 'story', update: { media: "", file: "" }, where: { id: this.storys[idx].id } });
-      this.storys[idx].media = "";this.storys[idx].file = "";
+      this.api.post('query', { table: 'story', update: { media: "", file: "", latlng: null }, where: { id: this.storys[idx].id } });
+      this.storys[idx].media = ""; this.storys[idx].file = ""; this.storys[idx].lat = null; this.storys[idx].lng = null;
       if (!this.storys[idx].file) {
         resolve();
-      } else {        
+      } else {
         this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete().toPromise().catch(err => {
           this.ui.alert("ファイルの削除に失敗しました。\r\n" + err.message);
         }).finally(() => {
           resolve();
-        });        
+        });
       }
     })
   }
   async setMarker(idx) {
     let marker = await this.modal.create({
       component: MarkerComponent,
-      componentProps: { typ:this.typ,parent:this.parent,markers:this.markers,story:{...this.storys[idx],idx:idx}}
+      componentProps: { typ: this.typ, parent: this.parent, markers: this.markers, story: { ...this.storys[idx], idx: idx } }
     });
     marker.present();
     marker.onDidDismiss().then(event => {
       if (event.data) {
-        this.markers=event.data.markers;
+        this.markers = event.data.markers;
         this.resetMarkers.emit(this.markers);
       }
     });
   }
-  async mediaUrl(idx){
+  async mediaUrl(idx) {
     let alart = await this.alert.create({
-      header:'youtubeやiframeのurlを入力',
-      inputs:[{name:'txt',type:'url',placeholder:`https://www.youtube.com/watch?v=Q9lN1MPHaPs` }],
-      buttons:[{text:'取消',role:'cancel'},{text:'決定',handler:(res)=>{
-        let txt=res.txt;let html;
-        if (txt.indexOf("<iframe") > -1) {
-          let urls = txt.match("<iframe[-_.!~*\'\"()a-zA-Z0-9;/?:@&=+$,%#> ]+</iframe>")
-          if (urls && urls.length) {
-            let widths: Array<string> = urls[0].match('width="[0-9]+"');
-            let heights: Array<string> = urls[0].match('height="[0-9]+"');
-            if (widths && heights && widths.length && heights.length) {
-              let w = Number(widths[0].replace(/[^0-9]/g, ''));
-              let h = Number(heights[0].replace(/[^0-9]/g, ''));
-              const aspect = h / w;
-              w = w < 640 ? w : 640;
-              h = Math.floor(w * aspect);
-              const padding=Math.floor((h/w)*100);
-              const iframe = urls[0].replace(widths[0], 'style="position:absolute;left:0;top:0;width:100%;height:100%;"').replace(heights[0], '');
-              html=`<div style="position:relative;width:100%;height:0;padding-top:${padding}%;">${iframe}</div>`;
-              for (let i = 0; i < urls.length; i++) {
-                let res: string = txt.replace(urls[i], "");
-                while (res !== txt) {
-                  txt = txt.replace(urls[i], "");
-                  res = txt.replace(urls[i], "");
+      header: 'youtubeやiframeのurlを入力',
+      inputs: [{ name: 'txt', type: 'url', placeholder: `https://www.youtube.com/watch?v=Q9lN1MPHaPs` }],
+      buttons: [{ text: '取消', role: 'cancel' }, {
+        text: '決定', handler: (res) => {
+          let txt = res.txt; let html;
+          if (txt.indexOf("<iframe") > -1) {
+            let urls = txt.match("<iframe[-_.!~*\'\"()a-zA-Z0-9;/?:@&=+$,%#> ]+</iframe>")
+            if (urls && urls.length) {
+              let widths: Array<string> = urls[0].match('width="[0-9]+"');
+              let heights: Array<string> = urls[0].match('height="[0-9]+"');
+              if (widths && heights && widths.length && heights.length) {
+                let w = Number(widths[0].replace(/[^0-9]/g, ''));
+                let h = Number(heights[0].replace(/[^0-9]/g, ''));
+                const aspect = h / w;
+                w = w < 640 ? w : 640;
+                h = Math.floor(w * aspect);
+                const padding = Math.floor((h / w) * 100);
+                const iframe = urls[0].replace(widths[0], 'style="position:absolute;left:0;top:0;width:100%;height:100%;"').replace(heights[0], '');
+                html = `<div style="position:relative;width:100%;height:0;padding-top:${padding}%;">${iframe}</div>`;
+                for (let i = 0; i < urls.length; i++) {
+                  let res: string = txt.replace(urls[i], "");
+                  while (res !== txt) {
+                    txt = txt.replace(urls[i], "");
+                    res = txt.replace(urls[i], "");
+                  }
                 }
+              } else {
+                this.ui.alert("iframeのサイズを解析できませんでした。");
               }
             } else {
-              this.ui.alert("iframeのサイズを解析できませんでした。");
+              this.ui.alert("iframeを解析できませんでした。"); return;
+            }
+          } else if (txt.indexOf("youtu.be") > 0 || txt.indexOf("youtube.com") > 0) {
+            let id = txt.match('[\/?=]([a-zA-Z0-9\-_]{11})');
+            if (id && id.length) {
+              html = "<div style='position: relative;width:320px;'><a href='https://youtube.com/watch?v=" + id[1] +
+                "' target='_blank'><img style='position:absolute;top:40px;left:100px;opacity:0.5;' src='" + APIURL + "img/play.png'/><img style='border-radius: 5px;' src='http://i.ytimg.com/vi/" + id[1] +
+                "/mqdefault.jpg'/></a></div>";//sddefault.jpg
+            } else {
+              this.ui.alert("youtubeのurlを解析できませんでした。"); return;
             }
           } else {
-            this.ui.alert("iframeを解析できませんでした。"); return;
+            let urls = txt.match("https?://[-_.!~*\'()a-zA-Z0-9;/?:@&=+$,%#]+");
+            if (urls && urls.length) {
+              let url = urls[0];
+              html = '<a href="' + url + '" target="_blank">' + url + '</a>';
+              /*　課題　promise化が必要　linkcard.phpが不明なエラーを返す　981.jpなどで発生
+              this.api.get('linkcard', { url: url }).then(res => {
+                if (res.title || res.image) {
+                  this.media.html = '<div style="border-style:groove; border-radius: 10px;"><div><a href="' + url + '" target="_blank"><img style="max-height:200px;"src="'
+                    + res.image + '"></a></div><div><a href="' + url + '" target="_blank">' + res.title + '</a><p>' + res.description + '</p></div></div>';
+                } else {
+                  this.media.html = '<a href="' + url + '" target="_blank">' + url + '</a>';
+                }
+              });
+              */
+            }
           }
-        } else if (txt.indexOf("youtu.be") > 0 || txt.indexOf("youtube.com") > 0) {
-          let id = txt.match('[\/?=]([a-zA-Z0-9\-_]{11})');
-          if (id && id.length) {
-            html = "<div style='position: relative;width:320px;'><a href='https://youtube.com/watch?v=" + id[1] +
-              "' target='_blank'><img style='position:absolute;top:40px;left:100px;opacity:0.5;' src='" + APIURL + "img/play.png'/><img style='border-radius: 5px;' src='http://i.ytimg.com/vi/" + id[1] +
-              "/mqdefault.jpg'/></a></div>";//sddefault.jpg
-          } else {
-            this.ui.alert("youtubeのurlを解析できませんでした。"); return;
-          }
-        } else {
-          let urls = txt.match("https?://[-_.!~*\'()a-zA-Z0-9;/?:@&=+$,%#]+");
-          if (urls && urls.length) {
-            let url = urls[0];
-            html = '<a href="' + url + '" target="_blank">' + url + '</a>';
-            /*　課題　promise化が必要　linkcard.phpが不明なエラーを返す　981.jpなどで発生
-            this.api.get('linkcard', { url: url }).then(res => {
-              if (res.title || res.image) {
-                this.media.html = '<div style="border-style:groove; border-radius: 10px;"><div><a href="' + url + '" target="_blank"><img style="max-height:200px;"src="'
-                  + res.image + '"></a></div><div><a href="' + url + '" target="_blank">' + res.title + '</a><p>' + res.description + '</p></div></div>';
-              } else {
-                this.media.html = '<a href="' + url + '" target="_blank">' + url + '</a>';
+          if (html) {
+            this.api.post('query', { table: 'story', update: { media: html, file: "", latlng: null }, where: { id: this.storys[idx].id } }).then(res => {
+              if (this.storys[idx].file) {
+                this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete();
               }
+              this.storys[idx].media = html; this.storys[idx].file = ""; this.storys[idx].lat = null; this.storys[idx].lng = null;
             });
-            */
+          } else {
+            this.ui.alert(`html文字列を解析できませんでした。`);
           }
         }
-        if(html){
-          this.api.post('query', { table: 'story', update: { media: html, file: "" }, where: { id: this.storys[idx].id } }).then(res=>{
-            if(this.storys[idx].file){
-              this.storage.ref(`${this.typ}/${this.parent}/${this.storys[idx].file}`).delete();
-            }
-            this.storys[idx].media=html;this.storys[idx].file="";
-          });
-        }else{
-          this.ui.alert(`html文字列を解析できませんでした。`);
-        }
-      }}]
+      }]
     });
     await alart.present();
   }
@@ -288,7 +291,7 @@ export class StoryComponent implements OnInit {
     if (!files.length) return;
     let fileName = files[0].name;
     this.uploading = idx;
-    let latlng = "";
+    let latlng = ""; let lat; let lng;
     const send = async (file) => {
       await this.mediaDel(idx);
       fileName = Math.floor(new Date().getTime() / 1000).toString() + "." + fileName.split('.').pop();//アップロードファイルの拡張子
@@ -317,8 +320,9 @@ export class StoryComponent implements OnInit {
             sql.insert = { typ: this.typ, parent: this.parent, idx: idx, media: html, file: fileName };
             if (latlng) sql.insert = { ...sql.insert, latlng: latlng };
           }
-          this.api.post("query", sql,"保存中").then(res=>{
-            this.storys[idx]={...this.storys[idx],...res.story};
+          this.api.post("query", sql, "保存中").then(res => {
+            this.storys[idx] = { ...this.storys[idx], ...res.story };
+            if (latlng) this.storys[idx].lat = lat; this.storys[idx].lng = lng;
           });
         })
       }).catch(err => {
@@ -344,15 +348,17 @@ export class StoryComponent implements OnInit {
           }
         });
       }
-      EXIF.getData(files[0], () => {
-        let gpsLat = EXIF.getTag(files[0], "GPSLatitude");
-        let gpsLng = EXIF.getTag(files[0], "GPSLongitude");
-        if (gpsLat && gpsLng) {
-          this.storys[idx].lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
-          this.storys[idx].lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
-          latlng = `POINT(${this.storys[idx].lng} ${this.storys[idx].lat})`;
-        }
-      })
+      if (this.typ === "report" || this.typ === "plan") {
+        EXIF.getData(files[0], () => {
+          let gpsLat = EXIF.getTag(files[0], "GPSLatitude");
+          let gpsLng = EXIF.getTag(files[0], "GPSLongitude");
+          if (gpsLat && gpsLng) {
+            lat = gpsLat[0] + gpsLat[1] / 60 + gpsLat[2] / 3600;
+            lng = gpsLng[0] + gpsLng[1] / 60 + gpsLng[2] / 3600;
+            latlng = `POINT(${lng} ${lat})`;
+          }
+        })
+      }
       var canvas = document.querySelector('canvas');
       var ctx = canvas.getContext('2d');
       var img = new Image();
@@ -376,9 +382,9 @@ export class StoryComponent implements OnInit {
       }
       reader.readAsDataURL(files[0]);
     } else {
-      if(files[0].size>10000000){
+      if (files[0].size > 10000000) {
         this.ui.alert(`ファイルサイズは10MBまでにしてください。`);
-      }else{
+      } else {
         send(files[0]);
       }
     }
@@ -394,6 +400,6 @@ export interface Story {
   rest: number;
   restdate: number;
   button: boolean;
-  idx?:number
+  idx?: number
 }
 const STORY = { id: null, txt: "", media: "", file: "", lat: null, lng: null, rest: null, restdate: null, button: false };

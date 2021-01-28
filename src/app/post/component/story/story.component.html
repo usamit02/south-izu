@@ -3,15 +3,18 @@
     <ion-col size-xs="12" size-sm="12" size-md="4" size-lg="4" size-xl="4" style="text-align: center;">
       <div class="media" (drop)="dropMedia($event,i)">
         <ion-buttons *ngIf="document.user===user.id||user.admin" class="mediaButton">
+          <ion-button *ngIf="story.lat&&story.lng" (click)="setMarker(i)" fill="clear">
+            <ion-icon name="location" color="google" slot="icon-only"></ion-icon>
+          </ion-button>
           <ion-button fill="clear" (click)="upmedia.click()">
             <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
           </ion-button>
           <ion-button fill="clear" (click)="mediaUrl(i)">
             <ion-icon name="logo-youtube" color="google" slot="icon-only"></ion-icon>
-          </ion-button>        
-            <ion-button *ngIf="story.media" fill="clear" (click)="mediaDel(i)">
-              <ion-icon name="close-circle" color="danger" slot="icon-only"></ion-icon>
-            </ion-button>
+          </ion-button>
+          <ion-button *ngIf="story.media" fill="clear" (click)="mediaDel(i)">
+            <ion-icon name="close-circle" color="danger" slot="icon-only"></ion-icon>
+          </ion-button>
         </ion-buttons>
         <div [innerHtml]="story.media|safe:'html'"></div>
       </div>
@@ -23,7 +26,7 @@
         apiKey="k5ac3vz6w0fxrw863ng9oartu6tyagjk7kmra9jetazslyfz" [init]="tinyinit" inline="true"></editor>
       <ion-buttons *ngIf="story.button" class="setButton">
         <ion-button *ngIf="typ==='report'||typ==='plan'" (click)="setMarker(i)" fill="clear">
-          <ion-icon name="location" slot="icon-only" color="primary"></ion-icon>
+          <ion-icon name="location" slot="icon-only" color="google"></ion-icon>
         </ion-button>
         <ion-button (click)="storyRest(i)" fill="clear">
           <ion-icon name="lock-closed" slot="icon-only" color="tertiary"></ion-icon>
