@@ -30,17 +30,17 @@ export class MeetPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.params = params;
-      this.home = HOME[params.home].na;
-      this.date = params.date;
-    });
-    this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
-      this.user = user;
-      if (user.id) {
-        this.undo();
-      } else {
-        this.param = { id: null };
-        this.store.update(state => ({ ...state, users: [] }));
-      }
+      this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
+        this.user = user;
+        if (user.id) {
+          this.home = HOME[this.params.home].na;
+          this.date = this.params.date;
+          this.undo();
+        } else {
+          this.param = { id: null };
+          this.store.update(state => ({ ...state, users: [] }));
+        }
+      });
     });
   }
   async undo(date?: number) {
@@ -55,7 +55,7 @@ export class MeetPage implements OnInit, OnDestroy {
       this.users = res.bookmanags.map(user => {
         return { ...user, id: user.user };
       });
-      this.param = { id: `${this.params.home}_${this.date}`, topInfinite: true };
+      this.param = { id: this.params.home + this.date.replace(/\-/g, ""), topInfinite: true };
       if (this.params.cursor) this.param.cursor = this.params.cursor;
       if (this.params.thread) this.param.thread = this.params.thread;
       this.store.update(state => ({ ...state, users: this.users }));
@@ -67,34 +67,34 @@ export class MeetPage implements OnInit, OnDestroy {
   async openCalendar() {
     const now = new Date();
     const upper = new Date();
-    upper.setMonth(upper.getMonth() + 1);    
-    if (!this.days.length) {      
-      let day:any={};
-      for (let d = new Date(now); d < upper; d.setDate(d.getDate() + 1)) {
-        let w = d.getDay();
-        if (w === 0) {
-          
-        } else if (w === 6) {
-          day[this.dateFormat(d)]={ cssClass: "satday" };
-        }
-      }
+    upper.setMonth(upper.getMonth() + 1);
+    if (!this.days.length) {
+      let css: any = {};
       for (let holiday of HOLIDAYS) {
         let d = new Date(holiday);
         if (now.getTime() <= d.getTime() && d.getTime() <= upper.getTime()) {
-          day[this.dateFormat(d)]={ cssClass: "sunday" };
+          css[this.dateFormat(d)] = "sunday";
         }
       }
-      const where={home:this.params.home,user:this.user.id,dated:{lower:this.dateFormat(now),upper:this.dateFormat(upper)}};
-      const res=await this.api.get('query',{table:'book',select:['dated'],where:where});
-      for (let book of res.books){
-        day[this.dateFormat(new Date(book.dated))].able=true;
+      const where = { home: this.params.home, user: this.user.id, dated: { lower: this.dateFormat(now), upper: this.dateFormat(upper) } };
+      const res = await this.api.get('query', { table: 'book', select: ['dated'], where: where });
+      let able: any = {};
+      for (let book of res.books) {
+        able[book.dated] = true;
       }
-      Object.keys(day).forEach(d=>{
-        let daysConfig:any={date:new Date(d)};
-        if(day[d].cssClass) daysConfig.cssClass=day[d].cssClass;
-        if(!day[d].able) daysConfig.disable=true;
+      for (let d = new Date(now); d < upper; d.setDate(d.getDate() + 1)) {
+        const key = this.dateFormat(d);
+        const w = d.getDay();
+        if (w === 0) {
+          css[key] = "sunday";
+        } else if (w === 6) {
+          if (!css[key]) css[key] = "satday";
+        }
+        let daysConfig: any = { date: new Date(d) };
+        if (css[key]) daysConfig.cssClass = css[key];
+        if (!able[key]) daysConfig.disable = true;
         this.days.push(daysConfig);
-      })
+      }
     }
     const options: CalendarModalOptions = {
       pickMode: 'single',
@@ -111,7 +111,8 @@ export class MeetPage implements OnInit, OnDestroy {
     myCalendar.present();
     myCalendar.onDidDismiss().then(event => {
       if (event.data) {
-        const from = new Date(event.data.from.string);
+        this.date = event.data.string;
+        this.undo();
       }
     });
   }

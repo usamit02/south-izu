@@ -38,7 +38,6 @@ export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestro
   private onDestroy$ = new Subject();
   constructor(private db: AngularFirestore, private api: ApiService, private storage: AngularFireStorage,
     private ui: UiService, private pop: PopoverController, private router: Router, private sendService: SendService, ) { }
-
   ngOnInit() {
     this.sendService.emoji.asObservable().pipe(takeUntil(this.onDestroy$)).subscribe((emoji: string) => {
       this.talk.nativeElement.insertAdjacentHTML('beforeend', emoji);
@@ -261,10 +260,10 @@ export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestro
         });
       }
       const thread = this.thread ? `/${this.thread}` : "";
-      const url = `/chat/${this.page}${thread}/${this.id}/${Math.floor(upd.getTime() / 1000)}`;
+      const url = `/${this.page}${thread}/${this.id}/${Math.floor(upd.getTime() / 1000)}`;
       let mention: Mention = {
         id: this.user.id, na: this.user.na, upd: upd, avatar: this.user.avatar, description: description, url: url,
-        page: this.page, pid: Number(this.id), thread: this.thread,
+        page: this.page, pid: Number(this.id), thread: this.thread ?this.thread:"",
       };
       for (let i = 0; i < this.mentions.length; i++) {
         promises.push(pushMention(i));
