@@ -29,12 +29,13 @@ export class MeetPage implements OnInit, OnDestroy {
     private store: Store, private modal: ModalController) { }
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
-      this.params = params;
+      const date = params.id.slice(-8);
+      this.params = { ...params, home: params.id.replace(date, "") };
+      this.home = HOME[this.params.home].na;
+      this.date = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(-2)}`;
       this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
         this.user = user;
         if (user.id) {
-          this.home = HOME[this.params.home].na;
-          this.date = this.params.date;
           this.undo();
         } else {
           this.param = { id: null };

@@ -1,6 +1,6 @@
 <ion-header>
   <ion-item *ngFor="let book of books">
-    <ion-item button="true" [routerLink]="'/meet/' + book.home + '/' + book.from">
+    <ion-item button="true" (click)="clickBook(book)">
       <ng-container *ngIf="book.from===book.to ; else fromto">
         <ion-note slot="start">　{{book.from|date}}</ion-note>{{book.HOME}}　{{book.stay}}<ion-note slot="end">
           {{book.amount}}円</ion-note>　

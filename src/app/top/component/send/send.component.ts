@@ -6,7 +6,7 @@ import { AngularFireStorage } from '@angular/fire/storage';
 import { Mention } from '../class';
 import { ApiService } from '../../../service/api.service';
 import { Observable, Subject, fromEvent, merge } from 'rxjs';
-import { takeUntil, throttleTime } from 'rxjs/operators';
+import { takeUntil, throttleTime,debounceTime } from 'rxjs/operators';
 import { UiService } from '../../../service/ui.service';
 import { SendService } from './send.service';
 import { EmojiComponent } from './emoji/emoji.component';
@@ -19,6 +19,7 @@ import { APIURL } from '../../../../environments/environment';
 })
 export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   @Input() user;
+  @Input() users;//everyone mention用
   @Input() id: string;
   @Input() page: string;
   @Input() thread: string;
@@ -54,7 +55,7 @@ export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestro
     const keydown$: Observable<KeyboardEvent> = fromEvent<KeyboardEvent>(this.talk.nativeElement, "keydown");
     const paste$: Observable<KeyboardEvent> = fromEvent<KeyboardEvent>(this.talk.nativeElement, "paste");
     const change$: Observable<KeyboardEvent> = fromEvent<KeyboardEvent>(this.talk.nativeElement, "change");
-    merge(keyup$, paste$, change$).pipe(takeUntil(this.onDestroy$), throttleTime(2000)).subscribe(() => {
+    merge(paste$,change$).pipe(takeUntil(this.onDestroy$), throttleTime(2000)).subscribe(() => {
       this.sendable = true;
     });
     keydown$.pipe(takeUntil(this.onDestroy$)).subscribe(e => {
@@ -66,9 +67,13 @@ export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestro
         }
       }
     });
+    keyup$.pipe(takeUntil(this.onDestroy$), debounceTime(2000)).subscribe(() => {
+      console.log('keyup:' + this.talk.nativeElement.innerText);
+      
+    });
   }
   deleteMention(member) {
-    this.mentions = this.mentions.filter(mention => { return mention.no !== member.no; });
+    this.mentions = this.mentions.filter(mention => { return mention.id !== member.id; });
   }
   async send() {
     this.sendable = false;
