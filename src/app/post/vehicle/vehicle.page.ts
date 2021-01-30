@@ -25,7 +25,7 @@ export class VehiclePage implements OnInit, OnDestroy {
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
   id: number = null;
-  VEHICLE={typ:0,na:"",maker:"",txt:"",img:"",simg:"",year:0,close:0,chat:1};
+  VEHICLE={typ:0,na:"",maker:"",txt:"",img:"",simg:"",year:null,close:0,chat:1};
   vehicle = {
     typ: new FormControl(this.VEHICLE.typ, [Validators.required]),
     na: new FormControl(this.VEHICLE.na, [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
@@ -85,7 +85,7 @@ export class VehiclePage implements OnInit, OnDestroy {
       }
       this.vehicleForm.markAsPristine();
     }).catch(err => {
-      this.ui.alert(`愛機情報の読み込みに失敗しました。\r\n${err.message}`);
+      this.ui.alert(`愛車情報の読み込みに失敗しました。\r\n${err.message}`);
     })
   }
   imgChange(e) {
@@ -167,8 +167,8 @@ export class VehiclePage implements OnInit, OnDestroy {
   }
   async new() {
     const alert = await this.alert.create({
-      header: '新しい愛機を作成',
-      message: '現在の内容を元にして新しい愛機を作成しますか。<br>「いいえ」で現在の編集内容を破棄します。',
+      header: '新しい愛車を作成',
+      message: '現在の内容を元にして新しい愛車を作成しますか。<br>「いいえ」で現在の編集内容を破棄します。',
       buttons: [
         {
           text: 'Cancel',
@@ -204,11 +204,11 @@ export class VehiclePage implements OnInit, OnDestroy {
       this.id=res.vehicle.id;
       this.undo();
     }).catch(err => {
-      this.ui.alert(`新規愛機の作成に失敗しました。\r\n${err.message}`);
+      this.ui.alert(`新規愛車の作成に失敗しました。\r\n${err.message}`);
     });
   }
   async erase() {
-    const confirm = await this.ui.confirm("削除確認", `愛機「${this.vehicle.na.value}」を削除します。`);
+    const confirm = await this.ui.confirm("削除確認", `愛車「${this.vehicle.na.value}」を削除します。`);
     if (!confirm || !this.id) return;
     this.ui.loading('削除中...');
     this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'vehicle', parent: this.id } }).then(async res => {
@@ -224,9 +224,9 @@ export class VehiclePage implements OnInit, OnDestroy {
         await this.storage.ref(`vehicle/${this.id}/small.jpg`).delete();
       }
       this.id=null; this.vehicleForm.reset(); 
-      this.ui.pop("愛機を削除しました。");
+      this.ui.pop("愛車を削除しました。");
     }).catch(err => {
-      this.ui.alert(`愛機を削除できませんでした。\r\n${err.message}`);
+      this.ui.alert(`愛車を削除できませんでした。\r\n${err.message}`);
     }).finally(()=>{this.ui.loadend();});
   }
   async onScrollEnd() {

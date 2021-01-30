@@ -8,6 +8,7 @@ import { SafePipe } from './safe.pipe';
 import { ReportPage } from './report/report.page';
 import { ColumnPage } from './column/column.page';
 import { ChatPage } from './chat/chat.page';
+import { VehiclePage } from './vehicle/vehicle.page';
 import { FriendPage } from './friend/friend.page';
 const routes: Routes = [
   {
@@ -15,7 +16,8 @@ const routes: Routes = [
     children: [
       { path: 'report', component: ReportPage },
       { path: 'column', component: ColumnPage },
-      { path: 'chat', component: ChatPage },
+      { path: 'chat', component: ChatPage }, 
+      { path: 'vehicle', component: VehiclePage },
       { path: 'friend/:typ', component: FriendPage },
       { path: '', component: ReportPage },
     ]
@@ -28,6 +30,6 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [UserPage, DatePipe, SafePipe, ReportPage, ColumnPage, ChatPage, FriendPage,]
+  declarations: [UserPage, DatePipe, SafePipe, ReportPage, ColumnPage, ChatPage, VehiclePage,FriendPage,]
 })
 export class UserPageModule { }

@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { IonInfiniteScroll } from '@ionic/angular';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -12,9 +11,8 @@ import { TabsService } from '../tabs.service';
   styleUrls: ['./vehicle.page.scss'],
 })
 export class VehiclePage implements OnInit, OnDestroy {
-  @ViewChild('infinite', { static: false }) infinite: IonInfiniteScroll;
   user: any = { id: "", na: "" };
-  columns = [];
+  vehicles = [];
   private onDestroy$ = new Subject();
   constructor(private api: ApiService, private db: AngularFireDatabase, private tabs: TabsService, ) {
   }
@@ -25,7 +23,7 @@ export class VehiclePage implements OnInit, OnDestroy {
         res.vehicles.map(vehicle => {
           vehicle.detail$ = this.db.object(`vehicle/${vehicle.id}`).valueChanges();
         });
-        this.columns = res.colums;
+        this.vehicles = res.vehicles;
       });
     });
   }

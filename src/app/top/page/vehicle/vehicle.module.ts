@@ -1,24 +1,23 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { VehiclePage } from './vehicle.page';
-import { ImageCropperModule } from 'ngx-image-cropper';
-import { CropComponent } from '../../component/crop/crop.component';
+import { EvalSharedModule } from '../../component/eval/shared.module';
+import { StorySharedModule } from '../../component/story/shared.module';
+import { ChatSharedModule } from '../../component/chat/shared.module';
+import { PipeSharedModule } from '../../../pipe/shared.module';
+//import { ThreadPage } from '../../page/thread/thread.page';
 const routes: Routes = [
-  {
-    path: '',
-    component: VehiclePage
-  }
+  { path: ':id', component: VehiclePage },
+  { path: ':id/:cursor', component: VehiclePage },
+  //{ path: 'report/thread/:id/:thread', component: ReportPage },
+  //{ path: 'report/thread/:id/:thread/:cursor', component: ReportPage },
 ];
-
 @NgModule({
   imports: [
-    CommonModule, IonicModule, FormsModule, ReactiveFormsModule,
-    RouterModule.forChild(routes),
-    ImageCropperModule,
+    CommonModule, IonicModule, RouterModule.forChild(routes),EvalSharedModule,StorySharedModule, ChatSharedModule, PipeSharedModule,
   ],
-  declarations: [VehiclePage, CropComponent,],
+  declarations: [VehiclePage],
 })
 export class VehiclePageModule { }

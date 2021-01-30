@@ -1,173 +1,64 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-      <ion-button (click)="undo()" fill="clear">
-        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>愛機の登録</ion-title>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <ion-title>{{vehicle.na}}</ion-title>    
     <ion-buttons slot="end">
-      <ion-button [disabled]="!user.id||!userForm.dirty||!userForm.valid" (click)="save()" fill="clear">
-        　 <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
-      </ion-button>
+        <ion-button [routerLink]="'/post/vehicle/' + vehicle.id" slot="end" fill="clear">
+          <ion-icon name="create" slot="icon-only" color="secondary"></ion-icon>
+        </ion-button>
       <ion-menu-button menu="end">
         <ion-icon name="contacts"></ion-icon>
       </ion-menu-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content padding>
-  <form [formGroup]="userForm">
-    <p></p>
-    <ion-title>
-      <ion-icon name="person" color="primary"></ion-icon>基本情報
-    </ion-title>
-    <ion-item>
-      <ion-label class="leftLabel">
-        ニックネーム
-      </ion-label>
-      <ion-input required [formControl]="na" name="na" minlength="2" maxlength="20" placeholder="ななしのごんべえ"></ion-input>
-      <ion-button *ngIf="user.photoURL" slot="end" (click)="na.reset(user.displayName)" fill="clear">
-        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
-      </ion-button>
-    </ion-item>
-    <span *ngIf="na.errors?.minlength||na.errors?.maxlength" class="errmsg">２文字以上２０文字以下で入力してください。</span>
-    <ion-item>
-      <ion-label>アバター</ion-label>
-      <ion-avatar>
-        <ion-img [src]="user.avatar"></ion-img>
-      </ion-avatar>
-      <ion-button *ngIf="user.photoURL" slot="end" (click)="undoAvatar()" fill="clear">
-        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
-      </ion-button>
-      <ion-button slot="end" (click)="popCrop()" fill="clear">
-        　 <ion-icon name="image" slot="icon-only" color="success"></ion-icon>
-      </ion-button>
-    </ion-item>
-    <p></p>
-    <ion-title>
-      <ion-icon name="mail" color="secondary"></ion-icon>ダイレクト
-    </ion-title>
-    <span class="memo">非公開の個別チャットの対象者を設定します。</span>
-    <ion-item>
-      <ion-segment scrollable [formControl]="direct">
-        <ion-segment-button value="everyone">
-            <ion-icon name="people" color="success"></ion-icon>
-            <ion-label>誰でも</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="support">
-            <ion-icon name="heart-outline" color="danger"></ion-icon>
-            <ion-label>サポーター</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="block">
-            <ion-icon name="lock-closed" color="dark"></ion-icon>
-            <ion-label>閉鎖</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-    </ion-item>
-    <p></p>
-    <ion-title>
-      <ion-icon name="heart-outline" color="danger"></ion-icon>サポート
-    </ion-title>
-    <span class="memo">あなたの活動を支援してくれるサポーターとの条件を設定します。</span>
-    <ion-item>
-      <ion-label>月額料金</ion-label>
-      <ion-select placeholder="選択してください" [formControl]="plan">
-        <ion-select-option value="50">50円</ion-select-option>
-        <ion-select-option value="100">100円</ion-select-option>
-        <ion-select-option value="500">500円</ion-select-option>
-        <ion-select-option value="1000">1000円</ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ion-item>
-      <ion-label>無料期間（30日）</ion-label>
-      <ion-segment scrollable [formControl]="trial">
-        <ion-segment-button value="trial">
-          <ion-label>あり</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="">
-          <ion-label>なし</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-    </ion-item>
-    <ion-item>
-      <ion-label class="leftLabel">振込口座</ion-label>
-      <ion-input [formControl]="bank" minlength="10" maxlength="50" placeholder="日産銀行　ゴーン支店　普通　1862616"></ion-input>
-    </ion-item>
-    <span *ngIf="bank.errors?.minlength||bank.errors?.maxlength" class="errmsg">１０文字以上５０文字以下で入力してください。</span>
-    <ion-item>
-      <ion-label>現在のポイント</ion-label>
-      {{user.p}}ｐ
-      <ion-button [disabled]="user.p<3000" color="tertiary">振込請求</ion-button>
-    </ion-item>
-    <span *ngIf="user.p<3000" class="memo">3000p以上貯まると請求できます。入金額はポイントから18%のシステム手数料及び330pの振込手数料が差し引かれた同数の円です。</span>
-  </form>
+<ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()" class="ion-padding">  
+  <app-story #essay page="vehicle" [param]="vehicle" [user]="user" (isStory)="isStory=$event">
+  </app-story>
+  <ion-grid>
+    <ion-row>
+      <ion-col size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4" *ngFor="let vehicle of vehicles">
+        <ion-card button="true" [routerLink]="'/vehicle/'+vehicle.id">
+          <ion-card-header>
+            <ion-card-title>{{vehicle.na}}</ion-card-title>
+          </ion-card-header>
+          <img *ngIf="vehicle.simg" [src]="vehicle.simg" />
+          <ion-card-content>
+            <div class="description">{{vehicle.txt}}</div>
+            <div class="acked">{{vehicle.created|date}}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <app-chat #chat *ngIf="vehicle.chat" page="vehicle" [param]="param" [user]="user"
+    [content]="content">
+  </app-chat>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">
+      <ion-icon name="caret-up"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="chatY&&currentY>chatY+50" (click)="scroll(chatY)" color="light" size="small">
+      Chat
+    </ion-fab-button>
+  </ion-fab>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY+contentH<chatY" (click)="scroll(chatY)" color="light" size="small">
+      Chat
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
+      <ion-icon name="caret-down"></ion-icon>
+    </ion-fab-button>
+    <app-eval *ngIf="currentY+contentH===scrollH && user.id && vehicle.user && isStory" typ="vehicle" [id]="vehicle.id"
+      [user]="user.id" [author]="vehicle.user" [na]="vehicle.na"></app-eval><!--    marker.user!==user.id       -->
+  </ion-fab>
 </ion-content>
-<canvas #canvas style="display: none;"></canvas>
+<ion-footer id="footer">
+  <app-send *ngIf="vehicle.chat&&user.id&&currentY+contentH>chatY"
+    [id]="vehicle.id.toString()" page="vehicle" thread="" [user]="user" [content]="content"></app-send>
+</ion-footer>
 
 
 
 <!--
-    <ion-item>
-      <ion-label>あなたの基本プレー日は<ion-text color="danger">*</ion-text>
-      </ion-label>
-      <ion-select multiple="true" name="holiday" placeholder="選択してください" cancelText="取消" okText="決定"
-        [formControl]="holiday">
-        <ion-select-option value="月">月</ion-select-option>
-        <ion-select-option value="火">火</ion-select-option>
-        <ion-select-option value="水">水</ion-select-option>
-        <ion-select-option value="木">木</ion-select-option>
-        <ion-select-option value="金">金</ion-select-option>
-        <ion-select-option value="土">土</ion-select-option>
-        <ion-select-option value="日">日</ion-select-option>
-        <ion-select-option value="祝">祝</ion-select-option>
-        <ion-select-option value="全">全日</ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ion-item>
-      <ion-label>よくプレーする時間帯は
-      </ion-label>
-      <ion-segment name="timezone" scrollable [formControl]="timezone">
-        <ion-segment-button value="昼">
-          <ion-label>昼</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="夕方">
-          <ion-label>夕方</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="深夜">
-          <ion-label>深夜</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-    </ion-item>
-    <ion-item>
-      <ion-label>あなたの年代は
-      </ion-label>
-      <ion-range min="20" max="80" step="10" snaps="true" [formControl]="age">
-      </ion-range>
-    </ion-item>
-  </form>
-  <form [formGroup]="castForm">
-    <ion-item>
-      <ion-label>年齢<ion-text color="danger">*</ion-text>
-      </ion-label>
-      <ion-range min="15" max="50" step="5" snaps="true" dualKnobs="true" [formControl]="youth">
-        <ion-label slot="start">少女</ion-label>
-        <ion-label slot="end">熟女</ion-label>
-      </ion-range>
-    </ion-item>
-    <ion-item>
-      <ion-label>あなたの希望するプレー<ion-text color="danger">*</ion-text>
-      </ion-label>
-      <ion-segment name="playsex" scrollable [formControl]="playsex">
-        <ion-segment-button value="男性のみ">
-          <ion-label>男性のみ</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="女性のみ">
-          <ion-label>女性のみ</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="男女問わず">
-          <ion-label>男女問わず</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-    </ion-item> -->
+-->
