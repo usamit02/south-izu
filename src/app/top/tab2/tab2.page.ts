@@ -214,7 +214,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   }
   clickBook(book){
-    this.router.navigate(['meet',book.home + book.dated.replace(/\-/g, "")]);
+    this.router.navigate(['meet',book.home + book.from.replace(/\-/g, "")]);
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'    
     var y = date.getFullYear();

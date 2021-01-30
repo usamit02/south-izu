@@ -67,9 +67,14 @@ export class SendComponent implements OnInit, OnChanges, AfterViewInit, OnDestro
         }
       }
     });
-    keyup$.pipe(takeUntil(this.onDestroy$), debounceTime(2000)).subscribe(() => {
+    keyup$.pipe(takeUntil(this.onDestroy$), debounceTime(1000)).subscribe(() => {
       console.log('keyup:' + this.talk.nativeElement.innerText);
-      
+      let txt=this.talk.nativeElement.innerText;
+      const pos=txt.indexOf('@everyone');
+      if(pos==!-1){        
+        this.mentions=this.users;
+        this.talk.nativeElement.innerHTML=this.talk.nativeElement.innerHTML.replace("@everyone","");        
+      }
     });
   }
   deleteMention(member) {

@@ -31,8 +31,8 @@ export class ReportPage implements OnInit, OnDestroy {
     cursor.setSeconds(cursor.getSeconds() - 1);//upper 以上ではなく超にするため -1秒
     let where: any = { user: this.user.id, ack: 1, created: { upper: this.dateFormat(cursor) } };
     if (this.shop) where.shop = this.shop;
-    this.api.get('query', { table: 'reported', select: ['*'], where: where, order: { created: 'DESC' }, limit: LIMIT }).then(res => {
-      res.reporteds.map(report => {
+    this.api.get('query', { table: 'reporting', select: ['*'], where: where, order: { created: 'DESC' }, limit: LIMIT }).then(res => {
+      res.reports.map(report => {
         report.detail$ = this.db.object(`report/${report.id}`).valueChanges();
         this.reports.push(report);
       });

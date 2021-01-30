@@ -1,0 +1,122 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+      <ion-button (click)="undoPlan=!undoPlan;undo()" fill="clear" [disabled]="!id">
+        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>愛機の設定</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!id">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!id">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button [disabled]="!dirty&&!vehicleForm.dirty||vehicleForm.invalid||!id" (click)="save()" fill="clear">
+        <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()">
+  <ion-grid>
+    <ion-row>      
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <ion-title #basic class="Text">Basic</ion-title>
+        <form [formGroup]="vehicleForm">
+          <ion-item>
+            <ion-label position="floating">
+              名称<ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-input required [formControl]="vehicle.na" minlength="2" maxlength="30" placeholder="プリウス"></ion-input>
+          </ion-item>
+          <span *ngIf="vehicle.na.errors?.minlength||vehicle.na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
+          <ion-item>
+            <ion-label position="floating">
+              メーカー<ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-input required [formControl]="vehicle.maker" minlength="2" maxlength="30" placeholder="ホンダ"></ion-input>
+          </ion-item>
+          <span *ngIf="vehicle.maker.errors?.minlength||vehicle.maker.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
+          <ion-segment scrollable [formControl]="vehicle.typ">
+            <ion-segment-button *ngFor="let typ of vehicleTyps" [value]="typ.id">
+              <img [src]="typ.icon" />
+              <ion-label>{{typ.na}}</ion-label>
+            </ion-segment-button>
+          </ion-segment>         
+          <ion-item>
+            <ion-label position="floating">
+              説明文
+            </ion-label>
+            <ion-textarea [formControl]="vehicle.txt" autoGrow="true" maxlength="300"></ion-textarea>
+          </ion-item>
+          <span *ngIf="vehicle.txt.errors?.minlength||vehicle.txt.errors?.maxlength"
+            class="errmsg">２文字以上３００文字以下で入力してください。</span>
+          <ion-item>
+            <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe:'url'" />
+            <ng-template #orgimg>
+              <img *ngIf="vehicle.img.value;else noimg" class="img" [src]="vehicle.img.value" />
+              <ng-template #noimg>
+                <img class="img" [src]="noimgUrl" />
+              </ng-template>
+            </ng-template>
+            <ion-buttons class="imgButtons">
+              <ion-button fill="clear" (click)="upImg.click()">
+                <ion-icon name="image" color="success" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button *ngIf="imgBlob" slot="end" (click)="imgBlob=''" fill="clear">
+                <ion-icon name="close-circle" slot="icon-only" color="danger"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+          <input #upImg style="display: none;" type="file" (change)="imgChange($event)">
+          <canvas #canvas style="display: none;"></canvas>
+          <ion-item>
+            <ion-icon name="people-circle" color="success"></ion-icon>
+            <ion-label>年式</ion-label>
+            <ion-input slot="end" typ="number" [formControl]="vehicle.year" min="1900" max="2100" placeholder="2020">
+            </ion-input>
+          </ion-item>
+          <span *ngIf="vehicle.year.errors?.min||vehicle.year.errors?.max" class="errmsg">1900～2100の整数を入力してください。</span>
+          <ion-item>
+            <ion-icon name="chatbubbles" color="primary"></ion-icon>
+            <ion-label>コメント欄</ion-label>
+            <ion-toggle [formControl]="vehicle.chat"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="pause" color="warning"></ion-icon>
+            <ion-label>休止中</ion-label>
+            <ion-toggle [formControl]="vehicle.close"></ion-toggle>
+          </ion-item> 
+        </form>
+      </ion-col>
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <ion-title #plan class="Text">Plan</ion-title>
+        <app-plan [vehicle]="id" [home]="home" isStayCalendarLoad="true" [undo]="undoPlan" (dirty)="planDirty($event)" [save]="savePlan" (saved)="planSaved()"></app-plan>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-title #essay class="Text">Essay</ion-title>
+  <app-story typ="vehicle" [document]="{id:id,user:user.id}" [user]="user"></app-story>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
+      Basic
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY>planY+50" (click)="scroll(planY)" color="light" size="small">
+      Plan
+    </ion-fab-button>
+  </ion-fab>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY+contentH<planY" (click)="scroll(planY)" color="light" size="small">
+      Plan
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<essayY" (click)="scroll(essayY)" color="light" size="small">
+      Essay
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

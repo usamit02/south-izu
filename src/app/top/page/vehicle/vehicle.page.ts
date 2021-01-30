@@ -11,11 +11,11 @@ import { UiService } from '../../../service/ui.service';
 import { ApiService } from '../../../service/api.service';
 import { CropComponent } from '../../component/crop/crop.component';
 @Component({
-  selector: 'app-regist',
-  templateUrl: './regist.page.html',
-  styleUrls: ['./regist.page.scss'],
+  selector: 'app-vehicle',
+  templateUrl: './vehicle.page.html',
+  styleUrls: ['./vehicle.page.scss'],
 })
-export class RegistPage implements OnInit, OnDestroy {
+export class VehiclePage implements OnInit, OnDestroy {
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   na = new FormControl("", [Validators.minLength(2), Validators.maxLength(20)]);
   plan = new FormControl(50, [Validators.required]);

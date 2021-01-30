@@ -10,6 +10,12 @@ export const STAYTYP={
   3:{na:'民泊'},
   4:{na:'バンガロー'}
 }
+export const VEHICLETYP={
+  1:{na:'バイク'},
+  2:{na:'車'},
+  3:{na:'自転車'},
+  4:{na:'トレーラー'}
+}
 export const HOME={
  1:{na:'南伊豆ライダーハウス',path:'southizu-riderhouse',stayTyps:[1,2,3,4],lat:34.68503331,lng:138.85154339,zoom:12,marker:1,
   icon:"http://maps.google.co.jp/mapfiles/ms/icons/rangerstation.png",
