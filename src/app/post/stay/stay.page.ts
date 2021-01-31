@@ -94,6 +94,7 @@ export class StayPage implements OnInit, OnDestroy {
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
       this.imgBlob = window.URL.createObjectURL(e.target.files[0]);
+      this.stayForm.markAsDirty();
     } else {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }

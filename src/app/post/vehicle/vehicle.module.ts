@@ -8,7 +8,7 @@ import { SafePipe } from './safe.pipe';
 import { PlanModule } from '../component/plan/plan.module';
 import { SharedModule } from '../component/shared.module';
 const routes: Routes = [
-  { path: ':id', component: VehiclePage },
+  { path: ':id', component: VehiclePage }, { path: '', component: VehiclePage },
 ];
 
 @NgModule({

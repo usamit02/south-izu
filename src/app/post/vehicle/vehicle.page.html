@@ -11,7 +11,10 @@
       <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!id">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!id">
+      <ion-button (click)="preview()" slot="end" fill="clear">
+        <ion-icon name="browsers" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="new()" color="secondary" slot="end" fill="clear">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button [disabled]="!vehicleForm.dirty||vehicleForm.invalid" (click)="save()" fill="clear">
@@ -39,9 +42,9 @@
             class="errmsg">２文字以上３０文字以下で入力してください。</span>
           <ion-item>
             <ion-label position="floating">
-              メーカー<ion-text color="danger">*</ion-text>
+              メーカー
             </ion-label>
-            <ion-input required [formControl]="vehicle.maker" minlength="2" maxlength="30" placeholder="ホンダ">
+            <ion-input [formControl]="vehicle.maker" minlength="2" maxlength="30" placeholder="ホンダ">
             </ion-input>
           </ion-item>
           <span *ngIf="vehicle.maker.errors?.minlength||vehicle.maker.errors?.maxlength"

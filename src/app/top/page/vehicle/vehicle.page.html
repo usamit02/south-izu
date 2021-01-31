@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-menu-button slot="start"></ion-menu-button>
-    <ion-title>{{vehicle.na}}</ion-title>    
+    <ion-title><img [src]="vehicle.icon" />{{vehicle.na}}</ion-title>    
     <ion-buttons slot="end">
         <ion-button [routerLink]="'/post/vehicle/' + vehicle.id" slot="end" fill="clear">
           <ion-icon name="create" slot="icon-only" color="secondary"></ion-icon>
@@ -13,6 +13,17 @@
   </ion-toolbar>
 </ion-header>
 <ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()" class="ion-padding">  
+  <ion-grid>
+    <ion-row>
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">      
+        <p>{{vehicle.maker}}　{{vehicle.year}}年式</p>
+        <p>{{vehicle.txt}}</p>
+      </ion-col>
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <img [src]="vehicle.img"/>
+      </ion-col>
+    </ion-row>
+  </ion-grid> 
   <app-story #essay page="vehicle" [param]="vehicle" [user]="user" (isStory)="isStory=$event">
   </app-story>
   <ion-grid>
@@ -20,7 +31,7 @@
       <ion-col size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4" *ngFor="let vehicle of vehicles">
         <ion-card button="true" [routerLink]="'/vehicle/'+vehicle.id">
           <ion-card-header>
-            <ion-card-title>{{vehicle.na}}</ion-card-title>
+            <ion-card-title><img [src]="vehicle.icon" />{{vehicle.na}}</ion-card-title>
           </ion-card-header>
           <img *ngIf="vehicle.simg" [src]="vehicle.simg" />
           <ion-card-content>

@@ -19,13 +19,13 @@ import { APIURL } from '../../../environments/environment';
   styleUrls: ['./vehicle.page.scss'],
 })
 export class VehiclePage implements OnInit, OnDestroy {
-  @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;  
+  @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
   @ViewChild('basic', { read: ElementRef, static: false }) basic: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
   id: number = null;
-  VEHICLE={typ:0,na:"",maker:"",txt:"",img:"",simg:"",year:null,close:0,chat:1};
+  VEHICLE = { typ: 0, na: "", maker: "", txt: "", img: "", simg: "", year: null,user:"", close: 0, chat: 1 };
   vehicle = {
     typ: new FormControl(this.VEHICLE.typ, [Validators.required]),
     na: new FormControl(this.VEHICLE.na, [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
@@ -33,46 +33,45 @@ export class VehiclePage implements OnInit, OnDestroy {
     txt: new FormControl(this.VEHICLE.txt, [Validators.minLength(2), Validators.maxLength(600)]),
     img: new FormControl(this.VEHICLE.img), simg: new FormControl(this.VEHICLE.simg),
     year: new FormControl(this.VEHICLE.year, [Validators.min(1900), Validators.max(2100), Validators.pattern('^[0-9]+$')]),
+    user: new FormControl(this.VEHICLE.user),
     close: new FormControl(this.VEHICLE.close), chat: new FormControl(this.VEHICLE.chat)
   }
   vehicleForm = this.builder.group({
-    typ: this.vehicle.typ, na: this.vehicle.na, txt: this.vehicle.txt, img: this.vehicle.img, simg: this.vehicle.simg,
-    year: this.vehicle.year, close: this.vehicle.close, chat: this.vehicle.chat
+    typ: this.vehicle.typ, na: this.vehicle.na,maker:this.vehicle.maker ,txt: this.vehicle.txt, img: this.vehicle.img, simg: this.vehicle.simg,
+    year: this.vehicle.year,user:this.vehicle.user, close: this.vehicle.close, chat: this.vehicle.chat
   });
   vehicleTyps = [];
   imgBlob;
   noimgUrl = APIURL + 'img/noimg.jpg';
-  undoPlan = false;//undoするたび交互にONOFF
-  savePlan = false;//saveするたび口語にONOFF
-  saving = { vehicle: false, plan: false };
+  saving = false;
   dirty: boolean = false;//planFormが変更されたか
   currentY: number; scrollH: number; contentH: number; planY: number; basicY: number; essayY: number;
   private onDestroy$ = new Subject();
   constructor(private route: ActivatedRoute, private router: Router, private userService: UserService, private api: ApiService,
-    private ui: UiService, private builder: FormBuilder, private storage: AngularFireStorage,private alert:AlertController,
-    private db:AngularFireDatabase,private storedb:AngularFirestore,) { }
+    private ui: UiService, private builder: FormBuilder, private storage: AngularFireStorage, private alert: AlertController,
+    private db: AngularFireDatabase, private storedb: AngularFirestore,) { }
   ngOnInit() {
     Object.keys(VEHICLETYP).forEach(key => {
       this.vehicleTyps.push({ id: Number(key), ...VEHICLETYP[key] });
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
-      this.id = Number(params.id);
-      if (params.id) {
-        this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
-          this.user = user;
-          if (!user.id) {
-            //this.router.navigate(['login']);
-          } else {
-            this.undo();
-          }
-        });
-      }
+      this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
+        this.user = user;
+        if (!user.id) {
+          //this.router.navigate(['login']);
+        } else if (params.id) {
+          this.id = Number(params.id);
+          this.undo();
+        } else {
+          //this.create({});
+        }
+      });
     });
   }
   undo() {
     this.api.get('query', { select: ['*'], table: 'vehicle', where: { id: this.id } }).then(async res => {
       if (res.vehicles.length !== 1) {
-        this.id=null;
+        this.id = null;
         throw { message: '無効なparam.idです。' };
       };
       const controls = this.vehicleForm.controls
@@ -91,13 +90,20 @@ export class VehiclePage implements OnInit, OnDestroy {
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
       this.imgBlob = window.URL.createObjectURL(e.target.files[0]);
+      this.vehicleForm.markAsDirty();
     } else {
       this.ui.pop("画像ファイルjpgまたはpngを選択してください。");
     }
   }
+  async preview() {
+    if (this.user.id === this.vehicle.user.value || this.user.admin) {
+      await this.api.post('query', { table: 'vehicle', update: this.vehicleForm.value, where: { id: this.id } });
+    }
+    this.router.navigate(['/vehicle', this.id]);
+  }
   async save() {
     if (this.vehicleForm.dirty) {
-      this.saving.vehicle = true;
+      this.saving = true;
       this.ui.loading('保存中...');
       let update: any = { ...this.vehicleForm.value };
       if (this.imgBlob) {
@@ -150,20 +156,10 @@ export class VehiclePage implements OnInit, OnDestroy {
         update.simg = await imagePut(this.id, "small");
       }
       await this.api.post('query', { table: "vehicle", update: update, where: { id: this.id } });
-      this.saving.vehicle = false;
+      this.saving = false;
       this.vehicleForm.markAsPristine();
       this.ui.loadend();
     }
-    if(this.dirty){
-      this.savePlan = !this.savePlan;
-      this.saving.plan = true;
-    }
-  }
-  planDirty(e) {
-    this.dirty = e;
-  }
-  planSaved() {
-    this.saving.plan = false;
   }
   async new() {
     const alert = await this.alert.create({
@@ -182,7 +178,7 @@ export class VehiclePage implements OnInit, OnDestroy {
         }, {
           text: 'はい',
           handler: () => {
-            this.create({ ...this.vehicleForm.value}, true);
+            this.create(this.vehicleForm.value, true);
           }
         }
       ]
@@ -190,18 +186,18 @@ export class VehiclePage implements OnInit, OnDestroy {
     await alert.present();
   }
   async create(insert, copy?: boolean) {
-    this.api.post("query", { table: "vehicle", insert: insert }).then(async res => {
+    this.api.post("query", { table: "vehicle", insert: { ...insert, user: this.user.id } }).then(async res => {
       if (copy && res.vehicle) {
         let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "vehicle", parent: this.id } });
-         if (doc.storys.length) {
+        if (doc.storys.length) {
           doc.storys.map(story => {
             story.parent = res.vehicle.id;
             return story;
           });
           await this.api.post('querys', { table: "story", inserts: doc.storys });
-        }   
+        }
       }
-      this.id=res.vehicle.id;
+      this.id = res.vehicle.id;
       this.undo();
     }).catch(err => {
       this.ui.alert(`新規愛車の作成に失敗しました。\r\n${err.message}`);
@@ -215,19 +211,19 @@ export class VehiclePage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`vehicle/${this.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ parent: this.id,typ:'vehicle',table:"story" }]});
+      await this.api.post('querys', { deletes: [{ parent: this.id, typ: 'vehicle', table: "story" }] });
       await this.db.list(`vehicle/${this.id}`).remove();
       await this.db.database.ref(`post/vehicle${this.id}`).remove();
       await this.storedb.collection('vehicle').doc(this.id.toString()).delete();
-      if(this.vehicle.img.value){
+      if (this.vehicle.img.value) {
         await this.storage.ref(`vehicle/${this.id}/medium.jpg`).delete();
         await this.storage.ref(`vehicle/${this.id}/small.jpg`).delete();
       }
-      this.id=null; this.vehicleForm.reset(); 
+      this.id = null; this.vehicleForm.reset();
       this.ui.pop("愛車を削除しました。");
     }).catch(err => {
       this.ui.alert(`愛車を削除できませんでした。\r\n${err.message}`);
-    }).finally(()=>{this.ui.loadend();});
+    }).finally(() => { this.ui.loadend(); });
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

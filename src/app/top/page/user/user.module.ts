@@ -14,12 +14,12 @@ const routes: Routes = [
   {
     path: ':id', component: UserPage,
     children: [
+      { path: 'vehicle', component: VehiclePage },
       { path: 'report', component: ReportPage },
       { path: 'column', component: ColumnPage },
-      { path: 'chat', component: ChatPage }, 
-      { path: 'vehicle', component: VehiclePage },
+      { path: 'chat', component: ChatPage },       
       { path: 'friend/:typ', component: FriendPage },
-      { path: '', component: ReportPage },
+      { path: '', component: VehiclePage },
     ]
   }
 ];

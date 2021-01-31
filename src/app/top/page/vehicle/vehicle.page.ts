@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../../service/api.service';
 import { UserService } from '../../../service/user.service';
+import { VEHICLETYP } from '../../../config';
 @Component({
   selector: 'app-vehicle',
   templateUrl: './vehicle.page.html',
@@ -34,11 +35,15 @@ export class VehiclePage implements OnInit, OnDestroy {
   }
   async load() {
     let res = await this.api.get('query', { select: ['*'], table: "vehicle", where: { id: this.param.id } });
-    if (res.vehicles.length) {
-      this.title.setTitle(`${res.vehicle.na} `);
-      this.vehicle = res.vehicle;
-      res = await this.api.get('query', { select: ['*'], table: "vehicle", where: { user: this.vehicle.user } });
-      this.vehicles = res.vehicles;
+    if (res.vehicles.length===1) {
+      this.vehicle = res.vehicles[0];
+      this.vehicle.icon=VEHICLETYP[this.vehicle.typ].icon;
+      this.title.setTitle(`${this.vehicle.na} `);      
+      res = await this.api.get('query', { select: ['*'], table: "vehicle", where: { user: this.vehicle.user, id:{not:this.param.id}} });
+      this.vehicles = res.vehicles.map(vehicle=>{
+        vehicle.icon=VEHICLETYP[vehicle.typ].icon;
+        return vehicle;
+      });
     } else {
       this.vehicle = VEHICLE;
     }
@@ -61,6 +66,7 @@ export class VehiclePage implements OnInit, OnDestroy {
 interface Vehicle {
   id: number;
   typ: number;
+  icon?:string;
   idx?: number;
   user: string;
   na: string;
@@ -74,5 +80,5 @@ interface Vehicle {
   close?: boolean;
 }
 const VEHICLE: Vehicle = {
-  typ: 0, id: null, na: "", maker: "", user: null, img: "", simg: "", txt: "", year: null, created: null, chat: null
+  typ: 0, id: null, na: "", maker: "", user: null, img: "", simg: "", txt: "", icon:"",year: null, created: null, chat: null
 }

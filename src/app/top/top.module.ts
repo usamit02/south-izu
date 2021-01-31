@@ -32,12 +32,13 @@ const routes: Routes = [
       { path: 'marker', loadChildren: () => import('./tab3/tab3.module').then(m => m.Tab3PageModule) },      
       { path: 'book', loadChildren: () => import('./page/book/book.module').then(m => m.BookPageModule) },
       { path: 'meet', loadChildren: () => import('./page/meet/meet.module').then(m => m.MeetPageModule) },
+      { path: 'vehicle', loadChildren: () => import('./page/vehicle/vehicle.module').then(m => m.VehiclePageModule) },
       { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
     ],    
   }
 ];
 @NgModule({
-  declarations: [TopPage, MenuComponent,FindComponent,UserComponent,TalksComponent,MarkersComponent,BooksComponent,MeetsComponent,],
+  declarations: [TopPage, MenuComponent,FindComponent,UserComponent,TalksComponent,MarkersComponent,BooksComponent,MeetsComponent],
   imports: [
     CommonModule, IonicModule, RouterModule.forChild(routes), FormsModule, ReactiveFormsModule, PipeSharedModule,
   ],

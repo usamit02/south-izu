@@ -11,7 +11,7 @@
   <ion-grid>
     <ion-row>
       <ion-col *ngFor="let card of cards;let i=index" size-xs="4" size-sm="3" size-md="2" size-lg="4" size-xl="3">
-        <ion-card button="true" [routerLink]="'/user/'+card.id+'/report'">
+        <ion-card button="true" [routerLink]="'/user/'+card.id">
           <ion-card-header>
             <ion-card-title>{{card.na}}
               <ion-icon *ngIf="card.friend==='support'" name="heart" color="danger"></ion-icon>
