@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-menu-button slot="start"></ion-menu-button>
+    <h1>{{blog.na}}</h1>    
+    <ion-buttons slot="end">
+        <ion-button [routerLink]="'/post/blog/' + blog.id" slot="end" fill="clear">
+          <ion-icon name="create" slot="icon-only" color="secondary"></ion-icon>
+        </ion-button>
+      <ion-menu-button menu="end">
+        <ion-icon name="contacts"></ion-icon>
+      </ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()" class="ion-padding">  
+  <ion-grid>
+    <ion-row>
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">          
+        <h2>{{blog.txt}}</h2>
+      </ion-col>
+      <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+        <img [src]="blog.img"/>
+      </ion-col>
+    </ion-row>
+  </ion-grid> 
+  <app-story #essay page="blog" [param]="blog" [user]="user" (isStory)="isStory=$event">
+  </app-story>
+  <ion-grid>
+    <ion-row>
+      <ion-col size-xs="12" size-sm="6" size-md="4" size-lg="4" size-xl="4" *ngFor="let blog of blogs">
+        <ion-card button="true" [routerLink]="'/blog/'+blog.id">
+          <ion-card-header>
+            <ion-card-title>{{blog.na}}</ion-card-title>
+          </ion-card-header>
+          <img *ngIf="blog.simg" [src]="blog.simg" />
+          <ion-card-content>
+            <div class="description">{{blog.txt}}</div>
+            <div class="acked">{{blog.created|date}}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <app-chat #chat *ngIf="blog.chat" page="blog" [param]="param" [user]="user"
+    [content]="content">
+  </app-chat>
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY>50" (click)="scroll(0)" color="light" size="small">
+      <ion-icon name="caret-up"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="chatY&&currentY>chatY+50" (click)="scroll(chatY)" color="light" size="small">
+      Chat
+    </ion-fab-button>
+  </ion-fab>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button *ngIf="currentY+contentH<chatY" (click)="scroll(chatY)" color="light" size="small">
+      Chat
+    </ion-fab-button>
+    <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
+      <ion-icon name="caret-down"></ion-icon>
+    </ion-fab-button>
+    <app-eval *ngIf="currentY+contentH===scrollH && user.id && blog.user && isStory" typ="blog" [id]="blog.id"
+      [user]="user.id" [author]="blog.user" [na]="blog.na"></app-eval><!--    marker.user!==user.id       -->
+  </ion-fab>
+</ion-content>
+<ion-footer id="footer">
+  <app-send *ngIf="blog.chat&&user.id&&currentY+contentH>chatY"
+    [id]="blog.id.toString()" page="blog" thread="" [user]="user" [content]="content"></app-send>
+</ion-footer>
+
+
+
+<!--
+-->

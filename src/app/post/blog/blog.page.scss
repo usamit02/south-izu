@@ -1,0 +1,21 @@
+.img{
+  border-radius: 10px;
+  max-width: 100%;
+  position:relative;
+}
+.imgButtons{
+ z-index: 2;
+ position: absolute;
+ left: 40%;
+ top: 40%;
+ margin: auto;
+}
+.leftLabel{
+  width:5em;
+}
+.leftText{
+  width:5.5em;
+}
+.errmsg{
+  color:red;
+}

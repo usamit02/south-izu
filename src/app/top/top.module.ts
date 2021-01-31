@@ -33,6 +33,7 @@ const routes: Routes = [
       { path: 'book', loadChildren: () => import('./page/book/book.module').then(m => m.BookPageModule) },
       { path: 'meet', loadChildren: () => import('./page/meet/meet.module').then(m => m.MeetPageModule) },
       { path: 'vehicle', loadChildren: () => import('./page/vehicle/vehicle.module').then(m => m.VehiclePageModule) },
+      { path: 'blog', loadChildren: () => import('./page/blog/blog.module').then(m => m.BlogPageModule) },
       { path: '', loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule) },
     ],    
   }
