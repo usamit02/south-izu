@@ -26,7 +26,7 @@ export class BlogPage implements OnInit, OnDestroy {
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   @ViewChildren('typOptions', { read: ElementRef }) typOptions: QueryList<ElementRef>;
   user: User;
-  id: number = null;
+  org:Blog=BLOG;
   blog = {
     typ: new FormControl(BLOG.typ, [Validators.required]),
     na: new FormControl(BLOG.na, [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
@@ -56,10 +56,16 @@ export class BlogPage implements OnInit, OnDestroy {
         if (!user.id) {
           //this.router.navigate(['login']);
         } else {
-          this.loadblog();
+          this.loadblogs();
           if (params.id) {
-            this.id = Number(params.id);          
-            this.undo();
+            this.api.get('query', { select: ['*'], table: 'blog', where: { id: params.id, a: { ack: 1, user: this.user.id } } }).then(res=>{
+              if(res.blogs.length===1){
+                this.org=res.blogs[0];
+              }else{
+                this.ui.alert("無効なidです。");
+              }
+              this.undo();
+            });                 
           }
         }
       });
@@ -72,13 +78,8 @@ export class BlogPage implements OnInit, OnDestroy {
     });
   }
   async undo(blog?: Blog) {
-    if (!blog) {
-      const res = await this.api.get('query', { select: ['*'], table: 'blog', where: { id: this.id, a: { ack: 1, user: this.user.id } } });
-      if (res.blogs.length === 1) {
-        blog = res.blogs[0];
-      } else {
-        blog = BLOG; this.ui.alert("無効なparam.idです");
-      }
+    if (blog) {
+      this.org=blog;
     }
     const controls = this.blogForm.controls
     for (let key of Object.keys(controls)) {
@@ -90,7 +91,7 @@ export class BlogPage implements OnInit, OnDestroy {
     }
     this.blogForm.markAsPristine();
   }
-  loadblog() {
+  loadblogs() {
     this.api.get('query', { table: 'blog', select: ['*'], where: { user: this.user.id }, order: { created: "DESC", } }).then(res => {
       this.blogs.drafts = res.blogs.filter(blog => { return blog.ack == -1; });
       this.blogs.acks = res.blogs.filter(blog => { return blog.ack == 1; });
@@ -139,15 +140,15 @@ export class BlogPage implements OnInit, OnDestroy {
   }
   async preview() {
     if (this.user.id === this.blog.user.value || this.user.admin) {
-      await this.api.post('query', { table: 'blog', update: this.blogForm.value, where: { id: this.id } });
+      await this.api.post('query', { table: 'blog', update: this.blogForm.value, where: { id: this.org.id } });
     }
-    this.router.navigate(['/blog', this.id]);
+    this.router.navigate(['/blog', this.org.id]);
   }
   async save(ack) {
     if (this.blogForm.dirty) {
       this.saving = true;
       this.ui.loading('保存中...');
-      let update: any = { ...this.blogForm.value,ack:ack };
+      let update: any = { ...this.blogForm.value,user:this.user.id,ack:ack };
       if (this.imgBlob) {
         if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
           Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
@@ -194,17 +195,26 @@ export class BlogPage implements OnInit, OnDestroy {
             image.src = this.imgBlob;
           });
         }
-        update.img = await imagePut(this.id, "medium");
-        update.simg = await imagePut(this.id, "small");
+        update.img = await imagePut(this.org.id, "medium");
+        update.simg = await imagePut(this.org.id, "small");
       }
-      await this.api.post('query', { table: "blog", update: update, where: { id: this.id } });
-      
       const msg = ['下書き保存', '投稿', '公開'];
-      this.ui.pop(`${msg[ack + 1]}しました。`);
-      this.saving = false;
-      this.blogForm.markAsPristine();
-      this.loadblog();
-      this.ui.loadend();
+      this.api.post('query', { table: "blog", update: update, where: { id: this.org.id } }).then(res=>{        
+        this.ui.pop(`${msg[ack + 1]}しました。`);
+        if(ack===1 && this.org.ack!==1){
+          this.db.list(`blog/`).update(this.org.id.toString(),
+            { na: res.blog.na, uid: this.user.id, description: res.blog.txt, image: res.blog.img, upd: new Date().getTime(),}
+          );
+        }
+        this.org=res.blog;
+        this.blogForm.markAsPristine();
+        this.loadblogs();
+      }).catch(err=>{
+        this.ui.alert(`${msg[ack + 1]}できませんでした。`)
+      }).finally(()=>{
+        this.saving = false;      
+        this.ui.loadend();
+      });     
     }
   }
   async new() {
@@ -232,9 +242,9 @@ export class BlogPage implements OnInit, OnDestroy {
     await alert.present();
   }
   async create(insert, copy?: boolean) {
-    this.api.post("query", { table: "blog", insert: { ...insert, user: this.user.id ,ack:-1} }).then(async res => {
+    this.api.post("query", { table: "blog", insert: { ...insert, user: this.user.id } }).then(async res => {
       if (copy && res.blog) {
-        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "blog", parent: this.id } });
+        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "blog", parent: this.org.id } });
         if (doc.storys.length) {
           doc.storys.map(story => {
             story.parent = res.blog.id;
@@ -243,7 +253,7 @@ export class BlogPage implements OnInit, OnDestroy {
           await this.api.post('querys', { table: "story", inserts: doc.storys });
         }
       }
-      this.id = res.blog.id;
+      this.org = res.blog;
       this.undo();
     }).catch(err => {
       this.ui.alert(`新規ブログの作成に失敗しました。\r\n${err.message}`);
@@ -251,21 +261,22 @@ export class BlogPage implements OnInit, OnDestroy {
   }
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `ブログ「${this.blog.na.value}」を削除します。`);
-    if (!confirm || !this.id) return;
+    if (!confirm || !this.org.id) return;
     this.ui.loading('削除中...');
-    this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'blog', parent: this.id } }).then(async res => {
+    this.api.get('query', { table: 'story', select: ['file'], where: { typ: 'blog', parent: this.org.id } }).then(async res => {
       for (let story of res.storys) {
-        if (story.file) this.storage.ref(`blog/${this.id}/${story.file}`).delete();
+        if (story.file) this.storage.ref(`blog/${this.org.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ parent: this.id, typ: 'blog', table: "story" }] });
-      await this.db.list(`blog/${this.id}`).remove();
-      await this.db.database.ref(`post/blog${this.id}`).remove();
-      await this.storedb.collection('blog').doc(this.id.toString()).delete();
+      await this.api.post('querys', { deletes: [{ parent: this.org.id, typ: 'blog', table: "story" }] });
+      await this.db.list(`blog/${this.org.id}`).remove();
+      await this.db.database.ref(`post/blog${this.org.id}`).remove();
+      await this.storedb.collection('blog').doc(this.org.id.toString()).delete();
       if (this.blog.img.value) {
-        await this.storage.ref(`blog/${this.id}/medium.jpg`).delete();
-        await this.storage.ref(`blog/${this.id}/small.jpg`).delete();
+        await this.storage.ref(`blog/${this.org.id}/medium.jpg`).delete();
+        await this.storage.ref(`blog/${this.org.id}/small.jpg`).delete();
       }
-      this.id = null; this.blogForm.reset();
+      this.org=BLOG;
+      this.blogForm.reset();
       this.ui.pop("ブログを削除しました。");
     }).catch(err => {
       this.ui.alert(`ブログを削除できませんでした。\r\n${err.message}`);
