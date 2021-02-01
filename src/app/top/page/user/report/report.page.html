@@ -46,7 +46,7 @@
           </ion-card-content>
         </ion-card>
       </ion-col>
-      <span *ngIf="!reports.length">まだ投稿していません。</span>
+      <span *ngIf="!reports.length" id="nopost">まだ投稿していません。</span>
     </ion-row>
   </ion-grid>
   <ion-infinite-scroll #infinite position="bottom" threshold="10px"

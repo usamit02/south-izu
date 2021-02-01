@@ -74,7 +74,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     this.api.get('query', { table: 'genre', select: ['id', 'na', 'travelmode'] }).then(res => {
       this.genres = res.genres; this.selects.genres = res.genres;
       this.genreOptions.changes.pipe(take(1)).toPromise().then(() => {
-        this.genre.setValue(res.genres[0].id.toString());
+        this.genre.setValue(res.genres[0].id);
         this.travelMode = this.genres[0].travelmode;
       });
     });
@@ -136,7 +136,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
             param.na = data[table];
             this.api.post('query', { table: table, insert: param }).then(res => {
               this[table + "s"].push(res[table]);
-              setTimeout(() => { this[table].setValue(res[table].id.toString()); }, 1000);
+              setTimeout(() => { this[table].setValue(res[table].id); }, 1000);
             })
           }
         }
@@ -210,6 +210,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   genreChange() {
     const genres = this.genres.filter(genre => { return genre.id == this.genre.value; });
     if (genres.length) this.travelMode = genres[0].travelmode;
+    this.api.post('query',{table:'genre',update:{},sign:{update:{idx:-1}},where:{id:this.genre.value}});
   }
   async undo(report) {
     this.undoing = true;
@@ -225,7 +226,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
       if (report[key] == null) {
         controls[key].reset();
       } else {
-        controls[key].reset(report[key].toString());
+        controls[key].reset(report[key]);
       }
     }
     setTimeout(() => { this.undoing = false; }, 1000);

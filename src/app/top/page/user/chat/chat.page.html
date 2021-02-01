@@ -13,7 +13,7 @@
 </ion-header>
 
 <ion-content>
-  <span *ngIf="!chats.length">まだコメントしていません。</span>
+  <span *ngIf="!chats.length" id="nopost">まだコメントしていません。</span>
   <ion-list>
     <ion-item *ngFor="let chat of chats;index as i" button="true" [routerLink]="chat.url">
       <div style="width:100%">

@@ -73,7 +73,7 @@
             <ion-label class="leftLabel" slot="start">種類<ion-text color="danger">*</ion-text>
             </ion-label>
             <ion-select name="genre" slot="start" placeholder="選択してください" [formControl]="genre" (ionChange)="genreChange()">
-              <ion-select-option *ngFor="let genre of genres" value="{{genre.id}}">
+              <ion-select-option *ngFor="let genre of genres" [value]="genre.id">
                 <span #genreOptions>{{genre.na}}</span>
               </ion-select-option>
             </ion-select>

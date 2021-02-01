@@ -7,23 +7,26 @@
       <ion-button *ngIf="blogs.acks.length" slot="start" color="success" (click)="popBlogs(blogs.acks,$event)">
         公開済{{blogs.acks.length}}件
       </ion-button>
-      <ion-button (click)="undo()" fill="clear" [disabled]="!id">
+      <ion-button (click)="undo()" fill="clear" [disabled]="!org.id">
         　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>ブログ編集</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!id">
+      <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!(org.user===user.id||user.admin)">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="preview()" slot="end" fill="clear">
         <ion-icon name="browsers" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="new()" color="secondary" slot="end" fill="clear">
+      <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!user.id">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="!blogForm.dirty||blogForm.invalid" (click)="save()" fill="clear">
+      <ion-button [disabled]="!blogForm.dirty||blogForm.invalid||!(org.user===user.id||user.admin)" (click)="save(-1)" fill="clear">
         <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
+      </ion-button>
+      <ion-button [disabled]="blogForm.invalid||!(org.user===user.id||user.admin)" (click)="save(1)" slot="end" fill="clear">
+        <ion-icon name="send" slot="icon-only" color="success"></ion-icon>
       </ion-button>
       <ion-menu-button menu="end">
         <ion-icon name="contacts"></ion-icon>
@@ -41,22 +44,29 @@
             <ion-label position="floating">
               名称<ion-text color="danger">*</ion-text>
             </ion-label>
-            <ion-input required [formControl]="blog.na" minlength="2" maxlength="30" placeholder="いろはにほへと"></ion-input>
+            <ion-input required [formControl]="blog.na" minlength="2" maxlength="30" placeholder="いろはにほへと" (ionBlur)="naBlur()"></ion-input>
           </ion-item>
-          <span *ngIf="blog.na.errors?.minlength||blog.na.errors?.maxlength"
-            class="errmsg">２文字以上３０文字以下で入力してください。</span>         
-            <ion-item>
-              <ion-label class="leftLabel" slot="start">種類<ion-text color="danger">*</ion-text>
-              </ion-label>
-              <ion-select name="typ" slot="start" placeholder="選択してください" [formControl]="blog.typ" (ionChange)="typChange()">
-                <ion-select-option *ngFor="let typ of typs" value="{{typ.id}}">
-                  <span #genreOptions>{{typ.na}}</span>
-                </ion-select-option>
-              </ion-select>
-              <ion-button slot="end" class="search" (click)="add('typ','種類','バイク')" fill="clear">
-                <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>　
-              </ion-button>
-            </ion-item>
+          <span *ngIf="blog.na.errors?.minlength||blog.na.errors?.maxlength" class="errmsg">２文字以上３０文字以下で入力してください。</span>
+          <ion-item>
+            <ion-label class="leftLabel" slot="start">種類
+            </ion-label>
+            <ion-select name="typ" slot="start" placeholder="選択してください" [formControl]="blog.typ" (ionChange)="select('blogtyp','typ')">
+              <ion-select-option *ngFor="let typ of typs" [value]="typ.id">
+                <span #genreOptions>{{typ.na}}</span>
+              </ion-select-option>
+            </ion-select>
+            <ion-button slot="end" class="search" (click)="add('blogtyp','typ','種類','バイク')" fill="clear">
+              <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>　
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">
+              説明文
+            </ion-label>
+            <ion-textarea [formControl]="blog.txt" autoGrow="true" maxlength="300"></ion-textarea>
+          </ion-item>
+          <span *ngIf="blog.txt.errors?.minlength||blog.txt.errors?.maxlength"
+            class="errmsg">２文字以上３００文字以下で入力してください。</span>
           <ion-item>
             <ion-icon name="chatbubbles" color="primary"></ion-icon>
             <ion-label>コメント欄</ion-label>
@@ -70,14 +80,6 @@
         </form>
       </ion-col>
       <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-        <ion-item>
-          <ion-label position="floating">
-            説明文
-          </ion-label>
-          <ion-textarea [formControl]="blog.txt" autoGrow="true" maxlength="300"></ion-textarea>
-        </ion-item>
-        <span *ngIf="blog.txt.errors?.minlength||blog.txt.errors?.maxlength"
-          class="errmsg">２文字以上３００文字以下で入力してください。</span>
         <ion-item>
           <img *ngIf="imgBlob;else orgimg" class="img" [src]="imgBlob|safe:'url'" />
           <ng-template #orgimg>
@@ -101,7 +103,7 @@
     </ion-row>
   </ion-grid>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story typ="blog" [document]="{id:id,user:user.id}" [user]="user"></app-story>
+  <app-story typ="blog" [document]="{id:org.id,user:user.id}" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic

@@ -58,7 +58,7 @@
           </ion-card-content>
         </ion-card>
       </ion-col>
-      <span *ngIf="!cards.length">まだ誰もいません。</span>
+      <span *ngIf="!cards.length" id="nopost">まだ誰もいません。</span>
     </ion-row>
   </ion-grid>
   <ion-infinite-scroll #infinite position="bottom" threshold="10px" (ionInfinite)="cardLoad($event)">

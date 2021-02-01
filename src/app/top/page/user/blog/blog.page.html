@@ -5,6 +5,9 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-buttons slot="end">
+      <ion-button (click)="new()" slot="end" fill="clear">
+        <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+      </ion-button>  
       <ion-menu-button menu="end">
         <ion-icon name="contacts"></ion-icon>
       </ion-menu-button>
@@ -25,7 +28,7 @@
               <img *ngIf="blog.simg" [src]="blog.simg"/>
               <div *ngIf="blog.detail$|async as detail" class="viewDiv">
                 <ion-icon name="eye" color="secondary"></ion-icon>{{detail.view}}
-                <ion-icon name="text" color="medium"></ion-icon>{{detail.chat}}
+                <ion-icon name="chatbubbles" color="medium"></ion-icon>{{detail.chat}}
                 <ion-icon name="thumbs-up" color="success"></ion-icon>{{detail.good}}
                 <ion-icon name="thumbs-down" color="dark"></ion-icon>{{detail.bad}}
               </div>
@@ -34,7 +37,7 @@
           </ion-card-content>
         </ion-card>
       </ion-col>
-      <span *ngIf="!blogs.length">まだ登録していません。</span>
+      <span *ngIf="!blogs.length" id="nopost">まだ投稿していません。</span>
     </ion-row>
   </ion-grid>
 </ion-content>

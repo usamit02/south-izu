@@ -25,6 +25,8 @@ export class ListComponent implements OnInit {
       this.lists = this.prop.columns;
     } else if (this.prop.markers) {
       this.lists = this.prop.markers;
+    } else if(this.prop.lists){
+      this.lists = this.prop.lists;
     }
   }
   seek(e) {
