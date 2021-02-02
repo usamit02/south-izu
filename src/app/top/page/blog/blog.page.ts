@@ -14,7 +14,7 @@ export class BlogPage implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
-  param = { id: null ,cursor:null};
+  param = { id: null, cursor: null };
   blog: Blog = BLOG;
   blogs: Blog[] = [];
   user;
@@ -25,26 +25,23 @@ export class BlogPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.param.id = params.id;
-      if(params.cursor) this.param.cursor=params.cursor;
-      this.load();
+      if (params.cursor) this.param.cursor = params.cursor;      
     });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
       this.user = user;
+      this.load();
     });
   }
   async load() {
-    let res = await this.api.get('query', { select: ['*'], table: "blog", where: { id: this.param.id } });
-    if (res.blogs.length===1) {
-      if(res.blogs[0].ack===1||res.blogs[0].user===this.user.id){
-        this.blog = res.blogs[0];
-        this.title.setTitle(`${this.blog.na} `);
-        res = await this.api.get('query', { select: ['*'], table: "blog", where: { user: this.blog.user, id:{not:this.param.id}},typ:this.blog.typ });
-        this.blogs = res.blogs;
-      }else{
-        this.blog={...BLOG,na:"まだ公開されていません。"};
-      }
+    let res = await this.api.get('query', { select: ['*'], table: "blog", where: { id: this.param.id, or: { ack: 1, user: this.user.id }, or1: { close: 0, user: this.user.id } } });
+    if (res.blogs.length === 1) {
+      this.blog = res.blogs[0];
+      this.title.setTitle(`${this.blog.na} `);      
+      res = await this.api.get('query', { select: ['*'], table: "blog", where: { user: this.blog.user, typ: this.blog.typ, ack: 1, close: 0, id: { not: this.param.id } } });
+      this.blogs = res.blogs;
+      setTimeout(()=>{this.onScrollEnd();},1000);     
     } else {
-      this.blog = BLOG;
+      this.blog = {...BLOG,na:"未公開または公開停止中です。"};
     }
   }
   async onScrollEnd() {
@@ -74,8 +71,8 @@ export interface Blog {
   created: Date;
   chat: boolean;
   close?: boolean;
-  ack?:number;
+  ack?: number;
 }
 export const BLOG: Blog = {
-  typ: 0, id: null, na: "", user: null, img: "", simg: "", txt: "",  created: null, chat:true,ack:0
+  typ: 0, id: null, na: "", user: null, img: "", simg: "", txt: "", created: null, chat: true, ack: 0
 }

@@ -55,7 +55,10 @@ export const markerCreate = functions.region('asia-northeast1').database.ref(`ma
   docCreate("marker", snapshot, context);
 });
 export const planCreate = functions.region('asia-northeast1').database.ref(`plan/{id}`).onCreate((snapshot, context) => {
-  docCreate("marker", snapshot, context);
+  docCreate("plan", snapshot, context);
+});
+export const blogCreate = functions.region('asia-northeast1').database.ref(`blog/{id}`).onCreate((snapshot, context) => {
+  docCreate("blog", snapshot, context);
 });
 const docCreate = (typ:any, snapshot:any, context:any) => {
   const doc = snapshot.val();
@@ -97,7 +100,13 @@ export const markerChatCreate = functions.region('asia-northeast1').firestore.do
   chatCreate('marker', snapshot, context);
 });
 export const planChatCreate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}').onCreate((snapshot, context) => {
-  chatCreate('marker', snapshot, context);
+  chatCreate('plan', snapshot, context);
+});
+export const blogChatCreate = functions.region('asia-northeast1').firestore.document('blog/{id}/chat/{key}').onCreate((snapshot, context) => {
+  chatCreate('blog', snapshot, context);
+});
+export const vehicleChatCreate = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}').onCreate((snapshot, context) => {
+  chatCreate('vehicle', snapshot, context);
 });
 export const reportThreadCreate = functions.region('asia-northeast1').firestore.document('report/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
   chatCreate('report', snapshot, context);
@@ -109,7 +118,13 @@ export const markerThreadCreate = functions.region('asia-northeast1').firestore.
   chatCreate('marker', snapshot, context);
 });
 export const planThreadCreate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
-  chatCreate('marker', snapshot, context);
+  chatCreate('plan', snapshot, context);
+});
+export const blogThreadCreate = functions.region('asia-northeast1').firestore.document('blog/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
+  chatCreate('blog', snapshot, context);
+});
+export const vehicleThreadCreate = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
+  chatCreate('vehicle', snapshot, context);
 });
 const chatCreate = (page: string, snapshot:any, context:any) => {
   const doc = snapshot.data();
@@ -170,6 +185,12 @@ export const markerChatUpdate = functions.region('asia-northeast1').firestore.do
 export const planChatUpdate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
+export const blogChatUpdate = functions.region('asia-northeast1').firestore.document('blog/{id}/chat/{key}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
+export const vehicleChatUpdate = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
 export const reportThreadUpdate = functions.region('asia-northeast1').firestore.document('report/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
@@ -180,6 +201,12 @@ export const markerThreadUpdate = functions.region('asia-northeast1').firestore.
   chatUpdate(change, context);
 });
 export const planThreadUpdate = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
+export const blogThreadUpdate = functions.region('asia-northeast1').firestore.document('blog/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
+  chatUpdate(change, context);
+});
+export const vehicleThreadUpdate = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
 const chatUpdate = (change:any, context:any) => {
@@ -210,10 +237,16 @@ export const columnChatDelete = functions.region('asia-northeast1').firestore.do
   chatDelete('column', snapshot, context);
 });
 export const markerChatDelete = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}').onDelete((snapshot, context) => {
-  chatDelete('column', snapshot, context);
+  chatDelete('marker', snapshot, context);
 });
 export const planChatDelete = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}').onDelete((snapshot, context) => {
-  chatDelete('column', snapshot, context);
+  chatDelete('plan', snapshot, context);
+});
+export const blogChatDelete = functions.region('asia-northeast1').firestore.document('blog/{id}/chat/{key}').onDelete((snapshot, context) => {
+  chatDelete('blog', snapshot, context);
+});
+export const vehicleChatDelete = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}').onDelete((snapshot, context) => {
+  chatDelete('vehicle', snapshot, context);
 });
 export const reportThreadDelete = functions.region('asia-northeast1').firestore.document('report/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
   chatDelete('report', snapshot, context);
@@ -222,10 +255,16 @@ export const columnThreadDelete = functions.region('asia-northeast1').firestore.
   chatDelete('column', snapshot, context);
 });
 export const markerThreadDelete = functions.region('asia-northeast1').firestore.document('marker/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
-  chatDelete('column', snapshot, context);
+  chatDelete('marker', snapshot, context);
 });
 export const planThreadDelete = functions.region('asia-northeast1').firestore.document('plan/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
-  chatDelete('column', snapshot, context);
+  chatDelete('plan', snapshot, context);
+})
+export const blogThreadDelete = functions.region('asia-northeast1').firestore.document('blog/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
+  chatDelete('blog', snapshot, context);
+});
+export const vehicleThreadDelete = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
+  chatDelete('vehicle', snapshot, context);
 });
 const chatDelete = (page: string, snapshot:any, context:any) => {
   const doc = snapshot.data();
@@ -338,6 +377,12 @@ export const markerEval = functions.region('asia-northeast1').firestore.document
 export const planEval = functions.region('asia-northeast1').firestore.document('plan/{id}/eval/{user}').onCreate((snapshot, context) => {
   evaluation('plan', snapshot, context);
 });
+export const blogEval = functions.region('asia-northeast1').firestore.document('blog/{id}/eval/{user}').onCreate((snapshot, context) => {
+  evaluation('blog', snapshot, context);
+});
+export const vehicleEval = functions.region('asia-northeast1').firestore.document('vehicle/{id}/eval/{user}').onCreate((snapshot, context) => {
+  evaluation('vehilce', snapshot, context);
+});
 const evaluation = (page:string, snapshot:any, context:any) => {
   const doc = snapshot.data();
   admin.database().ref(`${page}/${context.params.id}/${doc.id}`).transaction(val => {
@@ -421,6 +466,18 @@ export const viewMarkerUpdate = functions.region('asia-northeast1').database.ref
 });
 export const viewPlanUpdate = functions.region('asia-northeast1').database.ref(`plan/{id}/view`).onUpdate((change, context) => {
   admin.database().ref(`plan/${context.params.id}`).once('value', snapshot => {
+    const doc = snapshot.val();
+    score('user', doc.uid, 'view', 1);
+  });
+});
+export const viewBlogUpdate = functions.region('asia-northeast1').database.ref(`blog/{id}/view`).onUpdate((change, context) => {
+  admin.database().ref(`blog/${context.params.id}`).once('value', snapshot => {
+    const doc = snapshot.val();
+    score('user', doc.uid, 'view', 1);
+  });
+});
+export const viewVehicleUpdate = functions.region('asia-northeast1').database.ref(`vehilce/{id}/view`).onUpdate((change, context) => {
+  admin.database().ref(`vehilce/${context.params.id}`).once('value', snapshot => {
     const doc = snapshot.val();
     score('user', doc.uid, 'view', 1);
   });
@@ -658,23 +715,23 @@ export const render = functions.https.onRequest((req, res) => {
   //fs.readFile('./index.html', 'utf8', (err, html) => {
   //  if (err) res.status(300).send(err); 
   let html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
-          <title>南伊豆ライダーハウス</title>        
+          <title>ツーリングスティ</title>        
           <base href="/" />        
           <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
           <meta name="format-detection" content="telephone=no" />
           <meta name="msapplication-tap-highlight" content="no" />
           <meta name="twitter:card" content="summary"/>
           <meta property="og:type" content="article" />    
-          <meta property="og:title" content="南伊豆ライダーハウス"/>
-          <meta name="description" content="伊豆の先っぽ、南伊豆町蝶ケ野にライダーハウスの開設を目指す移住農家。"/>
-          <meta property="og:description" content="伊豆の先っぽ、南伊豆町蝶ケ野にライダーハウスの開設を目指す移住農家。"/>
-          <meta property="og:url" content="https://south-izu.web.app"/>
+          <meta property="og:title" content="ツーリングステイ"/>
+          <meta name="description" content="ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。"/>
+          <meta property="og:description" content="ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。"/>
+          <meta property="og:url" content="https://touringstay.web.app"/>
           <meta property="og:image" content="https://bloggersguild.cf/south-izu/img/pwa192.png"/>
           <meta property="og:locale" content="ja_JP" />
-          <meta name="twitter:text:title" content="南伊豆ライダーハウス"/>        
+          <meta name="twitter:text:title" content="ツーリングスティ"/>        
           <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
           <link rel="manifest" href="/manifest.json">
-          <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://south-izu.web.app/rss.xml" />
+          <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://touringstay.web.app/rss.xml" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         </head><body><app-root></app-root></body></html>`;
@@ -718,7 +775,7 @@ export const sitemap = functions.https.onRequest((req, res) => {
       resolve(true);
     }).catch(err => reject(err));
   });
-  Promise.all([promise('report'), promise('column')]).then(() => {
+  Promise.all([promise('report'), promise('column'),promise('marker'),promise('blog'),promise('vehicle')]).then(() => {
     urls.sort((a, b) => {
       if (a.upd < b.upd) {
         return 1;
@@ -739,8 +796,8 @@ export const sitemap = functions.https.onRequest((req, res) => {
 export const rss = functions.https.onRequest((req, res) => {
   res.set('Content-Type', 'application/xml');
   let items:Array<any> = [];
-  let html = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n<title>南伊豆ライダーハウス</title>
-  <description>伊豆の先っぽ、南伊豆町蝶ケ野にライダーハウスの開設を目指す移住農家。</description><link>${URL}</link><language>ja</language>`;
+  let html = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n<title>ツーリングスティ</title>
+  <description>ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。</description><link>${URL}</link><language>ja</language>`;
   const promise = (page: string) => new Promise((resolve, reject) => {
     admin.database().ref(`${page}`).orderByChild('upd').limitToLast(10).once('value').then((snapshot:any) => {
       if (snapshot.exists) {
@@ -752,7 +809,7 @@ export const rss = functions.https.onRequest((req, res) => {
       resolve(true);
     }).catch(err => reject(err));
   });
-  Promise.all([promise('report'), promise('column')]).then(() => {
+  Promise.all([promise('report'), promise('column'),promise('marker'),promise('blog'),promise('vehicle')]).then(() => {
     items.sort((a, b) => {
       if (a.upd < b.upd) {
         return 1;
