@@ -104,65 +104,64 @@ export class VehiclePage implements OnInit, OnDestroy {
   }
   async save() {
     if (this.user.id === this.vehicle.user.value || this.user.admin) {
-      if (this.vehicleForm.dirty && this.vehicleForm.valid) {
-        this.saving = true;
-        this.ui.loading('保存中...');
-        let update: any = { ...this.vehicleForm.value };
-        if (this.imgBlob) {
-          if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
-            Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
-              value: function (callback, type, quality) {
-                let canvas = this;
-                setTimeout(function () {
-                  var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
-                    len = binStr.length,
-                    arr = new Uint8Array(len);
-                  for (let i = 0; i < len; i++) {
-                    arr[i] = binStr.charCodeAt(i);
-                  }
-                  callback(new Blob([arr], { type: type || 'image/jpeg' }));
-                });
-              }
-            });
-          }
-          const imagePut = (id: number, typ: string) => {
-            return new Promise<string>(resolve => {
-              if (!this.imgBlob) return resolve("");
-              let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-              let ctx = canvas.getContext('2d');
-              let image = new Image();
-              image.onload = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const px = typ == 'small' ? 160 : 640;
-                let w, h;
-                if (image.width > image.height) {
-                  w = image.width > px ? px : image.width;//横長
-                  h = image.height * (w / image.width);
-                } else {
-                  h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
-                  w = image.width * (h / image.height);
+      this.saving = true;
+      this.ui.loading('保存中...');
+      let update: any = { ...this.vehicleForm.value };
+      if (this.imgBlob) {
+        if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
+          Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+              let canvas = this;
+              setTimeout(function () {
+                var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+                  len = binStr.length,
+                  arr = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                  arr[i] = binStr.charCodeAt(i);
                 }
-                canvas.width = w; canvas.height = h;
-                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob(async blob => {
-                  const ref = this.storage.ref(`vehicle/${id}/${typ}.jpg`);
-                  await ref.put(blob);
-                  const url = await ref.getDownloadURL().toPromise();
-                  return resolve(url);
-                }, "image/jpeg")
-              }
-              image.src = this.imgBlob;
-            });
-          }
-          update.img = await imagePut(this.id, "medium");
-          update.simg = await imagePut(this.id, "small");
+                callback(new Blob([arr], { type: type || 'image/jpeg' }));
+              });
+            }
+          });
         }
-        await this.api.post('query', { table: "vehicle", update: update, where: { id: this.id } });
-        this.saving = false;
-        this.vehicleForm.markAsPristine();
-        this.ui.loadend();
+        const imagePut = (id: number, typ: string) => {
+          return new Promise<string>(resolve => {
+            if (!this.imgBlob) return resolve("");
+            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+            let ctx = canvas.getContext('2d');
+            let image = new Image();
+            image.onload = () => {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              const px = typ == 'small' ? 160 : 640;
+              let w, h;
+              if (image.width > image.height) {
+                w = image.width > px ? px : image.width;//横長
+                h = image.height * (w / image.width);
+              } else {
+                h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
+                w = image.width * (h / image.height);
+              }
+              canvas.width = w; canvas.height = h;
+              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob(async blob => {
+                const ref = this.storage.ref(`vehicle/${id}/${typ}.jpg`);
+                await ref.put(blob);
+                const url = await ref.getDownloadURL().toPromise();
+                return resolve(url);
+              }, "image/jpeg")
+            }
+            image.src = this.imgBlob;
+          });
+        }
+        update.img = await imagePut(this.id, "medium");
+        update.simg = await imagePut(this.id, "small");
       }
+      await this.api.post('query', { table: "vehicle", update: update, where: { id: this.id } });
+      this.saving = false;
+      this.vehicleForm.markAsPristine();
+      this.ui.loadend();
     } else {
+      this.ui.popm("保存するにはログインしてください。");
       this.router.navigate(['login']);
     }
   }
@@ -221,7 +220,7 @@ export class VehiclePage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`vehicle/${this.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ parent: this.id, typ: 'vehicle', table: "story" },{id:this.id,table:'vehicle'}] });
+      await this.api.post('querys', { deletes: [{ parent: this.id, typ: 'vehicle', table: "story" }, { id: this.id, table: 'vehicle' }] });
       await this.db.list(`vehicle/${this.id}`).remove();
       await this.db.database.ref(`post/vehicle${this.id}`).remove();
       await this.storedb.collection('vehicle').doc(this.id.toString()).delete();

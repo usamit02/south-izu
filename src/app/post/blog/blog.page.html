@@ -13,7 +13,7 @@
     </ion-buttons>
     <ion-title>ブログ編集</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!(org.user===user.id||user.admin)">
+      <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!(org.user===user.id||user.admin)||!org.id">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="preview()" slot="end" fill="clear" [disabled]="!org.id">
@@ -22,10 +22,10 @@
       <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!org.id">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="!blogForm.dirty||blogForm.invalid||!(org.user===user.id||user.admin)" (click)="save(-1)" fill="clear">
+      <ion-button [disabled]="!blogForm.dirty||blogForm.invalid||!(org.user===user.id||user.admin)||!org.id" (click)="save(-1)" fill="clear">
         <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="blogForm.invalid||!(org.user===user.id||user.admin)" (click)="save(1)" slot="end" fill="clear">
+      <ion-button [disabled]="blogForm.invalid||!(org.user===user.id||user.admin)||!org.id" (click)="save(1)" slot="end" fill="clear">
         <ion-icon name="send" slot="icon-only" color="success"></ion-icon>
       </ion-button>
       <ion-menu-button menu="end">
@@ -103,7 +103,7 @@
     </ion-row>
   </ion-grid>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story typ="blog" [document]="{id:org.id,user:org.user}" [user]="user"></app-story>
+  <app-story *ngIf="org.user!=null" typ="blog" [document]="{id:org.id,user:org.user}" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic

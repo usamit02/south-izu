@@ -48,15 +48,11 @@ export class BlogPage implements OnInit, OnDestroy {
     private ui: UiService, private builder: FormBuilder, private storage: AngularFireStorage, private alert: AlertController,
     private db: AngularFireDatabase, private storedb: AngularFirestore, private modal: ModalController,) { }
   ngOnInit() {
-    let id;
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
-      id = params.id;
-    });
-    this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
-      this.user = user;
-      if (user.id) {
-        if (id) {
-          this.api.get('query', { select: ['*'], table: 'blog', where: { id: id, or: { ack: 1, user: this.user.id } } }).then(res => {
+      this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
+        this.user = user;
+        if (params.id) {
+          this.api.get('query', { select: ['*'], table: 'blog', where: { id: params.id, or: { ack: 1, user: this.user.id } } }).then(res => {
             if (res.blogs.length === 1) {
               this.org = res.blogs[0];
             } else {
@@ -66,9 +62,7 @@ export class BlogPage implements OnInit, OnDestroy {
           });
         }
         this.loadblogs();
-      } else {
-        this.router.navigate(['login']);
-      }
+      });
     });
     this.api.get('query', { table: 'blogtyp', select: ['id', 'na'] }).then(res => {
       this.typs = res.blogtyps;
@@ -112,7 +106,7 @@ export class BlogPage implements OnInit, OnDestroy {
     });;
   }
   naBlur() {
-    if (this.org.id || this.blogForm.invalid || !this.user.id) return;
+    if (this.org.id || this.blogForm.invalid) return;
     this.create(this.blogForm.value);
   }
   async add(table: string, control: string, na: string, placeholder: string, param: any = {}) {
@@ -152,75 +146,80 @@ export class BlogPage implements OnInit, OnDestroy {
     this.router.navigate(['/blog', this.org.id]);
   }
   async save(ack) {
-    this.saving = true;
-    this.ui.loading('保存中...');
-    let update: any = { ...this.blogForm.value, ack: ack };
-    if (this.imgBlob) {
-      if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
-        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
-          value: function (callback, type, quality) {
-            let canvas = this;
-            setTimeout(function () {
-              var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
-                len = binStr.length,
-                arr = new Uint8Array(len);
-              for (let i = 0; i < len; i++) {
-                arr[i] = binStr.charCodeAt(i);
-              }
-              callback(new Blob([arr], { type: type || 'image/jpeg' }));
-            });
-          }
-        });
-      }
-      const imagePut = (id: number, typ: string) => {
-        return new Promise<string>(resolve => {
-          if (!this.imgBlob) return resolve("");
-          let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-          let ctx = canvas.getContext('2d');
-          let image = new Image();
-          image.onload = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const px = typ == 'small' ? 160 : 640;
-            let w, h;
-            if (image.width > image.height) {
-              w = image.width > px ? px : image.width;//横長
-              h = image.height * (w / image.width);
-            } else {
-              h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
-              w = image.width * (h / image.height);
+    if (this.user.id === this.org.user || this.user.admin) {
+      this.saving = true;
+      this.ui.loading('保存中...');
+      let update: any = { ...this.blogForm.value, ack: ack };
+      if (this.imgBlob) {
+        if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
+          Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+              let canvas = this;
+              setTimeout(function () {
+                var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+                  len = binStr.length,
+                  arr = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                  arr[i] = binStr.charCodeAt(i);
+                }
+                callback(new Blob([arr], { type: type || 'image/jpeg' }));
+              });
             }
-            canvas.width = w; canvas.height = h;
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob(async blob => {
-              const ref = this.storage.ref(`blog/${id}/${typ}.jpg`);
-              await ref.put(blob);
-              const url = await ref.getDownloadURL().toPromise();
-              return resolve(url);
-            }, "image/jpeg")
-          }
-          image.src = this.imgBlob;
-        });
+          });
+        }
+        const imagePut = (id: number, typ: string) => {
+          return new Promise<string>(resolve => {
+            if (!this.imgBlob) return resolve("");
+            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+            let ctx = canvas.getContext('2d');
+            let image = new Image();
+            image.onload = () => {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              const px = typ == 'small' ? 160 : 640;
+              let w, h;
+              if (image.width > image.height) {
+                w = image.width > px ? px : image.width;//横長
+                h = image.height * (w / image.width);
+              } else {
+                h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
+                w = image.width * (h / image.height);
+              }
+              canvas.width = w; canvas.height = h;
+              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob(async blob => {
+                const ref = this.storage.ref(`blog/${id}/${typ}.jpg`);
+                await ref.put(blob);
+                const url = await ref.getDownloadURL().toPromise();
+                return resolve(url);
+              }, "image/jpeg")
+            }
+            image.src = this.imgBlob;
+          });
+        }
+        update.img = await imagePut(this.org.id, "medium");
+        update.simg = await imagePut(this.org.id, "small");
       }
-      update.img = await imagePut(this.org.id, "medium");
-      update.simg = await imagePut(this.org.id, "small");
+      const msg = ['下書き保存', '投稿', '公開'];
+      this.api.post('query', { table: "blog", update: update, where: { id: this.org.id } }).then(res => {
+        this.ui.pop(`${msg[ack + 1]}しました。`);
+        if (ack === 1 && this.org.ack !== 1) {
+          this.db.list(`blog/`).update(this.org.id.toString(),
+            { na: res.blog.na, uid: this.user.id, description: res.blog.txt, image: res.blog.img, upd: new Date().getTime(), }
+          );
+        }
+        this.org = res.blog;
+        this.blogForm.markAsPristine();
+        this.loadblogs();
+      }).catch(err => {
+        this.ui.alert(`${msg[ack + 1]}できませんでした。`)
+      }).finally(() => {
+        this.saving = false;
+        this.ui.loadend();
+      });
+    } else {
+      this.ui.popm("保存するにはログインしてください。");
+      this.router.navigate(['login']);
     }
-    const msg = ['下書き保存', '投稿', '公開'];
-    this.api.post('query', { table: "blog", update: update, where: { id: this.org.id } }).then(res => {
-      this.ui.pop(`${msg[ack + 1]}しました。`);
-      if (ack === 1 && this.org.ack !== 1) {
-        this.db.list(`blog/`).update(this.org.id.toString(),
-          { na: res.blog.na, uid: this.user.id, description: res.blog.txt, image: res.blog.img, upd: new Date().getTime(), }
-        );
-      }
-      this.org = res.blog;
-      this.blogForm.markAsPristine();
-      this.loadblogs();
-    }).catch(err => {
-      this.ui.alert(`${msg[ack + 1]}できませんでした。`)
-    }).finally(() => {
-      this.saving = false;
-      this.ui.loadend();
-    });
   }
   async new() {
     const alert = await this.alert.create({
@@ -247,22 +246,27 @@ export class BlogPage implements OnInit, OnDestroy {
     await alert.present();
   }
   async create(insert, copy?: boolean) {
-    this.api.post("query", { table: "blog", insert: { ...insert, user: this.user.id } }).then(async res => {
-      if (copy && res.blog) {
-        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "blog", parent: this.org.id } });
-        if (doc.storys.length) {
-          doc.storys.map(story => {
-            story.parent = res.blog.id;
-            return story;
-          });
-          await this.api.post('querys', { table: "story", inserts: doc.storys });
+    if (this.user.id) {
+      this.api.post("query", { table: "blog", insert: { ...insert, user: this.user.id } }).then(async res => {
+        if (copy && res.blog) {
+          let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "blog", parent: this.org.id } });
+          if (doc.storys.length) {
+            doc.storys.map(story => {
+              story.parent = res.blog.id;
+              return story;
+            });
+            await this.api.post('querys', { table: "story", inserts: doc.storys });
+          }
         }
-      }
-      this.org = res.blog;
-      this.undo();
-    }).catch(err => {
-      this.ui.alert(`新規ブログの作成に失敗しました。\r\n${err.message}`);
-    });
+        this.org = res.blog;
+        this.undo();
+      }).catch(err => {
+        this.ui.alert(`新規ブログの作成に失敗しました。\r\n${err.message}`);
+      });
+    } else {
+      this.ui.popm("ブログを投稿するにはログインしてください。");
+      this.router.navigate(['/login']);
+    }
   }
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `ブログ「${this.blog.na.value}」を削除します。`);

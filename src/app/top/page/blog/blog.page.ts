@@ -74,5 +74,5 @@ export interface Blog {
   ack?: number;
 }
 export const BLOG: Blog = {
-  typ: 0, id: null, na: "", user: "", img: "", simg: "", txt: "", created: null, chat: true, ack: 0
+  typ: 0, id: null, na: "", user: null, img: "", simg: "", txt: "", created: null, chat: true, ack: 0
 }

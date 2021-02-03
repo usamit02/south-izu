@@ -5,7 +5,7 @@ import * as google from 'googleapis';
 import { FieldValue } from '@google-cloud/firestore';
 admin.initializeApp();
 const URL = "https://south-izu.web.app";
-const typVal:any = { report: "レポート", column: "コラム" ,marker:"マーカー",plan:"プラン"};
+const typVal:any = { report: "レポート", column: "コラム" ,marker:"マーカー",plan:"プラン",vehicle:"愛車",blog:"ブログ"};
 //----------------------------------------ダイレクト---------------------------------------------
 export const directCreate = functions.region('asia-northeast1').firestore.document('direct/{key}').onCreate((snapshot, context) => {
   const doc = snapshot.data();
