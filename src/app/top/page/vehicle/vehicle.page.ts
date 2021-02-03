@@ -15,7 +15,7 @@ export class VehiclePage implements OnInit, OnDestroy {
   @ViewChild('content', { read: ElementRef, static: false }) content: ElementRef;
   @ViewChild('essay', { read: ElementRef, static: false }) essay: ElementRef;
   @ViewChild('chat', { read: ElementRef, static: false }) chat: ElementRef;
-  param = { id: null ,cursor:null};
+  param = { id: null, cursor: null };
   vehicle: Vehicle = VEHICLE;
   vehicles: Vehicle[] = [];
   user;
@@ -26,7 +26,7 @@ export class VehiclePage implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.param.id = params.id;
-      if(params.cursor) this.param.cursor=params.cursor;
+      if (params.cursor) this.param.cursor = params.cursor;
       this.load();
     });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(user => {
@@ -35,15 +35,16 @@ export class VehiclePage implements OnInit, OnDestroy {
   }
   async load() {
     let res = await this.api.get('query', { select: ['*'], table: "vehicle", where: { id: this.param.id } });
-    if (res.vehicles.length===1) {
+    if (res.vehicles.length === 1) {
       this.vehicle = res.vehicles[0];
-      this.vehicle.icon=VEHICLETYP[this.vehicle.typ].icon;
-      this.title.setTitle(`${this.vehicle.na} `);      
-      res = await this.api.get('query', { select: ['*'], table: "vehicle", where: { user: this.vehicle.user, id:{not:this.param.id}} });
-      this.vehicles = res.vehicles.map(vehicle=>{
-        vehicle.icon=VEHICLETYP[vehicle.typ].icon;
+      this.vehicle.icon = VEHICLETYP[this.vehicle.typ].icon;
+      this.title.setTitle(`${this.vehicle.na} `);
+      res = await this.api.get('query', { select: ['*'], table: "vehicle", where: { user: this.vehicle.user, id: { not: this.param.id } } });
+      this.vehicles = res.vehicles.map(vehicle => {
+        vehicle.icon = VEHICLETYP[vehicle.typ].icon;
         return vehicle;
-      });
+      });      
+      setTimeout(()=>{this.onScrollEnd();},1000);     
     } else {
       this.vehicle = VEHICLE;
     }
@@ -66,7 +67,7 @@ export class VehiclePage implements OnInit, OnDestroy {
 interface Vehicle {
   id: number;
   typ: number;
-  icon?:string;
+  icon?: string;
   idx?: number;
   user: string;
   na: string;
@@ -80,5 +81,5 @@ interface Vehicle {
   close?: boolean;
 }
 const VEHICLE: Vehicle = {
-  typ: 0, id: null, na: "", maker: "", user: null, img: "", simg: "", txt: "", icon:"",year: null, created: null, chat: null
+  typ: 0, id: null, na: "", maker: "", user: null, img: "", simg: "", txt: "", icon: "", year: null, created: null, chat: null
 }

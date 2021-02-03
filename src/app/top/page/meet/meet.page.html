@@ -25,7 +25,8 @@
     <app-chat page="meet" [param]="param" [user]="user" [content]="content"></app-chat>
   </ion-content>
   <ion-footer id="footer">
-    <app-send [id]="param.id" page="meet" [thread]="param.thread" [user]="user" [users]="users" [content]="content"></app-send>
+    <app-send [id]="param.id" page="meet" [thread]="param.thread" [user]="user" [users]="users" [content]="content">
+    </app-send>
   </ion-footer>
 </ng-container>
 

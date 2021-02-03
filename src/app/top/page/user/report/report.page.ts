@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -17,7 +16,7 @@ export class ReportPage implements OnInit, OnDestroy {
   reports = [];
   shop = "";
   private onDestroy$ = new Subject();
-  constructor(private api: ApiService, private db: AngularFireDatabase, private tabs: TabsService, private router: Router, ) {
+  constructor(private api: ApiService, private db: AngularFireDatabase, private tabs: TabsService,) {
   }
   ngOnInit() {
     this.tabs.user.asObservable().pipe(takeUntil(this.onDestroy$)).subscribe(user => {

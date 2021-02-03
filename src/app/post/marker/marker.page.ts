@@ -87,7 +87,7 @@ export class MarkerPage implements OnInit, OnDestroy {
           });
         }
       } else {
-        //this.router.navigate(['/login']);
+        this.router.navigate(['/login']);
       }
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(async params => {
@@ -180,7 +180,7 @@ export class MarkerPage implements OnInit, OnDestroy {
     update.chat = update.chat ? 1 : 0; update.rest = update.rest ? 1 : 0;
     const upd = new Date();
     if (ack === 1) {
-      update.acked = this.dateFormat(upd);
+      if (this.marker.ack !== 1) update.acked = this.dateFormat(upd);
       update.ackuser = this.user.id;
     }
     if (this.imgBlob) {
@@ -255,7 +255,7 @@ export class MarkerPage implements OnInit, OnDestroy {
       this.allMarkers = this.allMarkers.filter(marker => { return marker.id !== this.marker.id; });
       this.allMarkers.push(newMarker);
       this.loadMarkers();
-      this.undo({ id: this.marker.id, user: this.user.id, ...update });
+      this.undo({ id: this.marker.id, user: this.user.id, ...update, ack: ack });
       this.ui.pop(`${msg[ack + 1]}しました。`);
     }).catch(err => {
       this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
@@ -269,7 +269,7 @@ export class MarkerPage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`marker/${this.marker.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ id: this.marker.id, usar: this.user.id, table: "marker" }, { typ: "marker", parent: this.marker.id, table: "story" }] });
+      await this.api.post('querys', { deletes: [{ id: this.marker.id, table: "marker" }, { typ: "marker", parent: this.marker.id, table: "story" }] });
       //await this.api.post('query', { table: 'marker', delete: { id: this.marker.id, user: this.user.id } });
       //await this.api.post('query', { table: 'story', delete: { typ: 'marker', parent: this.marker.id } });
       await this.db.list(`marker/${this.marker.id}`).remove();

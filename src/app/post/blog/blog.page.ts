@@ -35,7 +35,7 @@ export class BlogPage implements OnInit, OnDestroy {
     close: new FormControl(BLOG.close), chat: new FormControl(BLOG.chat)
   }
   blogForm = this.builder.group({
-    typ: this.blog.typ, na: this.blog.na, txt: this.blog.txt, img: this.blog.img, simg: this.blog.simg,close: this.blog.close, chat: this.blog.chat
+    typ: this.blog.typ, na: this.blog.na, txt: this.blog.txt, img: this.blog.img, simg: this.blog.simg, close: this.blog.close, chat: this.blog.chat
   });
   typs = [];
   blogs = { drafts: [], acks: [] };
@@ -54,9 +54,7 @@ export class BlogPage implements OnInit, OnDestroy {
     });
     this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
       this.user = user;
-      if (!user.id) {
-        //this.router.navigate(['login']);
-      } else {
+      if (user.id) {
         if (id) {
           this.api.get('query', { select: ['*'], table: 'blog', where: { id: id, or: { ack: 1, user: this.user.id } } }).then(res => {
             if (res.blogs.length === 1) {
@@ -68,6 +66,8 @@ export class BlogPage implements OnInit, OnDestroy {
           });
         }
         this.loadblogs();
+      } else {
+        this.router.navigate(['login']);
       }
     });
     this.api.get('query', { table: 'blogtyp', select: ['id', 'na'] }).then(res => {
@@ -112,7 +112,7 @@ export class BlogPage implements OnInit, OnDestroy {
     });;
   }
   naBlur() {
-    if (this.org.id || this.blogForm.invalid) return;
+    if (this.org.id || this.blogForm.invalid || !this.user.id) return;
     this.create(this.blogForm.value);
   }
   async add(table: string, control: string, na: string, placeholder: string, param: any = {}) {
@@ -154,7 +154,7 @@ export class BlogPage implements OnInit, OnDestroy {
   async save(ack) {
     this.saving = true;
     this.ui.loading('保存中...');
-    let update: any = { ...this.blogForm.value,ack: ack };
+    let update: any = { ...this.blogForm.value, ack: ack };
     if (this.imgBlob) {
       if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
         Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
@@ -272,7 +272,7 @@ export class BlogPage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`blog/${this.org.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ parent: this.org.id, typ: 'blog', table: "story" }] });
+      await this.api.post('querys', { deletes: [{ parent: this.org.id, typ: 'blog', table: "story" }, { id: this.org.id, table: 'blog' }] });
       await this.db.list(`blog/${this.org.id}`).remove();
       await this.db.database.ref(`post/blog${this.org.id}`).remove();
       await this.storedb.collection('blog').doc(this.org.id.toString()).delete();

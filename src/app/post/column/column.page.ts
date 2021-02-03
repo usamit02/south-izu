@@ -48,7 +48,7 @@ export class ColumnPage implements OnInit, OnDestroy {
   constructor(private api: ApiService, private userService: UserService, private builder: FormBuilder, private storage: AngularFireStorage,
     private pop: PopoverController, private modal: ModalController, private alert: AlertController, private ui: UiService,
     private db: AngularFireDatabase, private router: Router, private route: ActivatedRoute, private store: Store,
-    private storedb: AngularFirestore, private title: Title, ) { }
+    private storedb: AngularFirestore, private title: Title,) { }
   async ngOnInit() {
     const res = await this.api.get('query', {
       table: 'colum', select: ['id', 'na', 'parent', 'user', 'ack', 'idx', 'image', 'description', 'created', 'rest', 'chat'],
@@ -65,7 +65,7 @@ export class ColumnPage implements OnInit, OnDestroy {
           });
         }
       } else {
-        //this.router.navigate(['/login']);
+        this.router.navigate(['/login']);
       }
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(async params => {
@@ -185,7 +185,7 @@ export class ColumnPage implements OnInit, OnDestroy {
   }
   naBlur() {
     if (this.column.id || this.columnForm.invalid) return;
-    this.create({ user: this.user.id, parent: this.parent.value, na: this.na.value});
+    this.create({ user: this.user.id, parent: this.parent.value, na: this.na.value });
   }
   async newColumn() {
     const alert = await this.alert.create({
@@ -199,12 +199,12 @@ export class ColumnPage implements OnInit, OnDestroy {
         }, {
           text: 'いいえ',
           handler: () => {
-            this.create({ user: this.user.id, parent: this.parent.value, na: this.na.value});
+            this.create({ user: this.user.id, parent: this.parent.value, na: this.na.value });
           }
         }, {
           text: 'はい',
           handler: () => {
-            this.create({ user: this.user.id, ...this.columnForm.value}, true);
+            this.create({ user: this.user.id, ...this.columnForm.value }, true);
           }
         }
       ]
@@ -239,7 +239,7 @@ export class ColumnPage implements OnInit, OnDestroy {
     let update: any = { ...this.columnForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
     update.chat = update.chat ? 1 : 0; update.rest = update.rest ? 1 : 0;
     if (ack === 1) {
-      update.acked = this.dateFormat();
+      if (this.column.ack !== 1) update.acked = this.dateFormat();
       update.ackuser = this.user.id;
     }
     if (this.imgBase64) {
@@ -279,10 +279,10 @@ export class ColumnPage implements OnInit, OnDestroy {
         id: this.column.id, na: this.na.value, parent: this.parent.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
         description: this.description.value, image: update.image ? update.image : null, created: this.column.created,
       }
-      this.allColumns = this.allColumns.filter(column => { return column.id !== this.column.id; });      
+      this.allColumns = this.allColumns.filter(column => { return column.id !== this.column.id; });
       this.allColumns.push(newColumn);
       this.loadColumns();
-      this.undo({ id: this.column.id, user: this.user.id, ...update });
+      this.undo({ id: this.column.id, user: this.user.id, ...update, ack: ack });
       this.ui.pop(`${msg[ack + 1]}しました。`);
     }).catch(err => {
       this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
@@ -296,13 +296,13 @@ export class ColumnPage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`column/${this.column.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ id: this.column.id,usar:this.user.id,table:"colum" },{typ:"column",parent:this.column.id,table:"story"}]});
+      await this.api.post('querys', { deletes: [{ id: this.column.id, usar: this.user.id, table: "colum" }, { typ: "column", parent: this.column.id, table: "story" }] });
       //await this.api.post('query', { table: 'colum', delete: { id: this.column.id, user: this.user.id } });
       //await this.api.post('query', { table: 'story', delete: { typ: 'column', parent: this.column.id } });
       await this.db.list(`column/${this.column.id}`).remove();
       await this.db.database.ref(`post/column${this.column.id}`).remove();
       await this.storedb.collection('column').doc(this.column.id.toString()).delete();
-      if(this.column.image) this.storage.ref(`column/${this.column.id}/image.jpg`).delete();
+      if (this.column.image) this.storage.ref(`column/${this.column.id}/image.jpg`).delete();
       this.ui.pop("コラムを削除しました。");
       this.columns.drafts = this.columns.drafts.filter(column => { return column.id !== this.column.id; });
       this.columns.requests = this.columns.requests.filter(column => { return column.id !== this.column.id; });
@@ -312,7 +312,7 @@ export class ColumnPage implements OnInit, OnDestroy {
       this.undo({ id: null, parent: null, user: this.user.id, na: "", kana: "", description: "" });
     }).catch(err => {
       this.ui.alert(`コラムを削除できませんでした。\r\n${err.message}`);
-    }).finally(()=>{this.ui.loadend();});
+    }).finally(() => { this.ui.loadend(); });
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();

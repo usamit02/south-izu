@@ -143,11 +143,11 @@ export class StoryComponent implements OnInit {
       });
     });
   }
-  undo(parent) {
-    this.storys = [];
+  undo(parent) {    
     if (!parent) return;
     let where: any = { typ: this.typ, parent: this.parent };
     this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file', 'latlng', 'rest', 'restdate'], where: where }).then(res => {
+      this.storys = [];
       for (let story of res.storys) {
         if (story.rest && !(this.user.id === this.document.user || this.user.admin)) {
           this.storys.push({ ...story, txt: '非公開記事', media: null, file: null, lat: null, lng: null, button: false });

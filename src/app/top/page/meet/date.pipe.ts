@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class DatePipe implements PipeTransform {
   constructor() { }
-  transform(date: Date | number, type: string = "remain"): string {
+  transform(date: Date | number | string, type: string = "remain"): string {
     date = new Date(date);    
     return (date.getMonth() + 1) + "月" + date.getDate() + "日";
   }

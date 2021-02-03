@@ -5,7 +5,7 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button (click)="new()" slot="end" fill="clear">
+      <ion-button [routerLink]="'/post/blog'" slot="end" fill="clear">
         <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
       </ion-button>  
       <ion-menu-button menu="end">

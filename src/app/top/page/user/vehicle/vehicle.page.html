@@ -5,6 +5,9 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-buttons slot="end">
+      <ion-button [routerLink]="'/post/vehicle'" slot="end" fill="clear">
+        <ion-icon name="add-circle" slot="icon-only" color="secondary"></ion-icon>
+      </ion-button>  
       <ion-menu-button menu="end">
         <ion-icon name="contacts"></ion-icon>
       </ion-menu-button>
@@ -18,14 +21,14 @@
       <ion-col *ngFor="let vehicle of vehicles;let i=index" size-xs="4" size-sm="3" size-md="2" size-lg="4" size-xl="3">
         <ion-card button="true" [routerLink]="'/vehicle/' + vehicle.id">
           <ion-card-header>
-            <ion-card-title>{{vehicle.na}}</ion-card-title>
+            <ion-card-title><img [src]="vehicle.icon" />{{vehicle.na}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div class="cardDiv">
               <img *ngIf="vehicle.simg" [src]="vehicle.simg"/>
               <div *ngIf="vehicle.detail$|async as detail" class="viewDiv">
                 <ion-icon name="eye" color="secondary"></ion-icon>{{detail.view}}
-                <ion-icon name="text" color="medium"></ion-icon>{{detail.chat}}
+                <ion-icon name="chatbubbles" color="medium"></ion-icon>{{detail.chat}}
                 <ion-icon name="thumbs-up" color="success"></ion-icon>{{detail.good}}
                 <ion-icon name="thumbs-down" color="dark"></ion-icon>{{detail.bad}}
               </div>

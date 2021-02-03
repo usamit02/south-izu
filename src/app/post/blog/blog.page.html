@@ -16,10 +16,10 @@
       <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!(org.user===user.id||user.admin)">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="preview()" slot="end" fill="clear">
+      <ion-button (click)="preview()" slot="end" fill="clear" [disabled]="!org.id">
         <ion-icon name="browsers" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!user.id">
+      <ion-button (click)="new()" color="secondary" slot="end" fill="clear" [disabled]="!org.id">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button [disabled]="!blogForm.dirty||blogForm.invalid||!(org.user===user.id||user.admin)" (click)="save(-1)" fill="clear">
@@ -103,7 +103,7 @@
     </ion-row>
   </ion-grid>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story typ="blog" [document]="{id:org.id,user:user.id}" [user]="user"></app-story>
+  <app-story typ="blog" [document]="{id:org.id,user:org.user}" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic

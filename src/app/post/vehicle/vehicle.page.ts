@@ -25,7 +25,7 @@ export class VehiclePage implements OnInit, OnDestroy {
   @ViewChild('canvas', { read: ElementRef, static: false }) canvas: ElementRef;
   user: User;
   id: number = null;
-  VEHICLE = { typ: 0, na: "", maker: "", txt: "", img: "", simg: "", year: null,user:"", close: 0, chat: 1 };
+  VEHICLE = { typ: 0, na: "", maker: "", txt: "", img: "", simg: "", year: null, user: null, close: 0, chat: 1 };
   vehicle = {
     typ: new FormControl(this.VEHICLE.typ, [Validators.required]),
     na: new FormControl(this.VEHICLE.na, [Validators.minLength(2), Validators.maxLength(20), Validators.required]),
@@ -37,8 +37,8 @@ export class VehiclePage implements OnInit, OnDestroy {
     close: new FormControl(this.VEHICLE.close), chat: new FormControl(this.VEHICLE.chat)
   }
   vehicleForm = this.builder.group({
-    typ: this.vehicle.typ, na: this.vehicle.na,maker:this.vehicle.maker ,txt: this.vehicle.txt, img: this.vehicle.img, simg: this.vehicle.simg,
-    year: this.vehicle.year,user:this.vehicle.user, close: this.vehicle.close, chat: this.vehicle.chat
+    typ: this.vehicle.typ, na: this.vehicle.na, maker: this.vehicle.maker, txt: this.vehicle.txt, img: this.vehicle.img, simg: this.vehicle.simg,
+    year: this.vehicle.year, user: this.vehicle.user, close: this.vehicle.close, chat: this.vehicle.chat
   });
   vehicleTyps = [];
   imgBlob;
@@ -54,16 +54,13 @@ export class VehiclePage implements OnInit, OnDestroy {
     Object.keys(VEHICLETYP).forEach(key => {
       this.vehicleTyps.push({ id: Number(key), ...VEHICLETYP[key] });
     });
+    this.vehicleTyps.shift();
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
         this.user = user;
-        if (!user.id) {
-          //this.router.navigate(['login']);
-        } else if (params.id) {
+        if (params.id) {
           this.id = Number(params.id);
           this.undo();
-        } else {
-          //this.create({});
         }
       });
     });
@@ -87,6 +84,10 @@ export class VehiclePage implements OnInit, OnDestroy {
       this.ui.alert(`愛車情報の読み込みに失敗しました。\r\n${err.message}`);
     })
   }
+  naBlur() {
+    if (this.id || this.vehicleForm.invalid) return;
+    this.create(this.vehicleForm.value);
+  }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
       this.imgBlob = window.URL.createObjectURL(e.target.files[0]);
@@ -102,63 +103,67 @@ export class VehiclePage implements OnInit, OnDestroy {
     this.router.navigate(['/vehicle', this.id]);
   }
   async save() {
-    if (this.vehicleForm.dirty) {
-      this.saving = true;
-      this.ui.loading('保存中...');
-      let update: any = { ...this.vehicleForm.value };
-      if (this.imgBlob) {
-        if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
-          Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
-            value: function (callback, type, quality) {
-              let canvas = this;
-              setTimeout(function () {
-                var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
-                  len = binStr.length,
-                  arr = new Uint8Array(len);
-                for (let i = 0; i < len; i++) {
-                  arr[i] = binStr.charCodeAt(i);
-                }
-                callback(new Blob([arr], { type: type || 'image/jpeg' }));
-              });
-            }
-          });
-        }
-        const imagePut = (id: number, typ: string) => {
-          return new Promise<string>(resolve => {
-            if (!this.imgBlob) return resolve("");
-            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-            let ctx = canvas.getContext('2d');
-            let image = new Image();
-            image.onload = () => {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              const px = typ == 'small' ? 160 : 640;
-              let w, h;
-              if (image.width > image.height) {
-                w = image.width > px ? px : image.width;//横長
-                h = image.height * (w / image.width);
-              } else {
-                h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
-                w = image.width * (h / image.height);
+    if (this.user.id === this.vehicle.user.value || this.user.admin) {
+      if (this.vehicleForm.dirty && this.vehicleForm.valid) {
+        this.saving = true;
+        this.ui.loading('保存中...');
+        let update: any = { ...this.vehicleForm.value };
+        if (this.imgBlob) {
+          if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
+            Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+              value: function (callback, type, quality) {
+                let canvas = this;
+                setTimeout(function () {
+                  var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+                    len = binStr.length,
+                    arr = new Uint8Array(len);
+                  for (let i = 0; i < len; i++) {
+                    arr[i] = binStr.charCodeAt(i);
+                  }
+                  callback(new Blob([arr], { type: type || 'image/jpeg' }));
+                });
               }
-              canvas.width = w; canvas.height = h;
-              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-              canvas.toBlob(async blob => {
-                const ref = this.storage.ref(`vehicle/${id}/${typ}.jpg`);
-                await ref.put(blob);
-                const url = await ref.getDownloadURL().toPromise();
-                return resolve(url);
-              }, "image/jpeg")
-            }
-            image.src = this.imgBlob;
-          });
+            });
+          }
+          const imagePut = (id: number, typ: string) => {
+            return new Promise<string>(resolve => {
+              if (!this.imgBlob) return resolve("");
+              let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+              let ctx = canvas.getContext('2d');
+              let image = new Image();
+              image.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const px = typ == 'small' ? 160 : 640;
+                let w, h;
+                if (image.width > image.height) {
+                  w = image.width > px ? px : image.width;//横長
+                  h = image.height * (w / image.width);
+                } else {
+                  h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
+                  w = image.width * (h / image.height);
+                }
+                canvas.width = w; canvas.height = h;
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(async blob => {
+                  const ref = this.storage.ref(`vehicle/${id}/${typ}.jpg`);
+                  await ref.put(blob);
+                  const url = await ref.getDownloadURL().toPromise();
+                  return resolve(url);
+                }, "image/jpeg")
+              }
+              image.src = this.imgBlob;
+            });
+          }
+          update.img = await imagePut(this.id, "medium");
+          update.simg = await imagePut(this.id, "small");
         }
-        update.img = await imagePut(this.id, "medium");
-        update.simg = await imagePut(this.id, "small");
+        await this.api.post('query', { table: "vehicle", update: update, where: { id: this.id } });
+        this.saving = false;
+        this.vehicleForm.markAsPristine();
+        this.ui.loadend();
       }
-      await this.api.post('query', { table: "vehicle", update: update, where: { id: this.id } });
-      this.saving = false;
-      this.vehicleForm.markAsPristine();
-      this.ui.loadend();
+    } else {
+      this.router.navigate(['login']);
     }
   }
   async new() {
@@ -186,22 +191,27 @@ export class VehiclePage implements OnInit, OnDestroy {
     await alert.present();
   }
   async create(insert, copy?: boolean) {
-    this.api.post("query", { table: "vehicle", insert: { ...insert, user: this.user.id } }).then(async res => {
-      if (copy && res.vehicle) {
-        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "vehicle", parent: this.id } });
-        if (doc.storys.length) {
-          doc.storys.map(story => {
-            story.parent = res.vehicle.id;
-            return story;
-          });
-          await this.api.post('querys', { table: "story", inserts: doc.storys });
+    if (this.user.id) {
+      this.api.post("query", { table: "vehicle", insert: { ...insert, user: this.user.id } }).then(async res => {
+        if (copy && res.vehicle) {
+          let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "vehicle", parent: this.id } });
+          if (doc.storys.length) {
+            doc.storys.map(story => {
+              story.parent = res.vehicle.id;
+              return story;
+            });
+            await this.api.post('querys', { table: "story", inserts: doc.storys });
+          }
         }
-      }
-      this.id = res.vehicle.id;
-      this.undo();
-    }).catch(err => {
-      this.ui.alert(`新規愛車の作成に失敗しました。\r\n${err.message}`);
-    });
+        this.id = res.vehicle.id;
+        this.undo();
+      }).catch(err => {
+        this.ui.alert(`新規愛車の作成に失敗しました。\r\n${err.message}`);
+      });
+    } else {
+      this.ui.popm("愛車を登録するにはログインしてください。");
+      this.router.navigate(['/login']);
+    }
   }
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `愛車「${this.vehicle.na.value}」を削除します。`);
@@ -211,7 +221,7 @@ export class VehiclePage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`vehicle/${this.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ parent: this.id, typ: 'vehicle', table: "story" }] });
+      await this.api.post('querys', { deletes: [{ parent: this.id, typ: 'vehicle', table: "story" },{id:this.id,table:'vehicle'}] });
       await this.db.list(`vehicle/${this.id}`).remove();
       await this.db.database.ref(`post/vehicle${this.id}`).remove();
       await this.storedb.collection('vehicle').doc(this.id.toString()).delete();
@@ -219,7 +229,7 @@ export class VehiclePage implements OnInit, OnDestroy {
         await this.storage.ref(`vehicle/${this.id}/medium.jpg`).delete();
         await this.storage.ref(`vehicle/${this.id}/small.jpg`).delete();
       }
-      this.id = null; this.vehicleForm.reset();
+      this.id = null; this.vehicleForm.reset(this.VEHICLE);
       this.ui.pop("愛車を削除しました。");
     }).catch(err => {
       this.ui.alert(`愛車を削除できませんでした。\r\n${err.message}`);

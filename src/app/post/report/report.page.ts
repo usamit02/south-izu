@@ -210,7 +210,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   genreChange() {
     const genres = this.genres.filter(genre => { return genre.id == this.genre.value; });
     if (genres.length) this.travelMode = genres[0].travelmode;
-    this.api.post('query',{table:'genre',update:{},sign:{update:{idx:-1}},where:{id:this.genre.value}});
+    this.api.post('query', { table: 'genre', update: {}, sign: { update: { idx: -1 } }, where: { id: this.genre.value } });
   }
   async undo(report) {
     this.undoing = true;
@@ -241,7 +241,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
   async save(ack) {
     let update: any = { ...this.reportForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
     if (ack === 1) {
-      update.acked = this.dateFormat();
+      if (this.report.ack !== 1) update.acked = this.dateFormat();
       update.ackuser = this.user.id;
     }
     if (this.imgBase64) {

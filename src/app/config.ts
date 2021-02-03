@@ -11,6 +11,7 @@ export const STAYTYP={
   4:{na:'バンガロー'}
 }
 export const VEHICLETYP={
+  0:{na:"",icon:""},
   1:{na:'バイク',icon:"http://maps.google.co.jp/mapfiles/ms/icons/motorcycling.png"},
   2:{na:'車',icon:"http://maps.google.co.jp/mapfiles/ms/icons/cabs.png"},
   3:{na:'自転車',icon:"http://maps.google.co.jp/mapfiles/ms/icons/cycling.png"},

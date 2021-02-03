@@ -62,10 +62,10 @@ export class StayPage implements OnInit, OnDestroy {
       if (params.id) {
         this.userService.$.pipe(takeUntil(this.onDestroy$)).subscribe(async user => {
           this.user = user;
-          if (!user.id) {
-            //this.router.navigate(['login']);
-          } else {
+          if (user.id) {
             this.undo();
+          } else {
+            this.router.navigate(['login']);
           }
         });
       }
