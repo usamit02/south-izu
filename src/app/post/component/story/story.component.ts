@@ -87,7 +87,7 @@ export class StoryComponent implements OnInit {
   ngOnInit() {
   }
   storyAdd() {
-    this.storys.push(STORY);
+    this.storys.push({ ...STORY });
   }
   async storyDel(idx) {
     let confirm: boolean = true;
@@ -143,20 +143,23 @@ export class StoryComponent implements OnInit {
       });
     });
   }
-  undo(parent) {    
-    if (!parent) return;
-    let where: any = { typ: this.typ, parent: this.parent };
-    this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file', 'latlng', 'rest', 'restdate'], where: where }).then(res => {
-      this.storys = [];
-      for (let story of res.storys) {
-        if (story.rest && !(this.user.id === this.document.user || this.user.admin)) {
-          this.storys.push({ ...story, txt: '非公開記事', media: null, file: null, lat: null, lng: null, button: false });
-        } else {
-          this.storys.push({ ...story, button: false });//txt:story.txt,media:story.media,file:story.file,lat:story.lat,lng:story.lng,rest:story.rest,restdate:story.restdate,button:false
+  undo(parent) {
+    if (parent) {
+      let where: any = { typ: this.typ, parent: this.parent };
+      this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file', 'latlng', 'rest', 'restdate'], where: where }).then(res => {
+        this.storys = [];
+        for (let story of res.storys) {
+          if (story.rest && !(this.user.id === this.document.user || this.user.admin)) {
+            this.storys.push({ ...story, txt: '非公開記事', media: null, file: null, lat: null, lng: null, button: false });
+          } else {
+            this.storys.push({ ...story, button: false });//txt:story.txt,media:story.media,file:story.file,lat:story.lat,lng:story.lng,rest:story.rest,restdate:story.restdate,button:false
+          }
         }
-      }
-      if (!res.storys.length) this.storyAdd();
-    });
+        if (!res.storys.length) this.storyAdd();
+      });
+    } else {
+      this.storys = [];
+    }
   }
   dropMedia(e, idx) {
     let a = e;

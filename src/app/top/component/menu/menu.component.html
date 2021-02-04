@@ -11,7 +11,7 @@
     <ion-item (click)="loadColumns(column.grand)" class="column" button="true">
       <ion-icon name="caret-up" color="dark"></ion-icon><span>{{column.up}}</span>
     </ion-item>
-    <ion-button (click)="postColumn(column.parent)" slot="end" fill="clear">
+    <ion-button [routerLink]="'/post/column/' + column.parent" slot="end" fill="clear">
       　 <ion-icon name="create" slot="icon-only"></ion-icon>
     </ion-button>
   </ion-item>
@@ -30,7 +30,7 @@
             　 <ion-icon name="caret-down" slot="icon-only" color="dark"></ion-icon>
           </ion-button>
           <ng-template #create>
-            <ion-button (click)="postColumn(col.id)" slot="end" fill="clear">
+            <ion-button [routerLink]="'/post/column/' + col.id" slot="end" fill="clear" color="secondary">
               　 <ion-icon name="create" slot="icon-only"></ion-icon>
             </ion-button>
           </ng-template>

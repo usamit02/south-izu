@@ -84,20 +84,6 @@ export class MenuComponent implements OnInit, OnChanges, OnDestroy {
     this.api.post('column', { ids: JSON.stringify(this.columns.map(column => { return column.id; })) });
     e.detail.complete(true);
   }
-  postColumn(parent) {
-    if (this.user.id) {
-      this.router.navigate([`/post/column/${parent}`]);
-    } else {
-      this.router.navigate([`/login`]);this.close.emit();
-    }
-  }
-  postReport() {
-    if (this.user.id) {
-      this.router.navigate(['/post/report']);
-    } else {
-      this.router.navigate([`/login`]);this.close.emit();
-    }
-  }
   deletePost(id) {
     this.db.database.ref(`post/${id}`).remove();
   }

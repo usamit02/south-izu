@@ -5,7 +5,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import * as firebase from 'firebase';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { AngularFirestore } from '@angular/fire/firestore';
@@ -37,7 +36,7 @@ export class ColumnPage implements OnInit, OnDestroy {
   });
   user: User;
   author: any = { id: "", na: "", avatar: "" };
-  column: any = { id: null };
+  column: any = { id: null ,user:null};
   columns = { drafts: [], requests: [], posts: [], acks: [] };
   allColumns = [];
   place: string = "";
@@ -64,8 +63,6 @@ export class ColumnPage implements OnInit, OnDestroy {
             this.columns.posts = res.colums;
           });
         }
-      } else {
-        this.router.navigate(['/login']);
       }
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(async params => {
@@ -165,7 +162,7 @@ export class ColumnPage implements OnInit, OnDestroy {
     if (this.user.id !== column.user) {
       const snapshot = await this.db.database.ref(`user/${column.user}`).once('value');
       const user = snapshot.val();
-      column.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
+      if(user) column.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
     }
     this.column = column;
     const controls = this.columnForm.controls
@@ -212,22 +209,27 @@ export class ColumnPage implements OnInit, OnDestroy {
     await alert.present();
   }
   async create(insert, storyCopy?: boolean) {
-    this.api.post("query", { table: "colum", insert: insert }).then(async res => {
-      if (storyCopy && this.column.id) {
-        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "column", parent: this.column.id } });
-        let inserts = doc.storys.filter(story => { return !story.rested || this.column.user === this.user.id || this.user.admin });
-        if (inserts.length) {
-          inserts.map(story => {
-            story.parent = res.colum.id;
-            return story;
-          });
-          await this.api.post('querys', { table: "story", inserts: inserts });
+    if (this.user.id) {
+      this.api.post("query", { table: "colum", insert: insert }).then(async res => {
+        if (storyCopy && this.column.id) {
+          let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "column", parent: this.column.id } });
+          let inserts = doc.storys.filter(story => { return !story.rested || this.column.user === this.user.id || this.user.admin });
+          if (inserts.length) {
+            inserts.map(story => {
+              story.parent = res.colum.id;
+              return story;
+            });
+            await this.api.post('querys', { table: "story", inserts: inserts });
+          }
         }
-      }
-      this.undo(res.colum);
-    }).catch(err => {
-      this.ui.alert(`新規コラムの挿入に失敗しました。\r\n${err.message}`);
-    });
+        this.undo(res.colum);
+      }).catch(err => {
+        this.ui.alert(`新規コラムの挿入に失敗しました。\r\n${err.message}`);
+      });
+    } else {
+      this.ui.popm("コラムを作成するにはログインしてください。");
+      this.router.navigate(['/login']);
+    }
   }
   async preview() {
     if (this.user.id === this.column.user || this.user.admin) {
@@ -236,57 +238,62 @@ export class ColumnPage implements OnInit, OnDestroy {
     this.router.navigate(['/column', this.column.id]);
   }
   async save(ack) {
-    let update: any = { ...this.columnForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
-    update.chat = update.chat ? 1 : 0; update.rest = update.rest ? 1 : 0;
-    if (ack === 1) {
-      if (this.column.ack !== 1) update.acked = this.dateFormat();
-      update.ackuser = this.user.id;
-    }
-    if (this.imgBase64) {
-      let bin = atob(this.imgBase64.replace(/^.*,/, ''));
-      let buffer = new Uint8Array(bin.length);
-      let blob: Blob;
-      for (var i = 0; i < bin.length; i++) {
-        buffer[i] = bin.charCodeAt(i);
-      }
-      try {
-        blob = new Blob([buffer.buffer], { type: 'image/jpeg' });
-      } catch (e) {
-        alert("ブロッブデータの作成に失敗しました。");
-        return;
-      }
-      const ref = this.storage.ref(`column/${this.column.id}/image.jpg`);
-      await ref.put(blob);
-      update.image = await ref.getDownloadURL().toPromise();
-    }
-    this.api.post('query', { table: 'colum', update: update, where: { id: this.column.id } }).then(() => {
-      if (ack === 0) {
-        this.db.database.ref(`post/column${this.column.id}`).set(
-          {
-            id: `column${this.column.id}`, na: `${this.na.value}`, upd: new Date().getTime(),
-            url: `/post/column/${this.parent.value}/${this.column.id}`, user: { id: this.user.id, na: this.user.na, avatar: this.user.avatar }
-          }
-        );
-      } else {
-        this.columns.posts = this.columns.posts.filter(column => { return column.id !== this.column.id; });
-        this.db.database.ref(`post/column${this.column.id}`).remove();
-      }
+    if (this.user.id === this.column.user || this.user.admin) {
+      let update: any = { ...this.columnForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
+      update.chat = update.chat ? 1 : 0; update.rest = update.rest ? 1 : 0;
       if (ack === 1) {
-        this.db.list(`column/`).update(this.column.id.toString(),
-          { na: update.na, uid: this.column.user, description: update.description, image: update.image ? update.image : null, upd: new Date().getTime(), });
+        if (this.column.ack !== 1) update.acked = this.dateFormat();
+        update.ackuser = this.user.id;
       }
-      const newColumn = {
-        id: this.column.id, na: this.na.value, parent: this.parent.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
-        description: this.description.value, image: update.image ? update.image : null, created: this.column.created,
+      if (this.imgBase64) {
+        let bin = atob(this.imgBase64.replace(/^.*,/, ''));
+        let buffer = new Uint8Array(bin.length);
+        let blob: Blob;
+        for (var i = 0; i < bin.length; i++) {
+          buffer[i] = bin.charCodeAt(i);
+        }
+        try {
+          blob = new Blob([buffer.buffer], { type: 'image/jpeg' });
+        } catch (e) {
+          alert("ブロッブデータの作成に失敗しました。");
+          return;
+        }
+        const ref = this.storage.ref(`column/${this.column.id}/image.jpg`);
+        await ref.put(blob);
+        update.image = await ref.getDownloadURL().toPromise();
       }
-      this.allColumns = this.allColumns.filter(column => { return column.id !== this.column.id; });
-      this.allColumns.push(newColumn);
-      this.loadColumns();
-      this.undo({ id: this.column.id, user: this.user.id, ...update, ack: ack });
-      this.ui.pop(`${msg[ack + 1]}しました。`);
-    }).catch(err => {
-      this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
-    });
+      this.api.post('query', { table: 'colum', update: update, where: { id: this.column.id } }).then(() => {
+        if (ack === 0) {
+          this.db.database.ref(`post/column${this.column.id}`).set(
+            {
+              id: `column${this.column.id}`, na: `${this.na.value}`, upd: new Date().getTime(),
+              url: `/post/column/${this.parent.value}/${this.column.id}`, user: { id: this.user.id, na: this.user.na, avatar: this.user.avatar }
+            }
+          );
+        } else {
+          this.columns.posts = this.columns.posts.filter(column => { return column.id !== this.column.id; });
+          this.db.database.ref(`post/column${this.column.id}`).remove();
+        }
+        if (ack === 1) {
+          this.db.list(`column/`).update(this.column.id.toString(),
+            { na: update.na, uid: this.column.user, description: update.description, image: update.image ? update.image : null, upd: new Date().getTime(), });
+        }
+        const newColumn = {
+          id: this.column.id, na: this.na.value, parent: this.parent.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
+          description: this.description.value, image: update.image ? update.image : null, created: this.column.created,
+        }
+        this.allColumns = this.allColumns.filter(column => { return column.id !== this.column.id; });
+        this.allColumns.push(newColumn);
+        this.loadColumns();
+        this.undo({ id: this.column.id, user: this.user.id, ...update, ack: ack });
+        this.ui.pop(`${msg[ack + 1]}しました。`);
+      }).catch(err => {
+        this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
+      });
+    } else {
+      this.ui.popm("保存するにはログインしてください。");
+      this.router.navigate(['login']);
+    }
   }
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `コラム「${this.column.na}」を削除します。`);
@@ -296,9 +303,7 @@ export class ColumnPage implements OnInit, OnDestroy {
       for (let story of res.storys) {
         if (story.file) this.storage.ref(`column/${this.column.id}/${story.file}`).delete();
       }
-      await this.api.post('querys', { deletes: [{ id: this.column.id, usar: this.user.id, table: "colum" }, { typ: "column", parent: this.column.id, table: "story" }] });
-      //await this.api.post('query', { table: 'colum', delete: { id: this.column.id, user: this.user.id } });
-      //await this.api.post('query', { table: 'story', delete: { typ: 'column', parent: this.column.id } });
+      await this.api.post('querys', { deletes: [{ id: this.column.id, user: this.user.id, table: "colum" }, { typ: "column", parent: this.column.id, table: "story" }] });
       await this.db.list(`column/${this.column.id}`).remove();
       await this.db.database.ref(`post/column${this.column.id}`).remove();
       await this.storedb.collection('column').doc(this.column.id.toString()).delete();

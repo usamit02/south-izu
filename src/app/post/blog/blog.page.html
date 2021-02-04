@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
+    <div class="title">
       <ion-button *ngIf="blogs.drafts.length" slot="start" color="medium" (click)="popBlogs(blogs.drafts,$event)">
         下書き{{blogs.drafts.length}}件
       </ion-button>
@@ -10,7 +10,6 @@
       <ion-button (click)="undo()" fill="clear" [disabled]="!org.id">
         　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
       </ion-button>
-    </ion-buttons>
     <ion-title>ブログ編集</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="erase()" color="danger" slot="end" fill="clear" [disabled]="!(org.user===user.id||user.admin)||!org.id">
@@ -27,11 +26,9 @@
       </ion-button>
       <ion-button [disabled]="blogForm.invalid||!(org.user===user.id||user.admin)||!org.id" (click)="save(1)" slot="end" fill="clear">
         <ion-icon name="send" slot="icon-only" color="success"></ion-icon>
-      </ion-button>
-      <ion-menu-button menu="end">
-        <ion-icon name="contacts"></ion-icon>
-      </ion-menu-button>
+      </ion-button>     
     </ion-buttons>
+    </div>
   </ion-toolbar>
 </ion-header>
 <ion-content #content [scrollEvents]="true" (ionScrollEnd)="onScrollEnd()">

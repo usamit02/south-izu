@@ -116,7 +116,7 @@
     </ion-grid>
   </form>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story typ="column" [document]="column" [user]="user"></app-story>
+  <app-story *ngIf="column.user!=null" typ="column" [document]="column" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic
