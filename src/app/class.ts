@@ -55,4 +55,4 @@ export interface Marker {
   chat?:number;
   distance?:string;
 }
-export const MARKER={id:0,na:"",kana:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:"",user$:{},img:"",simg:"",icon:0};
+export const MARKER={id:0,na:"",kana:"",txt:"",lat:34.68503331,lng:138.85154339,url:"",phone:"",user:null,user$:{},img:"",simg:"",icon:0};

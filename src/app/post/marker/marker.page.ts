@@ -5,7 +5,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import * as firebase from 'firebase';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { AngularFirestore } from '@angular/fire/firestore';
@@ -86,8 +85,6 @@ export class MarkerPage implements OnInit, OnDestroy {
             });
           });
         }
-      } else {
-        this.router.navigate(['/login']);
       }
     });
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(async params => {
@@ -145,7 +142,7 @@ export class MarkerPage implements OnInit, OnDestroy {
     if (this.user.id !== marker.user || !marker.author) {
       const snapshot = await this.db.database.ref(`user/${marker.user}`).once('value');
       const user = snapshot.val();
-      marker.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
+      if (user) marker.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
     }
     this.marker = marker;
     const controls = this.markerForm.controls
@@ -166,7 +163,7 @@ export class MarkerPage implements OnInit, OnDestroy {
     if (this.user.id === this.marker.user || this.user.admin) {
       await this.api.post('query', { table: 'marker', update: this.markerForm.value, where: { id: this.marker.id } });
     }
-    this.router.navigate(['/tabs/tab3', this.marker.id]);
+    this.router.navigate(['/tabs/marker', this.marker.id]);
   }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
@@ -176,90 +173,95 @@ export class MarkerPage implements OnInit, OnDestroy {
     }
   }
   async save(ack) {
-    let update: any = { ...this.markerForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
-    update.chat = update.chat ? 1 : 0; update.rest = update.rest ? 1 : 0;
-    const upd = new Date();
-    if (ack === 1) {
-      if (this.marker.ack !== 1) update.acked = this.dateFormat(upd);
-      update.ackuser = this.user.id;
-    }
-    if (this.imgBlob) {
-      if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
-        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
-          value: function (callback, type, quality) {
-            let canvas = this;
-            setTimeout(function () {
-              var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
-                len = binStr.length,
-                arr = new Uint8Array(len);
-              for (let i = 0; i < len; i++) {
-                arr[i] = binStr.charCodeAt(i);
-              }
-              callback(new Blob([arr], { type: type || 'image/jpeg' }));
-            });
-          }
-        });
-      }
-      const imagePut = (id: number, typ: string) => {
-        return new Promise<string>(resolve => {
-          if (!this.imgBlob) return resolve("");
-          let canvas: HTMLCanvasElement = this.canvas.nativeElement;
-          let ctx = canvas.getContext('2d');
-          let image = new Image();
-          image.onload = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const px = typ == 'small' ? 160 : 640;
-            let w, h;
-            if (image.width > image.height) {
-              w = image.width > px ? px : image.width;//横長
-              h = image.height * (w / image.width);
-            } else {
-              h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
-              w = image.width * (h / image.height);
-            }
-            canvas.width = w; canvas.height = h;
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob(async blob => {
-              const ref = this.storage.ref(`marker/${id}/${typ}.jpg`);
-              await ref.put(blob);
-              const url = await ref.getDownloadURL().toPromise();
-              return resolve(url);
-            }, "image/jpeg")
-          }
-          image.src = this.imgBlob;
-        });
-      }
-      update.img = await imagePut(this.marker.id, "medium");
-      update.simg = await imagePut(this.marker.id, "small");
-    }
-    this.api.post('query', { table: 'marker', update: update, where: { id: this.marker.id } }).then(() => {
-      if (ack === 0) {
-        this.db.database.ref(`post/marker${this.marker.id}`).set(
-          {
-            id: `marker${this.marker.id}`, na: `${this.na.value}`, upd: upd.getTime(),
-            url: `/post/marker/${this.marker.id}`, user: { id: this.user.id, na: this.user.na, avatar: this.user.avatar }
-          }
-        );
-      } else {
-        this.markers.posts = this.markers.posts.filter(marker => { return marker.id !== this.marker.id; });
-        this.db.database.ref(`post/marker${this.marker.id}`).remove();
-      }
+    if (this.user.id === this.marker.user || this.user.admin) {
+      let update: any = { ...this.markerForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
+      update.chat = update.chat ? 1 : 0; update.rest = update.rest ? 1 : 0;
+      const upd = new Date();
       if (ack === 1) {
-        this.db.list(`marker/`).update(this.marker.id.toString(),
-          { na: update.na, uid: this.marker.user, description: update.txt, image: update.img ? update.img : null, upd: upd.getTime(), });
+        if (this.marker.ack !== 1) update.acked = this.dateFormat(upd);
+        update.ackuser = this.user.id;
       }
-      const newMarker = {
-        id: this.marker.id, na: this.na.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
-        txt: this.txt.value, img: update.img ? update.img : null, simg: update.simg ? update.simg : null, created: this.marker.created,
+      if (this.imgBlob) {
+        if (!HTMLCanvasElement.prototype.toBlob) {//edge対策
+          Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+              let canvas = this;
+              setTimeout(function () {
+                var binStr = atob(canvas.toDataURL(type, quality).split(',')[1]),
+                  len = binStr.length,
+                  arr = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                  arr[i] = binStr.charCodeAt(i);
+                }
+                callback(new Blob([arr], { type: type || 'image/jpeg' }));
+              });
+            }
+          });
+        }
+        const imagePut = (id: number, typ: string) => {
+          return new Promise<string>(resolve => {
+            if (!this.imgBlob) return resolve("");
+            let canvas: HTMLCanvasElement = this.canvas.nativeElement;
+            let ctx = canvas.getContext('2d');
+            let image = new Image();
+            image.onload = () => {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              const px = typ == 'small' ? 160 : 640;
+              let w, h;
+              if (image.width > image.height) {
+                w = image.width > px ? px : image.width;//横長
+                h = image.height * (w / image.width);
+              } else {
+                h = image.height > px * 0.75 ? px * 0.75 : image.height;//縦長
+                w = image.width * (h / image.height);
+              }
+              canvas.width = w; canvas.height = h;
+              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob(async blob => {
+                const ref = this.storage.ref(`marker/${id}/${typ}.jpg`);
+                await ref.put(blob);
+                const url = await ref.getDownloadURL().toPromise();
+                return resolve(url);
+              }, "image/jpeg")
+            }
+            image.src = this.imgBlob;
+          });
+        }
+        update.img = await imagePut(this.marker.id, "medium");
+        update.simg = await imagePut(this.marker.id, "small");
       }
-      this.allMarkers = this.allMarkers.filter(marker => { return marker.id !== this.marker.id; });
-      this.allMarkers.push(newMarker);
-      this.loadMarkers();
-      this.undo({ id: this.marker.id, user: this.user.id, ...update, ack: ack });
-      this.ui.pop(`${msg[ack + 1]}しました。`);
-    }).catch(err => {
-      this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
-    });
+      this.api.post('query', { table: 'marker', update: update, where: { id: this.marker.id } }).then(() => {
+        if (ack === 0) {
+          this.db.database.ref(`post/marker${this.marker.id}`).set(
+            {
+              id: `marker${this.marker.id}`, na: `${this.na.value}`, upd: upd.getTime(),
+              url: `/post/marker/${this.marker.id}`, user: { id: this.user.id, na: this.user.na, avatar: this.user.avatar }
+            }
+          );
+        } else {
+          this.markers.posts = this.markers.posts.filter(marker => { return marker.id !== this.marker.id; });
+          this.db.database.ref(`post/marker${this.marker.id}`).remove();
+        }
+        if (ack === 1) {
+          this.db.list(`marker/`).update(this.marker.id.toString(),
+            { na: update.na, uid: this.marker.user, description: update.txt, image: update.img ? update.img : null, upd: upd.getTime(), });
+        }
+        const newMarker = {
+          id: this.marker.id, na: this.na.value, user: this.user.id, ack: ack, rest: this.rest.value, chat: this.chat.value,
+          txt: this.txt.value, img: update.img ? update.img : null, simg: update.simg ? update.simg : null, created: this.marker.created,
+        }
+        this.allMarkers = this.allMarkers.filter(marker => { return marker.id !== this.marker.id; });
+        this.allMarkers.push(newMarker);
+        this.loadMarkers();
+        this.undo({ id: this.marker.id, user: this.user.id, ...update, ack: ack });
+        this.ui.pop(`${msg[ack + 1]}しました。`);
+      }).catch(err => {
+        this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
+      });
+    } else {
+      this.ui.popm("保存するにはログインしてください。");
+      this.router.navigate(['login']);
+    }
   }
   async erase() {
     const confirm = await this.ui.confirm("削除確認", `マーカー「${this.marker.na}」を削除します。`);
@@ -285,7 +287,7 @@ export class MarkerPage implements OnInit, OnDestroy {
       this.markers.posts = this.markers.posts.filter(marker => { return marker.id !== this.marker.id; });
       this.markers.acks = this.markers.acks.filter(marker => { return marker.id !== this.marker.id; });
       this.allMarkers = this.allMarkers.filter(marker => { return marker.id !== this.marker.id; });
-      this.undo(MARKER);
+      this.undo({...MARKER});
     }).catch(err => {
       this.ui.alert(`マーカーを削除できませんでした。\r\n${err.message}`);
     }).finally(() => {

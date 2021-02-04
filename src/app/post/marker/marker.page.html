@@ -14,6 +14,9 @@
       <ion-button *ngIf="markers.acks.length" slot="start" color="success" (click)="popMarkers(markers.acks,$event)">
         承認済{{markers.acks.length}}件
       </ion-button>
+      <ion-button (click)="undo()" fill="clear" [disabled]="!marker.id">
+        <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+      </ion-button>
       <ion-title>マーカー記事投稿</ion-title>
       <ng-container *ngIf="marker.id">
         <ion-item *ngIf="marker.author" button="true" [routerLink]="'/user/'+marker.author.id">
@@ -22,7 +25,7 @@
           </ion-avatar>
           {{marker.author.na}}
         </ion-item>
-        <ion-button (click)="preview()" slot="end" fill="clear">
+        <ion-button (click)="preview()" [disabled]="!marker.id" slot="end" fill="clear">
           <ion-icon name="browsers" slot="icon-only"></ion-icon>
         </ion-button>
         <ng-container *ngIf="marker.user===user.id">
@@ -141,7 +144,7 @@
     </ion-segment>    
   </form>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story typ="marker" [document]="marker" [user]="user"></app-story>
+  <app-story *ngIf="marker.user" typ="marker" [document]="marker" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic
