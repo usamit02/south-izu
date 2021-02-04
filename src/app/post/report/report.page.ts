@@ -78,11 +78,6 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         this.travelMode = this.genres[0].travelmode;
       });
     });
-    setTimeout(() => {
-      if (!this.user.id) {
-        //this.router.navigate(['/login']);
-      }
-    }, 5000);
     this.title.setTitle(`レポート投稿`);
   }
   ngAfterViewInit() {
@@ -175,22 +170,27 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     this.create({ user: this.user.id, na: this.na.value });
   }
   create(insert, copy?: boolean) {
-    this.api.post("query", { table: "report", insert: insert }).then(async res => {
-      if (copy) {
-        let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "report", parent: this.report.id } });
-        let inserts = doc.storys.filter(story => { return !story.rested || this.report.user === this.user.id || this.user.admin });
-        if (inserts.length) {
-          inserts.map(story => {
-            story.parent = res.report.id;
-            return story;
-          });
-          await this.api.post('querys', { table: "story", inserts: inserts });
+    if (this.user.id) {
+      this.api.post("query", { table: "report", insert: insert }).then(async res => {
+        if (copy) {
+          let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "report", parent: this.report.id } });
+          let inserts = doc.storys.filter(story => { return !story.rested || this.report.user === this.user.id || this.user.admin });
+          if (inserts.length) {
+            inserts.map(story => {
+              story.parent = res.report.id;
+              return story;
+            });
+            await this.api.post('querys', { table: "story", inserts: inserts });
+          }
         }
-      }
-      this.undo(res.report);
-    }).catch(() => {
-      this.ui.alert(`新しいレポートの作成に失敗しました。`);
-    });
+        this.undo(res.report);
+      }).catch(() => {
+        this.ui.alert(`新しいレポートの作成に失敗しました。`);
+      });
+    } else {
+      this.ui.popm("レポートを作成するにはログインしてください。");
+      this.router.navigate(['/login']);
+    }
   }
   async onScrollEnd() {
     const content = await this.content.nativeElement.getScrollElement();
@@ -217,7 +217,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.user.id !== report.user) {
       const snapshot = await this.db.database.ref(`user/${report.user}`).once('value');
       const user = snapshot.val();
-      report.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
+      if (user) report.author = { id: snapshot.key, na: user.na, avatar: user.avatar };
     }
     this.report = report;
     this.genres = this.selects.genres;//.filter(genre => { return genre.id === report.genre; });
@@ -232,70 +232,73 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => { this.undoing = false; }, 1000);
   }
   async preview() {
-    if (this.reportForm.invalid) return;
     if (this.user.id === this.report.user || this.user.admin) {
       await this.api.post('query', { table: 'report', update: this.reportForm.value, where: { id: this.report.id } });
     }
     this.router.navigate(['/report', this.report.id]);
   }
   async save(ack) {
-    let update: any = { ...this.reportForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
-    if (ack === 1) {
-      if (this.report.ack !== 1) update.acked = this.dateFormat();
-      update.ackuser = this.user.id;
-    }
-    if (this.imgBase64) {
-      let bin = atob(this.imgBase64.replace(/^.*,/, ''));
-      let buffer = new Uint8Array(bin.length);
-      let blob: Blob;
-      for (var i = 0; i < bin.length; i++) {
-        buffer[i] = bin.charCodeAt(i);
-      }
-      try {
-        blob = new Blob([buffer.buffer], { type: 'image/jpeg' });
-      } catch (e) {
-        alert("ブロッブデータの作成に失敗しました。");
-        return;
-      }
-      const ref = this.storage.ref(`report/${this.report.id}/image.jpg`);
-      await ref.put(blob);
-      update.img = await ref.getDownloadURL().toPromise();
-    }
-    this.api.post('query', { table: 'report', update: update, where: { id: this.report.id } }).then(() => {
-      if (ack === 0) {
-        this.db.database.ref(`post/report${this.report.id}`).set(
-          {
-            id: `report${this.report.id}`, na: this.na.value, upd: new Date().getTime(),
-            url: `/post/report/${this.report.id}`, user: { id: this.user.id, na: this.user.na, avatar: this.user.avatar }
-          }
-        );
-      } else {
-        this.reports.posts = this.reports.posts.filter(report => { return report.id !== this.report.id; });
-        this.db.database.ref(`post/report${this.report.id}`).remove();
-      }
+    if (this.user.id === this.report.user || this.user.admin) {
+      let update: any = { ...this.reportForm.value, ack: ack }; const msg = ['下書き保存', '投稿', '公開'];
       if (ack === 1) {
-        this.api.get(`query`, { table: 'story', select: ['id', 'txt', 'media', 'restdate', 'rested'], where: { typ: "report", parent: this.report.id } }).then(res => {
-          const today = new Date(); let rested = new Date();
-          for (let story of res.storys) {
-            if (story.restdate && story.rested == null) {
-              rested.setDate(today.getDate() + story.restdate);
-              this.api.post('query', { table: 'story', update: { rested: rested }, where: { typ: "report", parent: this.report.id, id: story.id } });
-            }
-          }
-          const description = res.storys.length ? res.storys[0].txt.match(/[^ -~｡-ﾟ]/).slice(0, 50) : "";
-          this.db.list(`report/`).update(this.report.id.toString(),
-            {
-              na: this.na.value, uid: this.report.user, description: this.description.value, image: this.report.img, upd: new Date().getTime(),
-            });
-        });
+        if (this.report.ack !== 1) update.acked = this.dateFormat();
+        update.ackuser = this.user.id;
       }
-      this.loadreport();
-      this.report.ack = ack;
-      //this.undo({ id: this.report.id, user: this.user.id, ...update });
-      this.ui.pop(`${msg[ack + 1]}しました。`);
-    }).catch(err => {
-      this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
-    });
+      if (this.imgBase64) {
+        let bin = atob(this.imgBase64.replace(/^.*,/, ''));
+        let buffer = new Uint8Array(bin.length);
+        let blob: Blob;
+        for (var i = 0; i < bin.length; i++) {
+          buffer[i] = bin.charCodeAt(i);
+        }
+        try {
+          blob = new Blob([buffer.buffer], { type: 'image/jpeg' });
+        } catch (e) {
+          alert("ブロッブデータの作成に失敗しました。");
+          return;
+        }
+        const ref = this.storage.ref(`report/${this.report.id}/image.jpg`);
+        await ref.put(blob);
+        update.img = await ref.getDownloadURL().toPromise();
+      }
+      this.api.post('query', { table: 'report', update: update, where: { id: this.report.id } }).then(() => {
+        if (ack === 0) {
+          this.db.database.ref(`post/report${this.report.id}`).set(
+            {
+              id: `report${this.report.id}`, na: this.na.value, upd: new Date().getTime(),
+              url: `/post/report/${this.report.id}`, user: { id: this.user.id, na: this.user.na, avatar: this.user.avatar }
+            }
+          );
+        } else {
+          this.reports.posts = this.reports.posts.filter(report => { return report.id !== this.report.id; });
+          this.db.database.ref(`post/report${this.report.id}`).remove();
+        }
+        if (ack === 1) {
+          this.api.get(`query`, { table: 'story', select: ['id', 'txt', 'media', 'restdate', 'rested'], where: { typ: "report", parent: this.report.id } }).then(res => {
+            const today = new Date(); let rested = new Date();
+            for (let story of res.storys) {
+              if (story.restdate && story.rested == null) {
+                rested.setDate(today.getDate() + story.restdate);
+                this.api.post('query', { table: 'story', update: { rested: rested }, where: { typ: "report", parent: this.report.id, id: story.id } });
+              }
+            }
+            const description = res.storys.length ? res.storys[0].txt.match(/[^ -~｡-ﾟ]/).slice(0, 50) : "";
+            this.db.list(`report/`).update(this.report.id.toString(),
+              {
+                na: this.na.value, uid: this.report.user, description: this.description.value, image: this.report.img, upd: new Date().getTime(),
+              });
+          });
+        }
+        this.loadreport();
+        this.report.ack = ack;//this.undo({ id: this.report.id, user: report.user, ...update,ack:ack });        
+        this.ui.pop(`${msg[ack + 1]}しました。`);
+      }).catch(err => {
+        this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
+      });
+    } else {
+      this.ui.popm("保存するにはログインしてください。");
+      this.router.navigate(['login']);
+    }
   }
   async eraseClick() {
     if (this.report.id && await this.ui.confirm("削除確認", "レポートを削除します。")) this.erase([this.report.id]);
@@ -334,7 +337,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     }
     this.ui.pop("レポートを削除しました。");
     this.loadreport();
-    this.undo({ id: null, user: this.user.id, region: 1, area: 1, genre: 1, shop_na: "選択してください", cast_na: "選択してください", shopimg: "", castimg: "" });
+    this.undo({ id: null, user: this.user.id});
   }
   dateFormat(date = new Date()) {//MySQL用日付文字列作成'yyyy-M-d H:m:s'
     var y = date.getFullYear();

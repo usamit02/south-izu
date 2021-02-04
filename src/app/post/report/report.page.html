@@ -25,29 +25,29 @@
           </ion-avatar>
           {{report.author.na}}
         </ion-item>
-        <ion-button *ngIf="report.id" (click)="newReport()" slot="end" fill="clear">
-          <ion-icon name="create" slot="icon-only"></ion-icon>
+        <ion-button [disabled]="!report.id" (click)="newReport()" slot="end" fill="clear">
+          <ion-icon name="create" slot="icon-only" color="secondary"></ion-icon>
         </ion-button>
-        <ion-button (click)="preview()" [disabled]="!reportForm.valid" slot="end" fill="clear">
+        <ion-button (click)="preview()" [disabled]="!reportForm.valid || !report.id" slot="end" fill="clear">
           <ion-icon name="browsers" slot="icon-only"></ion-icon>
         </ion-button>
         <ng-container *ngIf="report.user===user.id">
-          <ion-button [disabled]="!reportForm.valid || !reportForm.dirty" (click)="save(-1)" slot="end" fill="clear">
+          <ion-button [disabled]="!reportForm.valid || !reportForm.dirty || !report.id" (click)="save(-1)" slot="end" fill="clear">
             <ion-icon name="checkmark" slot="icon-only"></ion-icon>
           </ion-button>
-          <ion-button [disabled]="!reportForm.valid" (click)="save(0)" slot="end" fill="clear">
-            <ion-icon name="send" slot="icon-only" color="secondary"></ion-icon>
+          <ion-button [disabled]="!reportForm.valid||!report.id" (click)="save(0)" slot="end" fill="clear">
+            <ion-icon name="send" slot="icon-only" color="success"></ion-icon>
           </ion-button>
         </ng-container>
         <ng-container *ngIf="user.admin">
-          <ion-button [disabled]="!reportForm.valid" (click)="save(1)" slot="end" fill="clear">
+          <ion-button [disabled]="!reportForm.valid||!report.id" (click)="save(1)" slot="end" fill="clear">
             <ion-icon name="thumbs-up" slot="icon-only" color="success"></ion-icon>
           </ion-button>
-          <ion-button [disabled]="!reportForm.valid" (click)="save(-1)" slot="end" fill="clear">
+          <ion-button [disabled]="!reportForm.valid || !report.id" (click)="save(-1)" slot="end" fill="clear">
             <ion-icon name="thumbs-down" slot="icon-only" color="dark"></ion-icon>
           </ion-button>
         </ng-container>
-        <ion-button *ngIf="report.user===user.id||user.admin" (click)="eraseClick()" color="danger" slot="end"
+        <ion-button [disabled]="!(report.user===user.id||user.admin)||!report.id" (click)="eraseClick()" color="danger" slot="end"
           fill="clear">
           <ion-icon name="trash" slot="icon-only"></ion-icon>
         </ion-button>

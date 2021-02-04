@@ -144,7 +144,7 @@
     </ion-segment>    
   </form>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story *ngIf="marker.user" typ="marker" [document]="marker" [user]="user"></app-story>
+  <app-story typ="marker" [document]="marker" [user]="user"></app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic

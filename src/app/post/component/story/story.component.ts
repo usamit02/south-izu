@@ -144,7 +144,7 @@ export class StoryComponent implements OnInit {
     });
   }
   undo(parent) {
-    if (parent) {
+    if (parent && this.document.user != null) {
       let where: any = { typ: this.typ, parent: this.parent };
       this.api.get('query', { table: 'story', select: ['id', 'txt', 'media', 'file', 'latlng', 'rest', 'restdate'], where: where }).then(res => {
         this.storys = [];
