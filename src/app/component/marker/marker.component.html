@@ -7,11 +7,11 @@
       　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
     </ion-button>
     <ion-title>マーカー</ion-title>
-    <ion-button [disabled]="!marker.id" (click)="postStory()" color="primary" slot="end" fill="clear">
+    <ion-button [disabled]="!marker.id" (click)="postStory()" color="secondary" slot="end" fill="clear">
       <ion-icon name="create" slot="icon-only"></ion-icon>
     </ion-button>
     <ion-button [disabled]="!marker.id" (click)="erase()" color="danger" slot="end" fill="clear">
-      <ion-icon name="hammer" slot="icon-only"></ion-icon>
+      <ion-icon name="trash" slot="icon-only"></ion-icon>
     </ion-button>
     <ion-button slot="end" [disabled]="!markerForm.dirty || !markerForm.valid || saving" (click)="save()" fill="clear">
       <ion-icon name="checkmark-circle" slot="icon-only" color="primary"></ion-icon>

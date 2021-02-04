@@ -64,7 +64,7 @@ export class Tab3Page implements OnInit, OnDestroy {
             res.markers[0].id = Number(res.markers[0].id);
             res.markers[0].lat = Number(res.markers[0].lat);
             res.markers[0].lng = Number(res.markers[0].lng);
-            res.markers[0].icon = Number(res.markers[0].icon);
+            res.markers[0].icon = res.markers[0].iconurl;
             res.markers[0].ack = Number(res.markers[0].ack);
             res.markers[0].rest = Number(res.markers[0].rest);
             res.markers[0].chat = Number(res.markers[0].chat);

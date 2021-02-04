@@ -163,7 +163,7 @@ export class MarkerPage implements OnInit, OnDestroy {
     if (this.user.id === this.marker.user || this.user.admin) {
       await this.api.post('query', { table: 'marker', update: this.markerForm.value, where: { id: this.marker.id } });
     }
-    this.router.navigate(['/tabs/marker', this.marker.id]);
+    this.router.navigate(['/marker', this.marker.id]);
   }
   imgChange(e) {
     if (e.target.files[0].type.match(/image.*/)) {
@@ -253,7 +253,7 @@ export class MarkerPage implements OnInit, OnDestroy {
         this.allMarkers = this.allMarkers.filter(marker => { return marker.id !== this.marker.id; });
         this.allMarkers.push(newMarker);
         this.loadMarkers();
-        this.undo({ id: this.marker.id, user: this.user.id, ...update, ack: ack });
+        this.undo({ id: this.marker.id, user: this.marker.user, ...update, ack: ack });
         this.ui.pop(`${msg[ack + 1]}しました。`);
       }).catch(err => {
         this.ui.alert(`${msg[ack + 1]}できませんでした。\r\n${err.message}`);
