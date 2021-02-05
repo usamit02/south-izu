@@ -104,11 +104,11 @@ export class StoryComponent implements OnInit {
         }]
       }).then(async res => {
         if (this.typ === 'report' || this.typ === 'plan') {
-          const marker = await this.api.get('query', { table: 'story_marker', select: ['img'], where: { id: id } });
+          const marker = await this.api.get('query', { table: 'story_marker', select: ['id','img'], where: { sid: id } });
           if (marker.story_markers.length) {
-            if (marker.story_markers[0].img) this.storage.ref(`story_marker/${id}.jpg`).delete();
+            if (marker.story_markers[0].img) this.storage.ref(`story_marker/${marker.story_markers[0].id}.jpg`).delete();
           }
-          this.api.post('query', { table: 'story_marker', delete: { id: id } });
+          this.api.post('query', { table: 'story_marker', delete: { sid: id } });
         }
         this.storys.splice(idx, 1);
       }).finally(() => { this.ui.loadend() });

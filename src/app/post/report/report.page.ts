@@ -179,31 +179,29 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
             ], where: { typ: "report", parent: this.report.id }, order: { id: "" }
           });
           let storys = doc.storys.filter(story => { return !story.rested || this.report.user === this.user.id || this.user.admin });
-          const ins = storys.map(story => {
+          const ids = storys.map(story => {
             story.parent = res.report.id;
             story.latlng = `POINT(${story.lng} ${story.lat})`;
             delete story.lat; delete story.lng;
-            return { id: story.id };
+            return story.id;
           });
           if (storys.length) {
             doc = await this.api.post('querys', { inserts: storys, table: "story" });
-            const ids = doc.story.map(story => {
+            const sids = doc.story.map(story => {
               return story.id;
             })
             doc = await this.api.get('query', {
               table: "story_marker", select: ["typ", "na", "txt", "img", "icon", "latlng", "idx"],
-              where: { typ: "report", parent: this.report.id, in: ins }, order: { id: "" }
+              where: { typ: "report", parent: this.report.id, in: { id: ids } }, order: { id: "" }
             });
-            //let markers = doc.story_markers.map(marker => {
-            for (let i = 0; i < doc.story_markers.length; i++) {
-              let marker = doc.story_markers[i];
-              marker.parent = res.report.id;
-              marker.latlng = `POINT(${marker.lng} ${marker.lat})`;
-              delete marker.lat; delete marker.lng;
-              marker.id = ids[i];
-            }
-            //});
             if (doc.story_markers.length) {
+              for (let i = 0; i < doc.story_markers.length; i++) {//let markers = doc.story_markers.map(marker => {
+                let marker = doc.story_markers[i];
+                marker.parent = res.report.id;
+                marker.latlng = `POINT(${marker.lng} ${marker.lat})`;
+                delete marker.lat; delete marker.lng;
+                marker.sid = sids[i];
+              }//});            
               await this.api.post('querys', { inserts: doc.story_markers, table: "story_marker" });
             }
           }
