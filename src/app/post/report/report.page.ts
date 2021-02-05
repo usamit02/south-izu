@@ -158,7 +158,7 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
         }, {
           text: 'はい',
           handler: () => {
-            this.create({ user: this.user.id, ...this.reportForm.value }, true);
+            this.create({ user: this.user.id, ...this.reportForm.value,img:this.report.img }, true);
           }
         }
       ]
@@ -173,11 +173,15 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.user.id) {
       this.api.post("query", { table: "report", insert: insert }).then(async res => {
         if (copy) {
-          let doc = await this.api.get('query', { table: "story", select: ["*"], where: { typ: "report", parent: this.report.id } });
+          let doc = await this.api.get('query', { table: "story", select: [
+            "typ","parent","txt","media","file","latlng","rest","restdate","rested","idx"
+          ], where: { typ: "report", parent: this.report.id } });
           let inserts = doc.storys.filter(story => { return !story.rested || this.report.user === this.user.id || this.user.admin });
           if (inserts.length) {
             inserts.map(story => {
               story.parent = res.report.id;
+              story.latlng=`POINT(${story.lng} ${story.lat})`;
+              delete story.lat;delete story.lng;
               return story;
             });
             await this.api.post('querys', { table: "story", inserts: inserts });
@@ -320,8 +324,6 @@ export class ReportPage implements OnInit, AfterViewInit, OnDestroy {
             { typ: "report", parent: id, table: "story_marker" }
           ]
         });
-        //await this.api.post('query', { table: 'report', delete: { id: id } });
-        //await this.api.post('query', { table: 'story', delete: { typ: 'report', parent: id } });
         await this.db.list(`report/${id}`).remove();
         await this.db.database.ref(`post/report${id}`).remove();
         await this.store.collection('report').doc(id.toString()).delete();
