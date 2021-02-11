@@ -45,7 +45,7 @@ export class FriendPage implements OnInit, OnDestroy {
             this.db.database.ref(`user/${friend.key}`).on('value', snap => {
               const detail$ = this.db.list(`user/${friend.key}`).stateChanges(["child_changed"]);
               this.friends.push({ id: friend.key, ...snap.val(), detail$: detail$ });
-              resolve();
+              resolve(true);
             });
           });
           let promises = []; this.friends = [];

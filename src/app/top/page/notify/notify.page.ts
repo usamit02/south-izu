@@ -79,23 +79,23 @@ export class NotifyPage implements OnInit, OnDestroy {
       return false;
     }
     const push = new Promise((resolve, reject) => {
-      if (!this.pushForm.dirty) return resolve();
+      if (!this.pushForm.dirty) return resolve(true);
       let ref = this.db.database.ref(`notify/push/${this.user.id}`);
       if (exist('push')) {
         this.messaging.getPermission().then(() => {
-          ref.update(this.pushForm.value).then(() => { return resolve(); });
+          ref.update(this.pushForm.value).then(() => { return resolve(true); });
         }).catch(err => {
           return reject(`プッシュ通知の設定保存に失敗しました。\r\n${err}`);
         });
       } else {
-        ref.remove().finally(() => { return resolve(); });
+        ref.remove().finally(() => { return resolve(true); });
       }
     });
     const mail = new Promise((resolve, reject) => {
-      if (!this.mailForm.dirty) return resolve();
+      if (!this.mailForm.dirty) return resolve(true);
       const ref = this.db.database.ref(`notify/mail/${this.user.id}`);
       ref.set(this.mailForm.value).then(() => {
-        return resolve();
+        return resolve(true);
       }).catch(err => {
         return reject(`メール通知の設定保存に失敗しました。\r\n${err.message}`);
       });

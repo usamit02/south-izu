@@ -15,7 +15,7 @@ export class MessagingService {
       const user = await this.user.get();
       if (user.id) {
         await this.db.database.ref(`notify/push/${user.id}`).update({ token: token }).catch(err => { reject(err); });
-        resolve();
+        resolve(true);
       } else {
         reject();
       }
@@ -27,7 +27,7 @@ export class MessagingService {
         if (permission === 'default' || permission === 'granted') {
           const token = await this.messaging.getToken();
           await this.updateToken(token);
-          resolve();
+          resolve(true);
         } else if (permission === 'denied') {
           alert(`通知はブラウザの設定によりブロックされています。\r\nブロックを解除してから再操作してください。`);
           reject();
