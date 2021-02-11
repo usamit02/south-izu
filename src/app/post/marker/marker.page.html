@@ -14,7 +14,7 @@
       <ion-button *ngIf="markers.acks.length" slot="start" color="success" (click)="popMarkers(markers.acks,$event)">
         承認済{{markers.acks.length}}件
       </ion-button>
-      <ion-button (click)="undo()" fill="clear" [disabled]="!marker.id">
+      <ion-button (click)="undo(marker)" fill="clear" [disabled]="!marker.id">
         <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
       </ion-button>
       <ion-title>マーカー記事投稿</ion-title>

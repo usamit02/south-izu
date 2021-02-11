@@ -5,7 +5,7 @@ import * as google from 'googleapis';
 import { FieldValue } from '@google-cloud/firestore';
 admin.initializeApp();
 const URL = "https://south-izu.web.app";
-const typVal:any = { report: "レポート", column: "コラム" ,marker:"マーカー",plan:"プラン",vehicle:"愛車",blog:"ブログ"};
+const typVal: any = { report: "レポート", column: "コラム", marker: "マーカー", plan: "プラン", vehicle: "愛車", blog: "ブログ" };
 //----------------------------------------ダイレクト---------------------------------------------
 export const directCreate = functions.region('asia-northeast1').firestore.document('direct/{key}').onCreate((snapshot, context) => {
   const doc = snapshot.data();
@@ -24,7 +24,7 @@ export const directCreate = functions.region('asia-northeast1').firestore.docume
 export const directChatCreate = functions.region('asia-northeast1').firestore.document('direct/{key}/chat/{doc}').onCreate((snap, context) => {
   const doc = snap.data();
   admin.firestore().collection('direct').doc(context.params.key).get().then(snapshot => {
-    const data:any = snapshot.data();
+    const data: any = snapshot.data();
     const dest = doc.uid === data.id1 ? { id: data.id2, na: data.na2, avatar: data.avatar2 } : { id: data.id1, na: data.na1, avatar: data.avatar1 };//ダイレクト相手方
     const ext = doc.txt.length > 50 ? "..." : "";
     const url = `/direct/${context.params.key}/${Math.floor(doc.upd._seconds)}`;
@@ -60,7 +60,7 @@ export const planCreate = functions.region('asia-northeast1').database.ref(`plan
 export const blogCreate = functions.region('asia-northeast1').database.ref(`blog/{id}`).onCreate((snapshot, context) => {
   docCreate("blog", snapshot, context);
 });
-const docCreate = (typ:any, snapshot:any, context:any) => {
+const docCreate = (typ: any, snapshot: any, context: any) => {
   const doc = snapshot.val();
   admin.database().ref(`user/${doc.uid}`).once('value', snap => {
     const user = snap.val();
@@ -69,7 +69,7 @@ const docCreate = (typ:any, snapshot:any, context:any) => {
     admin.database().ref(`talk`).push(payload).catch(err => { console.error(`talk書込みに失敗しました。${typVal[typ]}:${doc.na}\r\n${err.message}`) });
     timeline(payload);
     admin.database().ref(`friender/${doc.uid}`).orderByValue().equalTo('support').once('value', query => {
-      query.forEach((snap:any) => {
+      query.forEach((snap: any) => {
         send(snap.key, 'supportpost', `${user.na}が${txt}`, url, user.avatar).catch(err => { return `${doc.uid}の${typVal[typ]}「${doc.na}」の投稿通知に失敗しました\r\n${err.message}`; });
       });
     });
@@ -126,14 +126,14 @@ export const blogThreadCreate = functions.region('asia-northeast1').firestore.do
 export const vehicleThreadCreate = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}/chat/{thread}').onCreate((snapshot, context) => {
   chatCreate('vehicle', snapshot, context);
 });
-const chatCreate = (page: string, snapshot:any, context:any) => {
+const chatCreate = (page: string, snapshot: any, context: any) => {
   const doc = snapshot.data();
   admin.database().ref(`${page}/${context.params.id}/chat`).transaction(val => {
     return (val || 0) + 1;
   }).catch(err => { console.error(err); });
   const ext = doc.txt.length > 50 ? "..." : "";
   const upd = doc.upd._seconds * 1000;
-  let url:any; let key:any;
+  let url: any; let key: any;
   if (context.params.thread) {
     url = `/thread/${page}/${context.params.id}/${context.params.key}/${Math.floor(doc.upd._seconds)}`;
     key = context.params.thread;
@@ -209,7 +209,7 @@ export const blogThreadUpdate = functions.region('asia-northeast1').firestore.do
 export const vehicleThreadUpdate = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}/chat/{thread}').onUpdate((change, context) => {
   chatUpdate(change, context);
 });
-const chatUpdate = (change:any, context:any) => {
+const chatUpdate = (change: any, context: any) => {
   const doc = change.after.data();
   const before = change.before.data();
   if (doc.txt !== before.txt) {
@@ -266,15 +266,15 @@ export const blogThreadDelete = functions.region('asia-northeast1').firestore.do
 export const vehicleThreadDelete = functions.region('asia-northeast1').firestore.document('vehicle/{id}/chat/{key}/chat/{thread}').onDelete((snapshot, context) => {
   chatDelete('vehicle', snapshot, context);
 });
-const chatDelete = (page: string, snapshot:any, context:any) => {
+const chatDelete = (page: string, snapshot: any, context: any) => {
   const doc = snapshot.data();
   admin.database().ref(`${page}/${context.params.id}/chat`).transaction(val => {
     return (val || 1) - 1;
   }).catch(err => { console.error(err); });
   const key = context.params.thread ? context.params.thread : context.params.key;
   admin.database().ref(`chat/${doc.uid}/${key}`).remove().catch(err => { console.error(`chat削除に失敗しました。user:${doc.na}\r\n${err.message}`) });
-  const timelineDelete = (query:any) => {
-    query.forEach((snap:any) => {
+  const timelineDelete = (query: any) => {
+    query.forEach((snap: any) => {
       admin.database().ref(`timeline/${snap.key}/chat/${key}`).remove().catch(err => {
         console.error(`${snap.key}のタイムライン削除に失敗しました。${err.message}`);
       });
@@ -383,7 +383,7 @@ export const blogEval = functions.region('asia-northeast1').firestore.document('
 export const vehicleEval = functions.region('asia-northeast1').firestore.document('vehicle/{id}/eval/{user}').onCreate((snapshot, context) => {
   evaluation('vehilce', snapshot, context);
 });
-const evaluation = (page:string, snapshot:any, context:any) => {
+const evaluation = (page: string, snapshot: any, context: any) => {
   const doc = snapshot.data();
   admin.database().ref(`${page}/${context.params.id}/${doc.id}`).transaction(val => {
     return (val || 0) + 1;
@@ -393,7 +393,7 @@ const evaluation = (page:string, snapshot:any, context:any) => {
   }).catch(err => { console.error(`${typVal[page]}評価によるユーザー評価プラス１に失敗しました。${err.message}`); });
   admin.database().ref(`user/${context.params.user}`).once('value', snap => {
     const user = { id: context.params.user, ...snap.val() };
-    const evaluation:any = { good: 'いいね！', bad: "ダメだし" };
+    const evaluation: any = { good: 'いいね！', bad: "ダメだし" };
     const txt = `「${doc.na}」の${typVal[page]}に${evaluation[doc.id]}しました。`;
     const payload = {
       uid: user.id, na: user.na, avatar: user.avatar, txt: txt, upd: doc.upd._seconds * 1000, media: "",
@@ -421,12 +421,12 @@ export const chatEval = functions.region('asia-northeast1').firestore.document('
   }).catch(err => { console.error(`チャット評価によるユーザー評価プラス１に失敗しました。${err.message}`); });
   admin.database().ref(`user/${context.params.user}`).once('value', snap => {
     const user = { id: context.params.user, ...snap.val() };
-    const evaluation:any = { good: 'いいね！', bad: "ダメだし" };
+    const evaluation: any = { good: 'いいね！', bad: "ダメだし" };
     const txt = `${doc.na}のコメントに${evaluation[doc.id]}しました。`;
     const payload = { uid: user.id, na: user.na, avatar: user.avatar, txt: txt, upd: doc.upd._seconds * 1000, media: "", url: doc.url };
     timeline(payload, `eval${doc.upd._seconds}`);
     admin.firestore().doc(doc.path).get().then(snap => {
-      let chat:any = snap.data();
+      let chat: any = snap.data();
       chat.upd = doc.upd._seconds * 1000 + 1;
       timeline(chat, snap.id);
     });
@@ -437,7 +437,7 @@ export const chatEval = functions.region('asia-northeast1').firestore.document('
 export const tipCreate = functions.region('asia-northeast1').firestore.document('tip/{key}').onCreate((snapshot, context) => {
   const doc = snapshot.data();
   admin.database().ref(`admin`).once('value', snap => {
-    snap.forEach((adminUser:any) => {
+    snap.forEach((adminUser: any) => {
       send(adminUser.key, "tip", `「${doc.na}」の投稿に「${doc.tiper}」から通報がありました。\r\n${doc.txt}`, doc.url);
     });
   });
@@ -486,7 +486,7 @@ export const postCreate = functions.region('asia-northeast1').database.ref(`post
   const doc = snapshot.val();
   admin.database().ref(`admin`).once('value', admins => {
     const message = `${doc.user.na}から「${doc.na}」の投稿がありました。審査してください。`;
-    admins.forEach((admin:any) => {
+    admins.forEach((admin: any) => {
       send(admin.key, "admin", message, doc.url, doc.user.avatar);
     });
   }).catch(err => {
@@ -526,16 +526,16 @@ export const avatarUpdate = functions.region('asia-northeast1').database.ref('us
   })*/
 });
 
-const timeline = (doc:any, key?: string) => {
-  const set = (query:any) => {
-    query.forEach((snap:any) => {
+const timeline = (doc: any, key?: string) => {
+  const set = (query: any) => {
+    query.forEach((snap: any) => {
       admin.database().ref(`timeline/${snap.key}/chat/${key}`).set(doc).catch(err => {//admin.firestore().collection('test').doc(snap.key).collection('timeline').add(payload)
         console.error(`${snap.key}のタイムライン書込みに失敗しました。${err.message}`);
       });
     });
   }
-  const push = (query:any) => {
-    query.forEach((snap:any) => {
+  const push = (query: any) => {
+    query.forEach((snap: any) => {
       admin.database().ref(`timeline/${snap.key}/chat`).push(doc).catch(err => {//admin.firestore().collection('test').doc(snap.key).collection('timeline').add(payload)
         console.error(`${snap.key}のタイムライン書込みに失敗しました。${err.message}`);
       });
@@ -576,7 +576,7 @@ const send = async (id: string, typ: string, message: string, url?: string, avat
     const clientSecret = "L7VB0DfzYowNTbexvlDhWGKB";
     const refreshToken = "1//04ngcnvQ17C7yCgYIARAAGAQSNwF-L9IrWF7It-zXAgpQHGmTv9Ab1FQWD2qkmFFTsF_OC_dA_sjN_lZGxJenAucSZ_qx3RXOV_M";
     const oauth2Client = new OAuth2(
-      clientID, clientSecret,"https://developers.google.com/oauthplayground" // Redirect URL
+      clientID, clientSecret, "https://developers.google.com/oauthplayground" // Redirect URL
     );
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -640,17 +640,17 @@ const score = (typ: string, id: string | number, action: string, score: number) 
 export const scoreing = functions.region('asia-northeast1').https.onRequest(async (req, res) => {
   let score: any = { cast: {}, shop: {}, user: {} };
   let promises = [];
-  const dailyScore = (i:any) => new Promise((resolve, reject) => {
+  const dailyScore = (i: any) => new Promise((resolve, reject) => {
     let day = new Date();
     day.setDate(day.getDate() - i);
     const Y = day.getFullYear();
     const M = day.getMonth() + 1;
     const D = day.getDate();
     admin.database().ref(`score/${Y}/${M}/${D}`).once('value', daily => {
-      daily.forEach((typ:any) => {
-        typ.forEach((doc:any) => {
+      daily.forEach((typ: any) => {
+        typ.forEach((doc: any) => {
           if (!(doc.key in score[typ.key])) score[typ.key][doc.key] = {};
-          doc.forEach((action:any) => {
+          doc.forEach((action: any) => {
             const point = action.key in score[typ.key][doc.key] ? score[typ.key][doc.key][action.key] : 0;
             score[typ.key][doc.key][action.key] = point + action.val();
           });
@@ -661,16 +661,16 @@ export const scoreing = functions.region('asia-northeast1').https.onRequest(asyn
       reject(err);
     });
   });
-  const monthlyScore = (i:any) => new Promise((resolve, reject) => {
+  const monthlyScore = (i: any) => new Promise((resolve, reject) => {
     let day = new Date();
     day.setMonth(day.getMonth() - i);
     const Y = day.getFullYear();
     const M = day.getMonth() + 1;
     admin.database().ref(`total/${Y}/${M}`).once('value', monthly => {
-      monthly.forEach((typ:any) => {
-        typ.forEach((doc:any) => {
+      monthly.forEach((typ: any) => {
+        typ.forEach((doc: any) => {
           if (!(doc.key in score[typ.key])) score[typ.key][doc.key] = {};
-          doc.forEach((action:any) => {
+          doc.forEach((action: any) => {
             score[typ.key][doc.key][action.key] = (score[typ.key][doc.key][action.key] | 0) + action.val();
           });
         });
@@ -710,10 +710,10 @@ export const scoreing = functions.region('asia-northeast1').https.onRequest(asyn
   };
   res.status(200).send("ok");
 });
-//const fs = require('fs');
+const fs = require('fs');
 export const render = functions.https.onRequest((req, res) => {
-  //fs.readFile('./index.html', 'utf8', (err, html) => {
-  //  if (err) res.status(300).send(err); 
+  fs.readFile('./www/index.html', 'utf8', (err:any, html:any) => {
+    if (err) res.status(300).send(err); /*
   let html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
           <title>ツーリングスティ</title>        
           <base href="/" />        
@@ -726,7 +726,7 @@ export const render = functions.https.onRequest((req, res) => {
           <meta name="description" content="ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。"/>
           <meta property="og:description" content="ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。"/>
           <meta property="og:url" content="https://touringstay.web.app"/>
-          <meta property="og:image" content="https://bloggersguild.cf/south-izu/img/pwa192.png"/>
+          <meta property="og:image" content="https://ss1.coressl.jp/clife.m1.coreserver.jp/touringstay/img/pwa192.png"/>
           <meta property="og:locale" content="ja_JP" />
           <meta name="twitter:text:title" content="ツーリングスティ"/>        
           <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
@@ -734,40 +734,40 @@ export const render = functions.https.onRequest((req, res) => {
           <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://touringstay.web.app/rss.xml" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-        </head><body><app-root></app-root></body></html>`;
-  const path = req.path.split("/");
-  const page = path[1];
-  const id = path[2];
-  console.log(`page:${page} id:${id}`);
-  admin.database().ref(`${page}/${id}`).once('value').then((snapshot:any) => {
-    if (snapshot.exists) {
-      const doc = snapshot.val();
-      console.log(`doc:${doc} na:${doc.na}`);
-      html = html
-        .replace(/<title>.*<\/title>/, `<title>${doc.na}</title>`)
-        .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${doc.description}"/>`)
-        .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${doc.description}"/>`)
-        .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${doc.na}"/>`)
-        .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="/${page}/${id}"/>`)
-        .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${doc.image}"/>`)
-        .replace(/<meta name="twitter:text:title"[^>]*>/, `<meta name="twitter:text:title" content="${doc.na}"/>`);
-      res.set('Cache-Control', 'public, max-age=86400, s-maxage=86400');
-    }
-    res.status(200).send(html);
-  }).catch(err => {
-    res.status(200).send(html);
-    throw err;
+        </head><body><app-root></app-root></body></html>`;*/
+    const path = req.path.split("/");
+    const page = path[1];
+    const id = path[2];
+    console.log(`page:${page} id:${id}`);
+    admin.database().ref(`${page}/${id}`).once('value').then((snapshot: any) => {
+      if (snapshot.exists) {
+        const doc = snapshot.val();
+        console.log(`doc:${doc} na:${doc.na}`);
+        html = html
+          .replace(/<title>.*<\/title>/, `<title>${doc.na}</title>`)
+          .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${doc.description}"/>`)
+          .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${doc.description}"/>`)
+          .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${doc.na}"/>`)
+          .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="/${page}/${id}"/>`)
+          .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${doc.image}"/>`)
+          .replace(/<meta name="twitter:text:title"[^>]*>/, `<meta name="twitter:text:title" content="${doc.na}"/>`);
+        res.set('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+      }
+      res.status(200).send(html);
+    }).catch(err => {
+      res.status(200).send(html);
+      throw err;
+    });
   });
-  // });
 });
 export const sitemap = functions.https.onRequest((req, res) => {
   res.set('Content-Type', 'application/xml');
-  let urls:Array<any> = [];
+  let urls: Array<any> = [];
   let html = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   const promise = (page: string) => new Promise((resolve, reject) => {
-    admin.database().ref(`${page}`).orderByChild('upd').limitToLast(500).once('value').then((snapshot:any) => {
+    admin.database().ref(`${page}`).orderByChild('upd').limitToLast(500).once('value').then((snapshot: any) => {
       if (snapshot.exists) {
-        snapshot.forEach((doc:any) => {
+        snapshot.forEach((doc: any) => {
           const data = doc.val();
           urls.push({ loc: `${URL}/${page}/${doc.key}`, mod: new Date(data.upd), upd: data.upd });
         });
@@ -775,7 +775,7 @@ export const sitemap = functions.https.onRequest((req, res) => {
       resolve(true);
     }).catch(err => reject(err));
   });
-  Promise.all([promise('report'), promise('column'),promise('marker'),promise('blog'),promise('vehicle')]).then(() => {
+  Promise.all([promise('report'), promise('column'), promise('marker'), promise('blog'), promise('vehicle')]).then(() => {
     urls.sort((a, b) => {
       if (a.upd < b.upd) {
         return 1;
@@ -795,13 +795,13 @@ export const sitemap = functions.https.onRequest((req, res) => {
 });
 export const rss = functions.https.onRequest((req, res) => {
   res.set('Content-Type', 'application/xml');
-  let items:Array<any> = [];
+  let items: Array<any> = [];
   let html = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n<title>ツーリングスティ</title>
   <description>ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。</description><link>${URL}</link><language>ja</language>`;
   const promise = (page: string) => new Promise((resolve, reject) => {
-    admin.database().ref(`${page}`).orderByChild('upd').limitToLast(10).once('value').then((snapshot:any) => {
+    admin.database().ref(`${page}`).orderByChild('upd').limitToLast(10).once('value').then((snapshot: any) => {
       if (snapshot.exists) {
-        snapshot.forEach((doc:any) => {
+        snapshot.forEach((doc: any) => {
           const data = doc.val();
           items.push({ link: `${URL}/${page}/${doc.key}`, date: new Date(data.upd), upd: data.upd, title: data.na, description: data.description });
         });
@@ -809,7 +809,7 @@ export const rss = functions.https.onRequest((req, res) => {
       resolve(true);
     }).catch(err => reject(err));
   });
-  Promise.all([promise('report'), promise('column'),promise('marker'),promise('blog'),promise('vehicle')]).then(() => {
+  Promise.all([promise('report'), promise('column'), promise('marker'), promise('blog'), promise('vehicle')]).then(() => {
     items.sort((a, b) => {
       if (a.upd < b.upd) {
         return 1;

@@ -1,14 +1,12 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-      <ion-button (click)="undo()" fill="clear" [disabled]="!id">
-        　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <ion-button (click)="undo()" fill="clear" [disabled]="!id">
+      　 <ion-icon name="refresh-circle" slot="icon-only" color="warning"></ion-icon>
+    </ion-button>
     <ion-title>愛車の設定</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="erase()" color="danger" slot="end" fill="clear"  [disabled]="!(vehicle.user.value===user.id||user.admin)||!id">
+      <ion-button (click)="erase()" color="danger" slot="end" fill="clear"
+        [disabled]="!(vehicle.user.value===user.id||user.admin)||!id">
         <ion-icon name="trash" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="preview()" slot="end" fill="clear" [disabled]="!id">
@@ -36,7 +34,8 @@
             <ion-label position="floating">
               名称<ion-text color="danger">*</ion-text>
             </ion-label>
-            <ion-input required [formControl]="vehicle.na" minlength="2" maxlength="30" placeholder="プリウス" (ionBlur)="naBlur()"></ion-input>
+            <ion-input required [formControl]="vehicle.na" minlength="2" maxlength="30" placeholder="プリウス"
+              (ionBlur)="naBlur()"></ion-input>
           </ion-item>
           <span *ngIf="vehicle.na.errors?.minlength||vehicle.na.errors?.maxlength"
             class="errmsg">２文字以上３０文字以下で入力してください。</span>
@@ -55,7 +54,7 @@
               <ion-label>{{typ.na}}</ion-label>
             </ion-segment-button>
           </ion-segment>
-          <ion-item>            
+          <ion-item>
             <ion-label>年式</ion-label>
             <ion-input slot="end" typ="number" [formControl]="vehicle.year" min="1900" max="2100" placeholder="2020">
             </ion-input>
@@ -105,7 +104,8 @@
     </ion-row>
   </ion-grid>
   <ion-title #essay class="Text">Essay</ion-title>
-  <app-story *ngIf="vehicle.user.value!=null" typ="vehicle" [document]="{id:id,user:vehicle.user.value}" [user]="user"></app-story>
+  <app-story *ngIf="vehicle.user.value!=null" typ="vehicle" [document]="{id:id,user:vehicle.user.value}" [user]="user">
+  </app-story>
   <ion-fab vertical="top" horizontal="end" slot="fixed">
     <ion-fab-button *ngIf="currentY>basicY+50" (click)="scroll(basicY)" color="light" size="small">
       Basic

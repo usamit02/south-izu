@@ -17,6 +17,7 @@
           (click)="pop.dismiss(list)" [class.hidden]="list.hidden">
           <div>{{list.na}}</div>
           <img *ngIf="list.image" [src]="list.image" class="columnImg">
+          <img *ngIf="list.img" [src]="list.img" class="columnImg">
           <div>{{list.discription}}</div>
           <div class="created">{{list.created|date:'chat'}}</div>
         </ion-col>
@@ -25,7 +26,10 @@
           <ion-col *ngFor="let list of lists" button="true" size-xs="6" size-sm="4" size-md="4" size-lg="4" size-xl="4"
             (click)="pop.dismiss(list)" [class.hidden]="list.hidden">
             <ion-text> {{list.na}}</ion-text>
-            <img *ngIf="list.simg" [src]="list.simg" class="img">
+            <img *ngIf="list.simg;else img" [src]="list.simg" class="img">
+            <ng-template #img>
+              <img *ngIf="list.img" [src]="list.img" class="img">
+            </ng-template>
           </ion-col>
         </ng-template>      
     </ion-row>
