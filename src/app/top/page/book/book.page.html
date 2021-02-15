@@ -52,7 +52,7 @@
     <ion-fab-button *ngIf="currentY+contentH<scrollH-50" (click)="scroll(scrollH)" color="light" size="small">
       <ion-icon name="caret-down"></ion-icon>
     </ion-fab-button>
-  </ion-fab>
+  </ion-fab>  
 </ion-content>
 <ion-footer id="footer">
   <app-send *ngIf="chatParam.id&&user.id&&currentY+contentH>chatY" [id]="chatParam.id.toString()" page="stay"

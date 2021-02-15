@@ -13,7 +13,8 @@ const routes: Routes = [
 ];
 @NgModule({
   imports: [
-    CommonModule, IonicModule, RouterModule.forChild(routes), CalendarModule,PaySharedModule,StorySharedModule,ChatSharedModule,
+    CommonModule, IonicModule, RouterModule.forChild(routes), CalendarModule,
+    PaySharedModule,StorySharedModule,ChatSharedModule
   ],
   declarations: [BookPage,DatePipe,],
 })

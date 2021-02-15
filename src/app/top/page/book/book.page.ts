@@ -30,9 +30,9 @@ export class BookPage implements OnInit, OnDestroy {
   chatParam = { id: 0, topInfinite: false };
   editable = false;
   currentY: number; scrollH: number; contentH: number; reserveY: number; essayY: number; chatY: number;
-  private onDestroy$ = new Subject();
+  private onDestroy$ = new Subject(); 
   constructor(private route: ActivatedRoute,private router:Router, private location: Location, private modal: ModalController, private ui: UiService,
-    private userService: UserService, private api: ApiService, private db: AngularFireDatabase,) { }
+    private userService: UserService, private api: ApiService, private db: AngularFireDatabase,) {}
   ngOnInit() {
     this.route.params.pipe(takeUntil(this.onDestroy$)).subscribe(params => {
       this.ui.loading("予約確認中...")

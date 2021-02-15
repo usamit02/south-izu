@@ -51,3 +51,6 @@
     <ion-button *ngIf="!card.change" [disabled]="!amount" color="light" (click)="card.change=true" slot="end">クレジットカードを変更する</ion-button>
   </ion-item>
 </div>
+<div *ngIf="apiLoaded | async">
+  payjp ok!
+</div>
