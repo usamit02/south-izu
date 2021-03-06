@@ -4,7 +4,7 @@ import * as mailer from 'nodemailer';
 import * as google from 'googleapis';
 import { FieldValue } from '@google-cloud/firestore';
 admin.initializeApp();
-const URL = "https://south-izu.web.app";
+const URL = "https://touringstay.web.app";
 const typVal: any = { report: "レポート", column: "コラム", marker: "マーカー", plan: "プラン", vehicle: "愛車", blog: "ブログ" };
 //----------------------------------------ダイレクト---------------------------------------------
 export const directCreate = functions.region('asia-northeast1').firestore.document('direct/{key}').onCreate((snapshot, context) => {
@@ -710,56 +710,6 @@ export const scoreing = functions.region('asia-northeast1').https.onRequest(asyn
   };
   res.status(200).send("ok");
 });
-const fs = require('fs');
-export const render = functions.https.onRequest((req, res) => {
-  fs.readFile('./www/index.html', 'utf8', (err:any, html:any) => {
-    if (err) res.status(300).send(err); /*
-  let html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
-          <title>ツーリングスティ</title>        
-          <base href="/" />        
-          <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <meta name="format-detection" content="telephone=no" />
-          <meta name="msapplication-tap-highlight" content="no" />
-          <meta name="twitter:card" content="summary"/>
-          <meta property="og:type" content="article" />    
-          <meta property="og:title" content="ツーリングステイ"/>
-          <meta name="description" content="ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。"/>
-          <meta property="og:description" content="ライダー、ドライバー、チャリダー全ての旅人が安心して滞在し、感動を分かち合える場所をオンラインとオフラインにつくります。"/>
-          <meta property="og:url" content="https://touringstay.web.app"/>
-          <meta property="og:image" content="https://ss1.coressl.jp/clife.m1.coreserver.jp/touringstay/img/pwa192.png"/>
-          <meta property="og:locale" content="ja_JP" />
-          <meta name="twitter:text:title" content="ツーリングスティ"/>        
-          <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
-          <link rel="manifest" href="/manifest.json">
-          <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://touringstay.web.app/rss.xml" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-        </head><body><app-root></app-root></body></html>`;*/
-    const path = req.path.split("/");
-    const page = path[1];
-    const id = path[2];
-    console.log(`page:${page} id:${id}`);
-    admin.database().ref(`${page}/${id}`).once('value').then((snapshot: any) => {
-      if (snapshot.exists) {
-        const doc = snapshot.val();
-        console.log(`doc:${doc} na:${doc.na}`);
-        html = html
-          .replace(/<title>.*<\/title>/, `<title>${doc.na}</title>`)
-          .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${doc.description}"/>`)
-          .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${doc.description}"/>`)
-          .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${doc.na}"/>`)
-          .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="/${page}/${id}"/>`)
-          .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${doc.image}"/>`)
-          .replace(/<meta name="twitter:text:title"[^>]*>/, `<meta name="twitter:text:title" content="${doc.na}"/>`);
-        res.set('Cache-Control', 'public, max-age=86400, s-maxage=86400');
-      }
-      res.status(200).send(html);
-    }).catch(err => {
-      res.status(200).send(html);
-      throw err;
-    });
-  });
-});
 export const sitemap = functions.https.onRequest((req, res) => {
   res.set('Content-Type', 'application/xml');
   let urls: Array<any> = [];
@@ -786,7 +736,7 @@ export const sitemap = functions.https.onRequest((req, res) => {
     urls.forEach(url => {
       html += `<url>\n<loc>${url.loc}</loc>\n<lastmod>${url.mod.getFullYear()}-${url.mod.getMonth() + 1}-${url.mod.getDate()}</lastmod>\n</url>\n`;
     });
-    res.set('Cache-Control', 'public, max-age=600, s-maxage=600');
+    res.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
     res.status(200).send(html + "</urlset>");
   }).catch(err => {
     res.status(500).end();
@@ -822,7 +772,7 @@ export const rss = functions.https.onRequest((req, res) => {
       html += `<item>\n<title>${item.title}</title>\n<link>${item.link}</link><guid isPermaLink="true">${item.link}</guid>
       <pubDate>${item.date.toUTCString()}</pubDate><description>${item.description}</description>\n</item>\n`;
     });
-    res.set('Cache-Control', 'public, max-age=60, s-maxage=60');
+    res.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
     res.status(200).send(html + "</channel></rss>");
   }).catch(err => {
     res.status(500).end();
